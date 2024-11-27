@@ -12,3 +12,62 @@
 \def\ucr{\scalebox{1}{\stackinset{c}{}{c}{-.1pt}{%
   \textcolor{white}{\sffamily\bfseries\small ?}}{%
   \rotatebox{45}{$\blacksquare$}}}}
+\newcommand{\BibTeX}{B\kern-.05em\textsc{i \kern -.025em b}\kern-.08em\TeX}
+\newcommand{\baseline}{\textit{baseline}\xspace}
+\newcommand{\class}[1]{\mbox{\textbf{class-{#1}}}}
+\newcommand{\crt}{\textit{CR}\xspace}
+\newcommand{\dc}{$D_{\mathrm{contr}}$\xspace}
+\newcommand{\dcstar}{$D^{*}_{\mathrm{contr}}$\xspace}
+\newcommand{\ddpo}{$D_{\mathrm{dpo}}$\xspace}
+\newcommand{\dgen}{$D_{\mathrm{source}}$\xspace}
+\newcommand{\dgold}{$D_{\mathrm{gold}}$\xspace}
+\newcommand{\dgover}{$D_{\mathrm{gold\times4}}$\xspace}
+\newcommand{\dgstar}{$D^{r}_{\mathrm{step}}$\xspace}
+\newcommand{\dpte}{$D^{\prime}_{\mathrm{test}}$\xspace}
+\newcommand{\dte}{$D_{\mathrm{test}}$\xspace}
+\newcommand{\dptr}{$D^{\prime}_{\mathrm{train}}$\xspace}
+\newcommand{\dtr}{$D_{\mathrm{train}}$\xspace}
+\newcommand{\dsft}{$D_{\mathrm{sft}}$\xspace}
+\newcommand{\dtstar}{$D^{*}_{\mathrm{train}}$\xspace}
+\newcommand{\DGen}[1]{D_{\mathrm{#1}}}
+\newcommand{\kgen}{$K_{\mathrm{source}}$\xspace}
+\newcommand{\ksft}{$K_{\mathrm{sft}}$\xspace}
+\newcommand{\kte}{$K_{\mathrm{test}}$\xspace}
+\newcommand{\ktr}{$K_{\mathrm{train}}$\xspace}
+\newcommand{\ltr}{$L_{\mathrm{train}}$\xspace}
+\newcommand{\lte}{$L_{\mathrm{test}}$\xspace}
+\newcommand{\lptr}{$L^{\prime}_{\mathrm{train}}$\xspace}
+\newcommand{\lpte}{$L^{\prime}_{\mathrm{test}}$\xspace}
+\newcommand{\mathdefault}[1]{\mathrm{#1}}
+\newcommand{\mgold}{$M_{\mathrm{gold}}$\xspace}
+\newcommand{\mgover}{$M_{\mathrm{gold\times4}}$\xspace}
+\newcommand{\mimic}{Mimic-III\xspace}
+\newcommand{\rgen}{$r_{gen}$\xspace}
+\newcommand{\rsft}{$r$\xspace}
+\newcommand{\score}{\textsc{SemScore}\xspace}
+\newcommand{\GenMdl}[1]{\Mdl{gen}{#1}}
+\newcommand{\Mdl}[2]{M_{\mathrm{#1}}^{#2}}
+\newcommand{\mg}{$\GenMdl{}$\xspace}
+\newcommand{\mref}{$\RefMdl{}$\xspace}
+\newcommand{\me}{$\ScoreMdl{}$\xspace}
+\newcommand{\RefMdl}[1]{\Mdl{ref}{#1}}
+\newcommand{\ScoreMdl}[1]{\Mdl{score}{#1}}
+\newcommand{\topk}{\class}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+\newcommand{\mixp}{\{4,6\}\%}
+\newcommand{\instruct}{\mbox{InstructGPT-3}\xspace}
+\newcommand{\distilInstruct}{\mbox{Instruct-Distilation}\xspace}
+\newcommand{\distilmodels}{\textit{distilled models}\xspace}
+\newcommand{\dict}{dictionary extraction\xspace}
+\newcommand{\weakModel}{\textit{weak-supervised models}\xspace}
+\newcommand{\iclin}{$I_{clin}$\xspace}
+\newcommand{\bclin}{$B_{clin}$\xspace}
+\newcommand{\layerOne}{\textbf{gold standard}\xspace}
+\newcommand{\layerTwo}{\mbox{\textbf{silver}}\xspace}
+\newcommand{\layerValidate}{\textbf{silver with fixed annotations}\xspace}
+\newcommand{\layerThree}{\textbf{layer~3}\xspace}
+\newcommand{\SettingB}{\mbox{$S_{MonoGold}$}\xspace}
+\newcommand{\SettingC}{\mbox{$S_{MonoGold~\cap~MonoSilver}$}\xspace}
+\newcommand{\SettingD}{\mbox{$S_{MonoSilver}$}\xspace}  
+\newcommand{\SettingE}{\mbox{$S_{MultiSilver}$}\xspace}  
+\newcommand{\SettingA}{\mbox{\SettingD~$with$~$r\in \{0, 1\}$}\xspace}
