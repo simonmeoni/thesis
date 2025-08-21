@@ -1,0 +1,125 @@
+%!TEX encoding = UTF-8 Unicode
+
+\documentclass{styles/mimosis}
+
+\usepackage{metalogo}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Some of my favourite personal adjustments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% These are the adjustments that I consider necessary for typesetting
+% a nice thesis. However, they are *not* included in the template, as
+% I do not want to force you to use them.
+
+% This ensures that I am able to typeset bold font in table while still aligning the numbers
+% correctly.
+\usepackage{etoolbox}
+
+\usepackage{siunitx}
+\DeclareSIUnit\px{px}
+
+\sisetup{%
+  detect-all           = true,
+  detect-family        = true,
+  detect-mode          = true,
+  detect-shape         = true,
+  detect-weight        = true,
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hyperlinks & bookmarks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[%
+  unicode,
+  colorlinks = true,
+  citecolor  = RoyalBlue,
+  linkcolor  = RoyalBlue,
+  urlcolor   = RoyalBlue,
+  unicode,
+  ]{hyperref}
+\hypersetup{
+  pdftitle=Synthetic Data Generation for Clinical Natural Language Processing,
+  pdfauthor=Simon Meoni
+}
+
+\usepackage{bookmark}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fonts
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifxetexorluatex
+  \setmainfont[Ligatures=TeX]{TeX Gyre Pagella} % Palatino clone
+  \linespread{1.05} % a bit more for Palatino
+  \RequirePackage{unicode-math}
+  \setmathfont{TeX Gyre Pagella Math}
+\else
+  \usepackage[lf]{ebgaramond}
+  \usepackage[oldstyle,scale=0.7]{sourcecodepro}
+  \singlespacing
+\fi
+
+\usepackage{microtype}
+
+\renewcommand{\th}{\textsuperscript{\textup{th}}\xspace}
+
+\input{sources/lexicons/acronyms}
+\input{sources/lexicons/glossary}
+
+
+\makeindex
+\makeglossaries
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom Commands and Environments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{sources/lexicons/commands}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Incipit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{On Modern NLP for Extraterrestrial Languages and Scripts}
+\author{Simon Meoni}
+
+\begin{document}
+
+\frontmatter
+\include{sources/title/title}
+\include{sources/chapters/abstract}
+
+\tableofcontents
+
+\mainmatter
+
+%\include{sources/chapters/introduction}
+\include{sources/chapters/related_works}
+%\include{sources/chapters/annotation}
+%\include{sources/chapters/synthetic_data}
+%\include{sources/chapters/efficiency}
+%\include{sources/chapters/conclusion}
+
+
+% This ensures that the subsequent sections are being included as root
+% items in the bookmark structure of your PDF reader.
+\bookmarksetup{startatroot}
+\backmatter
+
+\begingroup
+\let\clearpage\relax
+\glsaddall
+\printglossary[type=\acronymtype]
+\newpage
+\printglossary
+\endgroup
+
+\printindex
+
+% Entries for the entire Anthology, followed by custom entries
+\bibliography{bibliography}
+\bibliographystyle{styles/acl_natbib}
+
+\end{document}
