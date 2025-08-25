@@ -18,32 +18,3 @@ Among these methods, one of the most popular methods for information extraction,
 In another way, we can cite works around the chain of thoughts (CoT). This encourages the LLM to explain its reasoning to get more accurate results, especially in mathematical and logical reasoning \cite{Wei2022ChainModels, Cobbe2021TrainingProblems}. This technique could be used with reason edited manually in the prompt or with two separate prompts where the first involves a reasoning task, then concatenated with the second prompt involving the main tasks.
 
 Other techniques involve generated knowledge similar to CoT. Instead of reasoning, the first prompt generates potentially useful information associated with the tasks concatenated in the final prompt \cite{Liu2022GeneratedReasoning}.
-
-
-\section{Other Papers}
-
-
-\subsection{KnowledgeSG https://aclanthology.org/2024.emnlp-main.438}
-Background of the study:
-The paper addresses the challenge of preserving privacy while fine-tuning large language models (LLMs) on sensitive data. Previous solutions, such as using synthetic data for substitution, struggle to simultaneously improve performance and preserve privacy.
-
-Research objectives and hypotheses:
-The paper proposes a novel client-server framework called "KnowledgeSG" to enhance synthetic data quality and improve model performance while ensuring privacy.
-
-Methodology:
-On the client side, the framework fine-tunes the local model using differentially private stochastic gradient descent (DP-SGD) to learn local knowledge from private data. On the server side, the framework generates raw synthetic instructions, filters them using a professional model, and then generates accurate responses. The optimized model is then transmitted back to the client.
-
-Results and findings:
-The results demonstrate the effectiveness of the proposed framework on both privacy and performance benchmarks in the medical and financial domains. Specifically, KnowledgeSG achieves a relative improvement of 120.39\% over the Non-Private training method in the medical free-form evaluation, even surpassing the professional model.
-
-Discussion and interpretation:
-The paper discusses the limitations of existing solutions, such as the trade-off between privacy risk and model performance, and how KnowledgeSG addresses these issues by leveraging knowledge distillation from the professional server-side model.
-
-Contributions to the field:
-The paper proposes a novel client-server framework that enhances synthetic data quality and improves model performance while maintaining strict privacy protection.
-
-Achievements and significance:
-KnowledgeSG achieves superior performance results while preventing memorization or leakage of the private dataset. The framework significantly reduces the reconstruction rate from 97.13 to 0.87, demonstrating its strong privacy-preserving capabilities.
-
-Limitations and future work:
-The paper acknowledges that the effectiveness of KnowledgeSG on general tasks remains to be fully explored. It also mentions that the framework involves more communication and computation cost than Non-Private fine-tuning, which the authors believe is justified by the significant reduction in memorization concerns and performance improvements. Future work includes conducting experiments on more general tasks and optimizing the deployment of KnowledgeSG to make it more compatible and lightweight. 
