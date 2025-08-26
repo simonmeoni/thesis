@@ -2523,3 +2523,78 @@
   month   = oct,
   url     = {https://arxiv.org/abs/2410.12869},
 }
+
+@inproceedings{zaghir2024frasimed,
+  title        = {{FRASIMED}: A Clinical French Annotated Resource Produced through Crosslingual {BERT}-Based Annotation Projection},
+  author       = {Zaghir, Maroua and Jimeno Yepes, Antonio and Névéol, Aurélie and Grouin, Cyril and Afzal, Syed and Rocheteau, Jérémy and Meurs, Marie},
+  booktitle    = {Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING)},
+  year         = {2024},
+  address      = {Turin, Italy},
+  publisher    = {European Language Resources Association},
+  url          = {https://aclanthology.org/2024.lrec-main.657}
+}
+
+@article{ghosh2025e3c,
+  title        = {Low-resource Information Extraction with the European Clinical Case Corpus ({E3C}-3.0)},
+  author       = {Ghosh, Souvik and Gonzalez-Agirre, Aitor and Perez-de-Viñaspre, Olatz and Rodriguez, Horacio and Krallinger, Martin},
+  journal      = {arXiv preprint arXiv:2503.20568},
+  year         = {2025},
+  url          = {https://arxiv.org/abs/2503.20568}
+}
+
+@article{garciaferrero2024medicalmt5,
+  title        = {Medical mT5: An Open-Source Multilingual Text-to-Text {LLM} for the Medical Domain},
+  author       = {García-Ferrero, Iker and Rivas, Jorge and González-Agirre, Aitor and Pérez-de-Viñaspre, Olatz and Krallinger, Martin},
+  journal      = {arXiv preprint arXiv:2404.07613},
+  year         = {2024},
+  url          = {https://arxiv.org/abs/2404.07613}
+}
+
+@article{villena2025nlp,
+  title        = {NLP modeling recommendations for restricted data availability in clinical settings},
+  author       = {Villena, Fabián and Bravo-Marquez, Felipe and Dunstan, Jocelyn},
+  journal      = {BMC Medical Informatics and Decision Making},
+  volume       = {25},
+  number       = {1},
+  pages        = {116},
+  year         = {2025},
+  doi          = {10.1186/s12911-025-02948-2},
+  url          = {https://bmcmedinformdecismak.biomedcentral.com/articles/10.1186/s12911-025-02948-2}
+}
+
+@misc{qiu2024building,
+  title={Towards Building Multilingual Language Model for Medicine}, 
+  author={Pengcheng Qiu and Chaoyi Wu and Xiaoman Zhang and Weixiong Lin and Haicheng Wang and Ya Zhang and Yanfeng Wang and Weidi Xie},
+  year={2024},
+  eprint={2402.13963},
+  archivePrefix={arXiv},
+  primaryClass={cs.CL}
+}
+
+@article{roosli2022fairness,
+  title        = {Peeking into a black box, the fairness and generalizability of a {MIMIC}-{III} benchmarking model},
+  author       = {Röösli, Eliane and Bozkurt, Selen and Hernandez-Boussard, Tina},
+  journal      = {Scientific Data},
+  volume       = {9},
+  number       = {1},
+  pages        = {24},
+  year         = {2022},
+  doi          = {10.1038/s41597-021-01110-7},
+  url          = {https://www.nature.com/articles/s41597-021-01110-7}
+}
+
+@InProceedings{pmlr-v106-nestor19a,
+  title = 	 {Feature Robustness in Non-stationary Health Records: Caveats to Deployable Model Performance in Common Clinical Machine Learning Tasks},
+  author =       {Nestor, Bret and McDermott, Matthew B. A. and Boag, Willie and Berner, Gabriela and Naumann, Tristan and Hughes, Michael C. and Goldenberg, Anna and Ghassemi, Marzyeh},
+  booktitle = 	 {Proceedings of the 4th Machine Learning for Healthcare Conference},
+  pages = 	 {381--405},
+  year = 	 {2019},
+  editor = 	 {Doshi-Velez, Finale and Fackler, Jim and Jung, Ken and Kale, David and Ranganath, Rajesh and Wallace, Byron and Wiens, Jenna},
+  volume = 	 {106},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {09--10 Aug},
+  publisher =    {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v106/nestor19a/nestor19a.pdf},
+  url = 	 {https://proceedings.mlr.press/v106/nestor19a.html},
+  abstract = 	 {When training clinical prediction models from electronic health records (EHRs), a key concern should be a model’s ability to sustain performance over time when deployed, even as care practices, database systems, and population demographics evolve. Due to de-identification requirements, however, current experimental practices for public EHR benchmarks (such as the MIMIC-III critical care dataset) are time agnostic, assigning care records to train or test sets without regard for the actual dates of care. As a result, current benchmarks cannot assess how well models trained on one year generalise to another. In this work, we obtain a Limited Data Use Agreement to access year of care for each record in MIMIC and show that all tested state-of-the-art models decay in prediction quality when trained on historical data and tested on future data, particularly in response to a system-wide record-keeping change in 2008 (0.29 drop in AUROC for mortality prediction, 0.10 drop in AUROC for length-of-stay prediction with a random forest classifier). We further develop a simple yet effective mitigation strategy: by aggregating raw features into expert-defined clinical concepts, we see only a 0.06 drop in AUROC for mortality prediction and a 0.03 drop in AUROC for length-of-stay prediction. We demonstrate that this aggregation strategy outperforms other automatic feature preprocessing techniques aimed at increasing robustness to data drift. We release our aggregated representations and code1 to encourage more deployable clinical prediction models.}
+}
