@@ -1,0 +1,18 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{graphicx}
+\begin{table}
+\centering
+\large
+\resizebox{0.4\textwidth}{!}{%
+\begin{tabular}{@{}llll@{}}
+\toprule
+Models               & F1-Score           & Precision     & Recall             \\ \midrule
+Instruct-Distilation & 0.74 $\pm 6e^{-3}$ & \textbf{0.72} $\pm 0.01$ & 0.78 $\pm 6e^{-3}$ \\ \midrule
+InstructGPT-3        & 0.74               & 0.70          & \textbf{0.81}               \\ \bottomrule
+\end{tabular}%
+}
+\caption{
+Comparison of InstructGPT-3 with a model distilled via weak supervision on the E3C \layerTwo, in terms of F1-score, Precision and Recall. Scores are calculated on the \layerOne.}
+\label{tab:layer-1}
+\end{table}

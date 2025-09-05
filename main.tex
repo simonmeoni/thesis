@@ -1,5 +1,3 @@
-%!TEX encoding = UTF-8 Unicode
-
 \documentclass{styles/mimosis}
 
 \usepackage{metalogo}
@@ -63,7 +61,19 @@
 \fi
 
 \usepackage{microtype}
-
+\usepackage{latexsym}
+\usepackage{adjustbox}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{bm}
+\usepackage{xspace}
 \renewcommand{\th}{\textsuperscript{\textup{th}}\xspace}
 
 \input{sources/lexicons/acronyms}
@@ -97,7 +107,8 @@
 
 %\include{sources/chapters/introduction}
 \include{sources/chapters/related_works}
-%\include{sources/chapters/annotation}
+\include{sources/chapters/weak_annotations}
+ \include{sources/chapters/weak_supervision_healthnlp_2023}
 %\include{sources/chapters/synthetic_data}
 %\include{sources/chapters/efficiency}
 %\include{sources/chapters/conclusion}
@@ -119,7 +130,7 @@
 \printindex
 
 % Entries for the entire Anthology, followed by custom entries
-\bibliography{bibliography}
+\bibliography{bibliography,multi_weak_supervision}
 \bibliographystyle{styles/acl_natbib}
 
 \end{document}
