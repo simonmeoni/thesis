@@ -71,3 +71,20 @@
 \newcommand{\SettingD}{\mbox{$S_{MonoSilver}$}\xspace}  
 \newcommand{\SettingE}{\mbox{$S_{MultiSilver}$}\xspace}  
 \newcommand{\SettingA}{\mbox{\SettingD~$with$~$r\in \{0, 1\}$}\xspace}
+
+% Additional colors for synthetic generation chapter
+\definecolor{seedStep}{HTML}{BBE3BF}
+\definecolor{genStep}{HTML}{A0CED9}
+\definecolor{scoringStep}{HTML}{F7ABDA}
+\definecolor{alignStep}{HTML}{FFC09F}
+
+% Define custom commands used in the document
+\def\Mdl#1#2{M_{\mathrm{#1}}^{#2}}
+\def\RefMdl#1{\Mdl{ref}{#1}}
+\def\ScoreMdl#1{\Mdl{score}{#1}}
+\def\GenMdl#1{\Mdl{gen}{#1}}
+
+\def\mref{$\RefMdl{}$\xspace}
+\def\me{$\ScoreMdl{}$\xspace}
+\def\mg{$\GenMdl{}$\xspace}
+\renewcommand{\th}{\textsuperscript{\textup{th}}\xspace}

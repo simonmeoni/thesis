@@ -1,0 +1,413 @@
+\chapter{Synthetic Documents for Medical Tasks: Bridging Privacy with Knowledge Injection and Reward Mechanism}
+
+Electronic Health Records (EHR) store valuable patient-staff interaction data. Recent advancements in proprietary online large language models (LLMs) have shown promising capabilities in analyzing EHR notes. However, transmitting patient information through external APIs to LLMs like ChatGPT introduces privacy risks, necessitating alternative approaches that conform to hospital practices.
+
+To address privacy concerns, we propose generating synthetic documents based on a reward-mechanism-trained model from real documents without leaking sensitive information but keeping relevant clinical knowledge. These synthetic documents may be annotated by large proprietary models or existing public ones, and used to train small specialized models that can run on constrained medical infrastructure. 
+
+We validate our approach through a proof-of-concept scenario using MIMIC-III, assessing the effectiveness of the generated documents through several downstream tasks: a series of ICD-9 multi-label classifications of varying complexity and a synthetic Named Entity Recognition (NER) task. The results demonstrate that synthetic documents preserve privacy and improve performance when real annotated data are sparse.
+
+\section{Introduction}
+
+Electronic Health Records (EHR) contain patient and healthcare staff interactions. Professionals record their impressions, observations, and various medical procedures performed. These notes remain fairly expressive and free to save healthcare personnel time and allow for the description of unusual situations \citep{rosenbloom_data_2011, wu_survey_2022}. Natural Language Processing (NLP) techniques speed up the decision processes~\cite{zhou_datasiftertext_2022,wu_survey_2022}.
+
+In recent years, Proprietary Online Large Language Models (LLMs) such as ChatGPT have shown impressive results using zero or few-shot techniques in analyzing these notes~\cite{agrawal_large_2022, meoni_large_2023, hu_improving_2024}.
+
+However, clinical NLP faces challenges that arise from the sensitive, confidential, and specialized nature of its data—sending such patient information through an external API raises numerous legal issues and is often impossible. Hospitals or third parties providing NLP-based medical devices (i.e., directly impacting patient care) must maintain control over their NLP systems to ensure patient safety. Therefore, the customization of open LLMs and their execution in a secure but computationally constrained environment is an important issue.
+
+Still, specific training datasets are necessary to develop a model with clinical skills to address these challenges. To create such a dataset, obtaining real clinical data remains complicated and requires anonymization, which is time-consuming, expensive, and legally constrained. This also hinders the use of online models to annotate real data.
+
+Alternatively, we propose to create synthetic clinical notes that look like real data but do not include personally identifiable Information (PII)~\cite{melamud_towards_2019, ive_generation_2020}. This approach has several benefits: it reduces the need for human input, complies with regulations, and is suitable for annotation with external models to train local models. The local models and datasets can be shared with the community without leaking confidential information. These local models are also small enough to be hosted inside the hospital's infrastructure.
+
+Considering these issues, we implement a novel method for generating synthetic documents, enforcing privacy preservation by design, using only a tiny seed set of pseudo-anonymised data. As a proof of concept, our key contributions include:
+
+\begin{itemize}
+\item \textbf{Privacy-safe Document Generation guided by Clinical Knowledge and Reward Mechanism:} We present an methodology that leverages a minimal set of manually pseudo-anonymized data to train fine-tuned generative models. This process is enhanced by enriching prompts with keywords containing clinical knowledge, in our case extracted using QuickUMLS \citep{soldaini_quickumls_2016}, as illustrated in Section \ref{sec:experiment} and Figure \ref{fig:workflow}. This extraction does not contain any PII in the sense that it contains only clinical entities (or keywords). Furthermore, we improve the quality of the synthetic documents thanks to an iterative refinement process that employs a private scorer to compare real and synthetic documents. This scorer returns only floats to the public side, ensuring privacy while enabling continuous improvement of the synthetic document quality.
+
+\item \textbf{Proof of Concept using MIMIC-III:} Because it's almost impossible to evaluate our methods on real private documents, we utilize the MIMIC-III clinical notes \citep{johnson_mimic-iii_2016} as a proxy to simulate a private healthcare environment, demonstrating our method's potential in a controlled setting. This proof of concept illustrates how our methodology could be applied in real-world hospital scenarios without compromising patient data.
+
+\item \textbf{Evaluation on downstream tasks using MIMIC-III:} To assess the quality of the synthetic documents as training dataset for smaller models, we evaluate the generated data using two tasks: Multilabel Classification based on ICD-9 Codes (ICD-MC) and Synthetic Named Entity Recognition (NER). For ICD-MC, based on the codes proposed by \citet{mullenbach_explainable_2018} and MIMIC-III manual annotations, we have modified this task, as described in Section~\ref{subsec:multitask}, to compare the performance of the model trained with real data against the model trained with synthetic data. The NER task is conducted on annotations returned by GPT-4 on both our synthetic and real data. This allows us to compare the performance of models trained on these datasets.
+\end{itemize}
+
+\section{Related Works}
+
+\paragraph{Synthetic Data Generation:}
+Many recent studies focus on creating synthetic data, particularly for generating clinical data. For instance,~\citet{kweon_publicly_2023} proposes to train LLMs for different purposes using synthetic clinical data generated by online LLMs. \citet{xie_differentially_2024} has developed AUG-PE, a high-quality differential privacy synthetic text generation method leveraging API access.
+
+Furthermore, the work by~\citet{li_synthetic_2024} introduces Generalized Instruction Tuning (GLAN). Unlike previous approaches that rely on seed or existing datasets, GLAN uses a pre-curated taxonomy of human knowledge and capabilities as input to generate instructions across all disciplines. Inspired by their method, our work uses ontological information to extract sequences of ontology-based keywords from texts.
+
+To assess the performance of LLM in Multiple Questions Choices in the medical field, \citet{griot_multiple_2024} developed a fictional medical benchmark to isolate the knowledge of the LLM from its test-taking abilities. \citet{li_two_2023} generated a synthetic dataset of Alzheimer's Disease relative signs. As this task is relatively complex, LLM created the dataset by incorporating expert knowledge taxonomy. Finally, the \citet{hiebel_can_2023, xie_differentially_2024} works focus on generating a synthetic dataset of clinical cases for the NER task to study the effectiveness of real clinical data versus synthetic data.
+
+\paragraph{Self-Rewarding:}
+Reinforced Self-Training is an offline RL algorithm proposed by~\citet{gulcehre_reinforced_2023} for self-align LLMs generating a dataset from the initial LLM policy and using it to improve the policy via offline RL. Instruction back translation \cite{li_self-alignment_2023} is a scalable method that automatically labels human-written text with corresponding instructions by finetuning a LM on a small seed dataset and a web corpus to generate and selecting high-quality examples for further finetuning. \citet{yuan_self-rewarding_2024} use the trained LLM to provide rewards via LLM-as-a-Judge prompting, improving both instruction following and reward provision. \citet{lee_rlaif_2024} introduces Reinforcement Learning from AI Feedback (RLAIF) as an alternative, using an off-the-shelf LLM to generate preference labels. RLAIF achieves comparable or superior performance to RLHF in many tasks, such as those rated by humans.
+
+The difference from the other approaches to generating a synthetic dataset is that our method combines LLM guided by prompts enriched with clinical knowledge, fine-tuned with a low amount of real pseudonymized data, and reinforcement learning feedback. This feedback is based on a score, which compares the real and synthetic data to ensure that they are closer to the source while maintaining privacy, as illustrated in Algorithm~\ref{algorithm}.
+
+\section{Reward-based Generation}
+\label{sec:method}
+\begin{algorithm*}
+\caption{Reward Training Algorithm}
+\label{algorithm}
+\SetKwInOut{Input}{Input~}
+\SetKwInOut{Output}{Output~}
+\SetKwFor{For}{for}{do}{endfor}
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{endif}
+\SetKwFunction{Sample}{Sample}
+\SetKwFunction{Anon}{PseudoAnonymize}
+\SetKwFunction{Extract}{ExtractConcepts}
+\SetKwFunction{ContrastiveTrain}{ContrastiveTrain}
+\SetAlgoNlRelativeSize{-1}
+\DontPrintSemicolon
+\Input{\dgen = initial dataset; \rsft = sft ratio; \mg = generative model; \me = evaluator model; $p$ = percentile filter value; $N$ = number of candidates to generate;}
+\Output{\mg}
+\colorbox[HTML]{F3E6E0}{\parbox{0.95\dimexpr\linewidth-2\fboxsep-2\fboxrule}{
+\textcolor{scoringStep}{\tcp{\textbf{Running in Private Area, declassifying \dsft, \ksft}}}
+\kgen $\gets$ \Extract{\dgen}\;
+\dsft,\space\ksft $\gets$ \Anon{\Sample{\dgen, \kgen,\space\rsft}}\;
+\dtr,\space\ktr $\gets$ \dgen $\setminus$  \dsft, \kgen $\setminus$  \ksft \;
+}}
+\textcolor{seedStep}{\tcp{\textbf{Seed Step}}}
+\mg $\gets$ Supervised fine-tune \mg on pairs in (\ksft, \dsft)\;
+\For{$step = 0$ \KwTo $steps$}{
+    \textcolor{genStep}{\tcp{\textbf{Generation Step}}}
+     $\DGen{step} \gets$ generate new $N$ candidates with \mg per $k\in$ \ktr\;
+    \colorbox[HTML]{F3E6E0}{\parbox{0.95\dimexpr\linewidth-2\fboxsep-2\fboxrule}{
+    \textcolor{scoringStep}{\tcp{\textbf{Scoring Step (Running in Private Area, declassifying $D_{score}$)}}}
+    \If{$step = 0$}{
+    \textcolor{scoringStep}{\tcp{\textbf{Building the evaluator model}}}
+        \dcstar, \dc $\gets$ \Sample{$\DGen{0}$, \dtr, \space$r_{contr}$}\;
+        \me $\gets$ \ContrastiveTrain(\me,\space neg = $D^{*}_{contr}$,\space pos = $D_{contr}$)\;
+    }
+    $D_{score} \gets$ score $\DGen{step}$ over \dtr with \me\;
+    }}
+    $D_{dpo} \gets$ in $D_{score}$, keep a pair of candidates, then filter pairs on percentile $p$\;
+    $K_{dpo} \gets$ filter \ktr to keep keywords corresponding to candidates selected in $D_{dpo}$\;
+    \textcolor{alignStep}{\tcp{\textbf{Alignment Step}}}
+    \mg $\gets$ DPO Alignment \mg on ($K_{dpo}$, $D_{dpo}$)\;
+}
+\end{algorithm*}
+
+We sketch the main steps of our reward-based generation process, illustrated with Algorithm~\ref{algorithm}.
+
+\subsection{Collecting keywords}
+
+The generation of synthetic \crt{\textit{s}} is guided by prompts enriched with clinical knowledge represented by non-confidential UMLS concepts ($C$) (Figure \ref{experiment:prompt}) extracted from real documents. Of course, other sources of keywords are possible. Therefore, our first processing step is to extract such keywords from each real document of dataset \dgen, collecting them in \kgen
+
+\subsection{Seed Step}
+
+We sample a tiny seed subset \dsft (i.e., supervised fine-tuning) from \dgen, and associated keyword sequences \ksft, with a ratio of $\rsft\%$. This seed subset is assumed to be carefully pseudo-anonymized to authorize its use to finetune our initial public generator model \mg. In our case, one or two hundred pseudo-anonymized documents suffice.
+
+\subsection{Generation Step}
+For each keyword sequence in \ktr$~=~$\kgen$\setminus$\ksft and generation~$r$, the generator model \mg generates $N>1$ candidate documents, collected in dataset $\DGen{step}$. This way, each synthetic document has a real counterpart based on the same sequence of keywords. In practice, we set $N=4$.
+
+\subsection{Scoring Step}
+\label{subsec:scoring-step}
+
+We evaluate the quality of the generated documents using \score \cite{aynetdinov_semscore_2024}, a metric based on semantic textual similarity (STS) returned by our private evaluator model \me. The key point is that the \me must be hosted in a private infrastructure to compare public synthetic documents with real private ones.
+
+In Algorithm~\ref{algorithm}, we use a light orange background colour to indicate that this step takes place on the private side of the hospital building. However, being only composed of floats, the score set $D_{score}$ can be safely declassified and returned from the private side to the public one for the Alignment step to train safely a new updated version of public \mg.
+At the first generation step ($step = 0$), we initialize \me, fine-tuning it with a contrastive objective, selecting a subset of $\DGen{0}$ to serve as negative examples and their real counterparts as positive examples. 
+
+Using \me, we score the $N$ candidates of each group from \dgstar against their counterparts in \dtr. We keep only the best groups whose highest score is above the $p^{th}$ percentile. In practice, we set $p = 80$. 
+
+In each kept group, the candidate with the highest score (resp. lowest one) is selected as the \textit{chosen} (resp.  \textit{rejected}) candidate. Finally, a dataset \ddpo is formed from these selected candidate pairs.
+
+ 
+\subsection{Alignment Step}
+Using dataset \ddpo, we align and update \mg with \textit{DPO} (Direct Preference Optimization) \citep{rafailov_direct_2023}.
+
+\section{Applying Synthetic Dataset for Real Tasks}
+To validate the quality of the generated documents, we develop downstream tasks. In real life, the test set for such downstream tasks should be made up of real documents and manually annotated.  The evaluations must be run in a private area.
+
+\section{Experiments}
+\label{sec:experiment}
+
+\subsection{Base Models} 
+We use \space\verb|Mistral-7B-Instruct-v0.1|\space\citep{jiang_mistral_2023} as our base generator model, a trade-off between performance and computational cost. As an evaluator model, we use \space\verb|all-distilroberta-v1|.
+
+\subsection{Dataset}
+\label{subsec:dataset}
+We use a dataset from \mimic as a proof of concept, involving pre-processing, keyword extraction, and post-processing.
+\begin{enumerate}
+    \item \textit{Pre-processing}: We extract from \mimic the clinical notes from the clinical event row. We select only the \textit{Discharge Summaries} from these clinical notes and parse them to retrieve the \textit{History of Patient Illness} section, using them as documents for \dgen. On average, the documents consist of 248 words.
+    
+    \item \textit{Knowledge enrichment}: We project UMLS concepts using QuickUMLS over \dgen. QuickUMLS is an unsupervised biomedical concept extraction based on pattern matching that guarantees only medical concepts are extracted and no identifying information. We obtain \kgen (cf. Section~\ref{sec:method}) used to enrich the prompts, as illustrated in Figure~\ref{experiment:prompt}. On average, we extract 58 keywords per document.
+    
+    \item \textit{Post-processing}: We filter out documents without keywords. We keep ordered keywords to encourage the model to follow the same narrative as the ground truth.
+    In this way, we constitute a dataset of 4262 documents, using 70\% of them (2581) as a train set (\dtr) and 30\% (1680) as a test set (\dte). Moreover, the \dsft with 4\% and 6\% ratios have 156 and 235 documents, respectively.
+\end{enumerate}
+
+\section{Evaluation on Downstream Tasks}
+
+\subsection{Multilabel Classification tasks}
+\label{subsec:multitask}
+\paragraph{Collecting Gold Annotations:}
+As \mimic includes a set of expert-labeled ICD-9 codes ($L$) for each discharge summary, we use these annotations (1) to evaluate the quality of our datasets on tasks close to a real use-case (2) and test across a series of ICD-MC tasks with increasing complexity. We establish an association between these labels and the data points in \dtr and \dte, respectively, 2581 and 1681 data points.
+
+We get annotated datasets (~\dtr,~\ltr~) and (~\dte,~\lte~) by coupling documents with labels. In defining our series of ICD-MC tasks, we prioritize the most frequent $k$ labels, denoted as class-k (see Table~\ref{tab:datasets-proportion}) with $k \in \{20,50,100,400\}$. We subsequently refine  (~\dtr,~\ltr~) and (~\dte,~\lte~) by retaining only those documents whose labels intersect with the set of \class{k} labels.
+
+We define the refined training set as \dgold~$=$~(~\dptr,~\lptr~) where each document in \dptr contains at least one label from \class{k}. Documents devoid of any intersecting labels are excluded. Table~\ref{tab:datasets-proportion} presents the dataset sizes, which document the number of excerpts retained after applying these exclusion criteria.
+
+It should be noted that the task's complexity increases with $k$ not only because of the larger set of labels and the lower frequency of some labels but also because of the longer label set on average per document. For instance, the average length is around 6 when $k=20$ but 11 when $k=100$.
+
+\paragraph{Constituting the Synthetic Train Datasets: }
+As an approximation, we hypothesize that the synthetic data point from \dgstar, which shares the same set of UMLS keywords as its real data counterpart, can inherit the same set of ICD labels \lptr. This way, we easily obtain six synthetic datasets, denoted as $\DGen{step}$, corresponding to the generation steps $step \in \{0,1,2\}$ and seed ratios $r \in \{4\%,6\%\}$, as shown in Table~\ref{tab:main-results}. Each $\DGen{step}$ dataset contains four times more document data points than \dgold.
+
+\subsection{Named Entity Recognition (NER) Task}
+\paragraph{Annotating the Overall Dataset:}
+
+Because \mimic does not include gold NER annotations, we use GPT-4 to automatically annotate all (synthetic and real) train and test datasets (\citet{openai_gpt-4_2023},~\ref{sec:privacy}), focusing on three entity types: \textbf{problem}, \textbf{treatment} and \textbf{test}. We employ a few-shot learning approach inspired by \citet{hu_improving_2024}, using the prompt in Appendix~\ref{fig:prompt-ner}. To assess whether or not the annotated entities are essentially the UMLS keywords, we evaluated the overlap between keywords and annotations and found a low $22.36\%$ overlap.
+
+Table~\ref{tab:datasets-proportion} illustrates the distributions of labels for the ICD-MC tasks and entities for NER.
+
+\subsection{Training of Task Models}
+We train a series of (small) \verb|deberta-v3-base| \cite{he_deberta_2021} models on ICD-MC tasks using either real or synthetic datasets  \dgold or $D_{step}^{r}$ over the four tasks \class{k} where k $\in \{20,50,100,400\}$.
+
+To address the quantity bias of a larger synthetic dataset, we train two baseline models, one trained with \dgold, and another one trained with \dgover, where each real document is oversampled $N=4$ times, hence containing the same amount of documents as the synthetic set.
+
+We also consider a \baseline where only keywords (\ktr) are used to predict labels to check that the content of the documents impacts the performance, as shown in Table~\ref{tab:main-results}.
+
+We apply the same methodology for the NER task but with only \dgold and \dgover as baselines.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{\dgold} & \multicolumn{2}{c}{\dte}\\
+\textbf{\class{k}} & \textbf{\# labels} & \textbf{\# docs} & \textbf{\# labels} & \textbf{\# docs} \\ 
+\midrule
+\class{400} & 38602 & 2564 & 25409 & 1681 \\
+\class{100} & 30015 & 2560 & 19700 & 1672 \\
+\class{50}  & 23323 & 2552 & 15246 & 1672 \\
+\class{20}  & 14619 & 2513 & 9694  & 1648 \\
+\hline
+\textbf{ner}  & 72715 & 2581 & 47783  & 1681 \\
+\bottomrule
+\end{tabular}
+\caption{Multilabel classification \& NER task datasets, with labels size for \dgold, \dte. The number of labels for the NER task excludes label \textit{O\protect\footnotemark}.}
+\label{tab:datasets-proportion}
+\end{table}
+\footnotetext{\textit{O} (Outside) comes from the IOB (Inside-Outside-Beginning) schema used in Named Entity Recognition task. It denotes tokens that are not part of any named entity.}
+
+\section{Results}
+Table~\ref{tab:semscores} presents a comparative analysis of \score measurements by evaluators across the different datasets generated at various steps. We observe a consistent improvement in scores with successive steps. The $\GenMdl{6\%}$ model outperforms the $\GenMdl{4\%}$ model, highlighting the effectiveness of alignment in refining the quality of generated documents through iterative processes. The scores indicate a trend across various models, suggesting that models trained with more real data produce higher-quality documents.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\midrule
+&\textbf{steps}&$\ScoreMdl{4\%}$ & $\ScoreMdl{6\%}$ \\ \midrule
+ &0&67.95&\textcolor{gray}{65.94}\\
+$\GenMdl{4\%}$ &1&71.53&\textcolor{gray}{69.18}\\ 
+&2& 72.25 &\textcolor{gray}{70.12}\\ \midrule 
+&0&\textcolor{gray}{70.78}& 67.26 \\
+$\GenMdl{6\%}$ &1&\textcolor{gray}{72.54}&70.78 \\ 
+&2&\textcolor{gray}{\underline{76.10}}&\textbf{74.37} \\ \bottomrule
+\end{tabular}
+\caption{\score evaluation for models $\GenMdl{a}$ with ${a=r_{sft}\in\{4\%,6\%\}}$ using the different evaluators $\ScoreMdl{b}$ with ${b=r_{sft}\in\{4\%,6\%\}}$. The grey scores denote cross-evaluation where $a \neq b$.}
+\label{tab:semscores}
+\end{table}
+
+\begin{table*}
+\centering
+\pgfplotstabletypeset[
+    col sep=comma,
+    string type,
+    ignore chars = {\'},
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule},
+    every row no 2/.style={after row=\midrule},
+    every row no 0/.style={after row=\midrule},
+    every row no 4/.style={after row=\midrule},
+    every row no 6/.style={after row=\midrule},
+    every row no 9/.style={before row=\midrule},
+    every column/.style={column type={l}},
+    columns/dataset/.style={column name=\phantom,string type,column type={l}},
+    columns/20.0/.style={column name=\class{20},column type={l}},
+    columns/50.0/.style={column name=\class{50},column type={l}},
+    columns/100.0/.style={column name=\class{100},column type={l}},
+    columns/400.0/.style={column name=\class{400},column type={l}},
+    columns/ner/.style={column name=\textbf{ner},column type={l}},
+]{figures/synthetic_generation_cl4health_2025/task_results.csv}
+\caption{Comparative F1 Scores  and standard deviation across models trained over different dataset generations. The table illustrates F1 (Micro-F1) score performance for the {\topk{k}} and NER tasks across $D_{step}^r$, $D_{gold}$ and the \baseline.}
+\label{tab:main-results}
+\end{table*}
+
+Table~\ref{tab:main-results} compares F1 scores on the downstream tasks across different models and configurations, providing insights about their performance when varying task complexities and training data conditions. Notably, \mgover,trained with \dgover, outperforms the models trained with synthetic data ($M_{0,1,2}^{\mixp}$) across all tasks. Second generation models($D_{2}^{4\%}$ and $D_{2}^{6\%}$) demonstrate performance comparable to the model trained on \dgover. In particular, for the \class{400} task, the F1 scores for $D_{2}^{4\%}$ and $D_{2}^{6\%}$ match closely those for \dgover, with only minor variations. Notably, the standard deviations for the synthetic data models are lower than those of the gold data model, indicating more consistent performance. Furthermore, models trained on a combination of several generations($D_{0,1,2}^{6\%}$) outperform most cases, except on the \class{20} task. This suggests increasing data diversity and quantity through dataset mixing enhances model performance in certain scenarios.
+
+Consistently across \class{k} tasks, $M_{0}^{\mixp}$ models yield the lowest F1 scores. This indicates that initial generation models lack sufficient sophistication or diversity in training data to effectively capture necessary predictive features, particularly for $M_{0}^{4\%}$. As task complexity increases, F1 scores generally decrease for both real-based and synthetic-base models, highlighting the models' challenges in adapting to more complex interactions.
+
+In the \class{400} task, F1 scores improve from $step=1$ to $step=2$, following a general trend of performance increase. The exception is in the \class{100} task, where performance decreases between $M_{1}^{6\%}$ and $M_{2}^{6\%}$.
+
+\begin{figure*}[htb]
+    \centering
+    \resizebox{0.85\textwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/scatter.pgf}}
+    \caption{Correlation between \score and F1-score across \class{\{100,400\}} prediction tasks. The dots represent the model trained with $D_{step}^{r}$. The Spearman correlation ($\rho$) and Pearson correlation coefficient ($pcc$) indicate varying degrees of linear and rank-order association with task complexity.}
+    \label{fig:correlation-f1-semscore}
+\end{figure*}
+
+Figure~\ref{fig:correlation-f1-semscore} presents the correlation between F1 scores and \score computed by $M_{score}^{6\%}$ across \class{k} tasks. We observe that \score is an effective evaluator, although with nuances. Specifically, $D_{2}^{6\%}$ outperforms $D_{2}^{4\%}$ only in \class{20}. In \class{400}, the lowest correlation is observed, suggesting that \score's reliability decreases as task complexity increases, likely due to label scarcity affecting training stability. In contrast, \class{20, 50, 100} show stronger correlations, emphasizing \score effectiveness in these tasks.
+
+Though, $M_{0,1,2}^{4\%}$ consistently outperforms $M_{0,1,2}^{6\%}$, indicating that the seed may constrain the generator, leading to reduced document diversity. Further investigation is required to evaluate the impact of \rsft on overall performance.
+
+\begin{figure*}[htb]
+    \centering
+    \resizebox{.9\textwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/ablation.pgf}}
+    \caption{The figure showcases the experimental settings for training encoder models with varying quantities of synthetic data. The \textcolor{pinkLine}{\textbf{pink line}} (resp. \textcolor{blueLine}{\textbf{blue line}}) denotes models trained on randomly sampled datasets (resp. nth-best based on \score datasets). The black dot represents the model trained with \dgold, while the black square represents the model trained with \dgover.}
+    \label{fig:samplings}
+\end{figure*}
+
+We also conducted ablation studies to analyze how dataset sizes and selection strategies affect the performance of encoder models for the \class{100} and NER tasks.
+We trained several task models using different amounts of (filtered) synthetic data generated from the $D_{2}^{\mixp}$ subsets. We employed two filtering methodologies: (1) \textbf{percentile sampling}, which prioritizes the highest-scored candidates according to the \score metric, and (2) \textbf{random sampling}, which filters documents in varying proportions.
+
+In Figure~\ref{fig:samplings}, the graphs demonstrate a consistent increase in F1 scores when expanding the synthetic document set from 2,000 to 10,000 documents for both sampling methods. For \class{100}, percentile sampling shows a more pronounced improvement than random sampling, particularly at lower document counts. As the document set grows, the performance gap between the two sampling methods narrows, but percentile sampling maintains a slight edge throughout. This trend suggests that the quality of synthetic documents, measured by SEMSCORE, significantly impacts performance for this task, especially when working with smaller datasets. The observation underscores the importance of quantity and quality in synthetic data generation, with quality playing a crucial role in scenarios where data quantity is limited.
+
+On the other hand, there is a sharp decrease in the performance of the NER task when $M_{2}^{6\%}$ is trained with the same number of documents as \mgold using percentile sampling. We conjecture it is partly due to the synthetic subset containing fewer annotated tokens than the gold dataset (for the same number of documents), with 510199 tokens versus 643802 tokens. To neutralize the impact of this difference, we trained a model with the same amount of annotated tokens as \dgold, as illustrated by a black star in Figure \ref{fig:samplings}. We observe less difference between \mgold and $M_{2}^{6\%}$ (with values of $57.0$ and $56.6$). We hypothesize that this difference is because the distribution of \dgold is closer to that of the synthetic subset compared to \dte as illustrated in Figure \ref{fig:ner-labels}. Furthermore, adding or removing words can affect the proportion of annotated tokens. We have not yet conducted the NER task experiment with the document generated by $M_{0,1,2}^{4\%}$ as we do not anticipate significant results for these tasks.
+
+\section{Discussion}
+
+Besides validating our privacy-safe generation process, our results have also provided crucial insights into the impact of both the quality and quantity of synthetic training data on the performance of encoder models. \textbf{It is evident that refining the generator through DPO, using clinical concepts as inputs, enhances the synthetic dataset's quality, especially when the first alignment step has been performed}.
+
+Results indicate that training models on synthetic data not only preserves but outperforms models trained on gold datasets, as illustrated in Table~\ref{tab:main-results}.
+This highlights the potential of using privacy-preserving synthetic documents to maintain high data utility while protecting sensitive information.
+
+\textbf{The accuracy of the \score scoring mechanism as a predictor of data quality for downstream tasks is also particularly pronounced}. The nature of tasks significantly influences the predictive quality, as shown in Figure~\ref{fig:correlation-f1-semscore}. The need for text closely aligned with the source material to ensure accurate identification of rarer labels was clear, highlighting \score's role as a critical metric in evaluating and refining the quality of synthetic documents.
+
+While increasing the dataset size improves performance, applying selective filtering strategies, such as percentile sampling, on a larger volume further enhances results, surpassing the model trained with \dgold. These findings suggest that both data quantity and quality can be adjusted to optimize outcomes, as highlighted in Figure~\ref{fig:samplings}.
+
+Another interesting finding is that we can concatenate the datasets generated on the different $steps$ to increase performance. This is illustrated in overall tasks, where diversity is improved by using more data and simulating a more diverse dataset through the heterogeneous data quality, outperforming the model trained with \dgover.
+
+\section{Conclusion}
+We deliver a method for generating synthetic privacy-safe documents. Our method consists of (1) initializing the model with a small number of pseudo-anonymized documents, which reduces the need for human input, and (2) employing a private evaluator to score the generated document against real documents, preserving the confidentiality of the data while ensuring proximity between real and synthetic documents.
+
+Our study shows that models trained on small gold datasets face the practical limitations of current NLP systems when handling complex tasks. Scaling the amount of high-quality and diverse synthetic documents is a way to address these limitations. It can outperform models trained on real data under certain configurations, thereby validating the approach of generating on-demand data to overcome data scarcity and privacy issues. These findings facilitate the sharing of high-fidelity synthetic datasets. Furthermore, such datasets may be then annotated using (proprietary) LLMs or via large-scale manual annotation.
+
+Finally, the proposed solution is more ethical for patients. It focuses on privacy concerns and is motivated by the opening of clinical data for research advancements.
+
+\section{Limitations}
+
+Currently, evaluation is limited to multi-label classification and NER tasks. Expanding testing to more complex tasks that require reasoning and domain-specific knowledge, such as medical question answering, could give more insights into the applicability and robustness of our method.
+
+By design, Personal Identifiable Information are absent from our synthetic documents but there exist some slight risks of re-identification from some specific sequences of UMLS keywords. Adding some noise to such sequences should solve the issue.
+
+The economical cost for generating large synthetic datasets may also be an issue (see \ref{sec:carbon}) for some healthcare providers, even if it occurs in public environments. Investigating the efficacy of smaller generation models could make this technology more accessible, especially for hospitals or clinics with limited budgets.
+
+We are exploring alternative reinforcement learning techniques, such as KTO (Ethayarajh, 2024), to exploit all the generated data rather than only selecting example pairs filtered by percentile with DPO. We are also considering simpler RL methods like ORPO \cite{hong_orpo_2024} and SimPO \cite{meng_simpo_2024}.
+
+Finally, we wish to investigate more accurate evaluation metrics than just SemScore, in particular, by combining them with other sophisticated metrics, such as style transfer or document quality \cite{jin_deep_2022}.
+
+\section{Additional Material}
+
+\subsection{Carbon Footprint}
+\label{sec:carbon}
+The algorithm \ref{algorithm} with the experimentation protocol detailed in \ref{sec:experiment} runs in 40h on 4 GPUs NVIDIA A100 PCIe, and draws 46.34 kWh. Based in France, this has a carbon footprint of 2.38 kg CO2e, which is equivalent to 2.59 tree-months (calculated using green-algorithms.org v2.2 \cite{lannelongue_green_2021}).
+
+\subsection{MIMIC-III Usage}
+\label{sec:privacy}
+PhysioNet provides MIMIC-III under the PhysioNet Credentialed Health Data License 1.5.0. We employed Azure GPT, a HIPAA-certified platform for our large language model annotations. Importantly, Azure GPT does not store processed data. We received approval to waive abuse monitoring for Azure GPT, ensuring that no additional parties could access the data or prompts used in our experiments.
+
+\subsection{ICD-9 label distribution}
+\begin{figure}[h]
+    \centering
+    \resizebox{\columnwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/labels.pgf}}
+    \caption{Rank-frequency distribution of labels within the \dgold (blue) and \dte (pink) datasets, plotted over the \class{k}.}
+    \label{tab:datasets-distibutionline}
+\end{figure}
+\FloatBarrier
+
+\subsection{Name Entities Proportion}
+\begin{figure}[!htb]
+    \centering
+    \resizebox{1\columnwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/ner-labels.pgf}}
+    \caption{Normalized proportion of entity type in \dgold, \dte and $D_{2}^{6\%}$.}
+    \label{fig:ner-labels}
+\end{figure}
+\newpage
+\FloatBarrier
+
+\subsection{Workflow}
+\begin{figure*}[!htb]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/synthetic_generation_cl4health_2025/workflow.pdf}
+    \caption{workflow of our approach}
+    \label{fig:workflow}
+\end{figure*}
+\FloatBarrier
+\newpage
+
+\subsection{Example Outputs}
+\newtcolorbox{modelinput}{colback=blue!5!white,colframe=blue!75!black}
+\begin{figure}
+\centering
+\begin{modelinput}
+\verb|<s>[INST]|As a doctor, you must write an original 'History of Present Illness' (HPI) section for a discharge summary.
+Your response should capture the essence of a patient's health journey and recent medical experiences, while strictly using all the provided keywords conserving the order.
+You must adopt a medical telegraphic style, abbreviated, characterized by concise and direct language.
+\\
+\textbf{Keywords:} \textit{metastatic, RCC, pancreas, reports, chills, tylenol, reports, rib pain, lying, chills, reports, dark stools, fever, zosyn, headache, contacts, anxious, pain, dysuria, joint pain, rash, hypotensive, asymptomatic, given, lactate, baseline, guaiac, stool, saw, stent, pancreatic, blood, tomorrow, treated, cholangitis, given, sat, ARF, reports, anxious}\verb|[/INST]|
+\end{modelinput}
+\caption{An example of prompt for the Figures \ref{appendix:ground},\ref{appendix:worst},\ref{appendix:best}}
+\label{experiment:prompt}
+\end{figure} 
+
+\begin{figure}[!hbt]
+    \centering
+    \begin{modelinput}
+    This is a 67 y.o male with h.o metastatic RCC to the pancreas,
+recent ICU course for UGIB (12units pRBCs) who reports sudden
+intermittent chills since wednesday for which he took tylenol.
+Pt also reports R.side gnawing rib pain, while lying in bed
+before the onset of chills. In addition, pt reports dark stools
+for the last few days which started after taking "iron pills".
+Pt states he went to [**Hospital1 2436**] ED because of a fever of 101.3,
+however he felt better and did not want to wait to be seen. He
+returned to [**Hospital1 2436**] today and was transferred to [**Hospital1 18**] after
+a dose of zosyn, HCT 25. Pt denies headache/dizziness/blurred
+vision, URI/cough, sick contacts, CP, +palp when anxious, -abd
+pain/n/v/d/brbpr, dysuria/hematuria, joint pain, rash,
+paresthesias. \\
+. \\
+At [**Hospital1 18**], pt found to be hypotensive to 75/40, asymptomatic. He
+was given 3L IVF, lactate 6.8. HCT 22.8 from a baseline of 35 a
+few weeks ago. He was found to have black, guaiac +stool. GI saw
+pt, pt s/p stent to pancreatic ampulla, ?blocked  from blood.
+Plan is to transfuse, ERCP tomorrow. ED also treated for
+possible cholangitis/sepsis and pt was given dose of vanco.
+Vitals 99.2, BP 99/66 HR 88 sat 98% on RA. Access 3PIV's 2,
+20's, 18. Pt also found to be in ARF. \\
+. \\
+Currently, pt reports that he is anxious. \\
+.
+    \end{modelinput}
+    \caption{An example of a ground truth associated with the prompt of Figure~\ref{experiment:prompt}}
+    \label{appendix:ground}
+\end{figure}
+
+\begin{figure}[!hbt]
+\centering
+\begin{modelinput}
+77 yo M w/ hx of metastatic RCC of the pancreas (pancreo-duodenal \\
+mass reports R/o chills since starting [**6-2**] on [**2160-5-18**] (day 7-10 from \\
+Hx. He has had fevers with taking tylenol at that time \\
+(Ibuprofen 400mg, acetaminophen 650mg PRN for R/o rib pain and \\
+steal). On [**2160-5-22**] he was lying in bed and became extremely \\
+ill with chills. He reports this started a few minutes ago. Also \\
+reports dark stools. His fever is 102F (38.3C), he is on 2g IV \\
+zosyn (given IVF 2L NS, as he is V/5) for pneumonia with HC \\
+reported by the Wife. He reports severe headache. He is not \\
+compliant with PCP but has noticed many recent contacts with \\
+his S/M. He is very anxious for relief of pain. He has some \\
+dysuria and no joint pain. He has no rash. He is in the ED \\
+actively pacing. He is hypotensive. He is BP 90/45 with 3+ pti \\
+on his left hand. PRI all his vitals are stable otherwise at \\
+BP 92/44 HR 81 RR 14 96 O2 Sat 99% RA. On ABG: pH 7.31, \\
+PaCO2 28.1, PaO2 113. As a baseline (was done in ED), guaiac \\
+in stool was positive. He was sent to CT with ortho in ED. Saw \\
+his PCR [**Last Name (Only) **] [**Date**] [**Time (only) **] 5:15 and showed a 6.2mm x 5.1mm pancreatic \\
+tail mass (blood in the head of the pancreas with no dilation \\
+distally). He is scheduled for pancreatic stent placement \\
+tomorrow. He was treated for acute cholangitis (e.g. given 3L NS \\
+and 1g of IVF) and was given 1L NS to help with ARF. He \\
+reports that he is more anxious for relief of pain.
+\end{modelinput}
+\caption{An example of synthetic data generated with Figure \ref{experiment:prompt} with a high \score}
+\label{appendix:best}

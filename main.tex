@@ -60,6 +60,8 @@
   \singlespacing
 \fi
 
+\usepackage[ruled,vlined,boxed]{algorithm2e}
+\usepackage{enumitem}
 \usepackage{microtype}
 \usepackage{latexsym}
 \usepackage{adjustbox}
@@ -74,7 +76,9 @@
 \usepackage{textcomp}
 \usepackage{bm}
 \usepackage{xspace}
-\renewcommand{\th}{\textsuperscript{\textup{th}}\xspace}
+\usepackage{fancyvrb}
+\usepackage{fvextra}
+\usepackage{tcolorbox}
 
 \input{sources/lexicons/acronyms}
 \input{sources/lexicons/glossary}
@@ -108,8 +112,9 @@
 %\include{sources/chapters/introduction}
 \include{sources/chapters/related_works}
 \include{sources/chapters/weak_annotations}
- \include{sources/chapters/weak_supervision_healthnlp_2023}
-%\include{sources/chapters/synthetic_data}
+\include{sources/chapters/weak_supervision_healthnlp_2023}
+\include{sources/chapters/synthetic_generation}
+\include{sources/chapters/synthetic_generation_cl4health_2025}
 %\include{sources/chapters/efficiency}
 %\include{sources/chapters/conclusion}
 
@@ -130,7 +135,7 @@
 \printindex
 
 % Entries for the entire Anthology, followed by custom entries
-\bibliography{bibliography,multi_weak_supervision}
+\bibliography{bibliography,multi_weak_supervision,synthetic-coling2024}
 \bibliographystyle{styles/acl_natbib}
 
 \end{document}
