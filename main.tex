@@ -60,6 +60,7 @@
   \singlespacing
 \fi
 
+\usepackage{minitoc}
 \usepackage[ruled,vlined,boxed]{algorithm2e}
 \usepackage{enumitem}
 \usepackage{microtype}
@@ -79,10 +80,8 @@
 \usepackage{fancyvrb}
 \usepackage{fvextra}
 \usepackage{tcolorbox}
-
 \input{sources/lexicons/acronyms}
 \input{sources/lexicons/glossary}
-
 
 \makeindex
 \makeglossaries
@@ -104,23 +103,19 @@
 \frontmatter
 \include{sources/title/title}
 \include{sources/chapters/abstract}
-
+\dominitoc 
 \tableofcontents
 
 \mainmatter
-
 %\include{sources/chapters/introduction}
 \include{sources/chapters/related_works}
-\include{sources/chapters/weak_annotations}
-\include{sources/chapters/weak_supervision_healthnlp_2023}
-\include{sources/chapters/synthetic_generation}
 \include{sources/chapters/synthetic_generation_cl4health_2025}
-%\include{sources/chapters/efficiency}
-%\include{sources/chapters/conclusion}
+\include{sources/chapters/weak_annotations}
+
+\startappendices
+\include{sources/chapters/appendix}
 
 
-% This ensures that the subsequent sections are being included as root
-% items in the bookmark structure of your PDF reader.
 \bookmarksetup{startatroot}
 \backmatter
 
@@ -135,7 +130,7 @@
 \printindex
 
 % Entries for the entire Anthology, followed by custom entries
-\bibliography{bibliography,multi_weak_supervision,synthetic-coling2024}
+\bibliography{bibliography,weak_supervision,synthetic-coling2024}
 \bibliographystyle{styles/acl_natbib}
 
 \end{document}

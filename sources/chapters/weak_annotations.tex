@@ -1,8 +1,10 @@
-\chapter{Weak Supervision for Clinical Natural Language Processing}
+\chapter{Knowledge Distillation with Large Language Models for Multilingual Clinical Entity Extraction}
 
 In clinical and other specialized domains, data are scarce due to their confidential nature. This lack of data is a major problem when fine-tuning language models.
 Nevertheless, very large language models (LLMs) are promising for the medical domain but cannot be used directly in healthcare facilities due to data confidentiality issues. We explore an approach of annotating training data with LLMs to train smaller models more adapted to our problem. 
 We show that this method yields promising results for information extraction tasks.
+
+\minitoc
 
 \section{Introduction}
 Clinical notes contain the interactions between the patient and healthcare staff. Professionals record their impressions, observations, and various medical procedures performed. Despite the computerization of clinical documents, notes should remain fairly expressive and in a free format to save time for healthcare personnel and allow for the description of unusual situations \citep{Rosenbloom2011DataDocumentation}. Moreover, a large amount of crucial information is exclusively contained in clinical notes. According to a study by \citet{Escudie2017ADisease}, approximately 80\% of patient phenotypes (a set of observable biological and physical characteristics that can characterize a disease) are present only in free text. These documents are difficult to use without advanced methods such as deep learning in NLP. The use of such methods requires the collection and annotation of a significant amount of medical data. However, \citet{Fries2022DatasetModeling} proposes the term "\emph{dataset debt}," highlighting that learning data in the biomedical field is poorly accessible, poorly documented, and opaque as to its reusability in a commercial or a hospital context. According to the article, only 13\% of the 167 analyzed datasets are accessible and downloadable, 22\% use a standard structured format, and 40\% are in the public domain.
@@ -27,12 +29,12 @@ This takes form in these contributions:
     \item We propose a weak supervision approach (Figure \ref{fig: motiv} bottom) that combines annotations from dictionary extraction and \instruct, which outperform the approach with only \instruct annotation.
 \end{itemize}
 
-\begin{figure*}[htp!]
+\begin{figure}[htp!]
 \centering
-\includegraphics[width=0.9\textwidth]{figures/multi_weak_supervision/workflow.pdf}
+\includegraphics[width=0.85\textwidth]{figures/multi_weak_supervision/workflow.pdf}
 \caption{The different workflows we experiment with. The last workflow used a combination of \instruct and dictionary annotations; we tested different proportions of these annotations as described in \ref{sec:prot}.}
 \label{fig: motiv}
-\end{figure*}
+\end{figure}
 
 \section{Related Works}
 \paragraph{Weak Supervision} deep learning approach has achieved remarkable success in several domains beyond NLP \citep{Zhang2022ASupervision}. However, the main bottleneck is collecting massively annotated data. To address this issue, weak supervision replaces ground-truth annotation with automatic annotation based on heuristic rules, gazetteers or constraints linguistic rules to address. Some techniques called \textit{distant supervision} exploit semantic links from knowledge bases or ontologies \citep{Lison2021Skweak:NLP}. \citet{Karamanolakis2021Self-TrainingSupervision} proposes an iterative self-training method to combine classic weak supervision and inference of the learning model to extract entities not covered by the initial heuristic rules. In the clinical domain, weak supervision has already been used for specific use cases \citep{Cusick2021UsingIdeation,Fries2021Ontology-drivenRecords,Wang2019ARepresentation}.
@@ -48,7 +50,7 @@ In this paradigm, instead of fine-tuning a model to a downstream task (\textit{"
 \textit{prompt engineering} explores the most suitable prompt method applied to a LM to solve a task.
 This way, an unsupervised pre-trained LM can be used for many tasks \citep{Liu2023Pre-trainProcessing}.
 
-Among these methods, \textit{in-context learning} is the most popular method for information extraction, question-answering or sentiment analysis. In the clinical domain, some works exist on information retrieval and question-answering. The prompt contains three components: the examples' template, the set of examples and the ordering of prompts, such as present in Figure \ref{fig:prompt}. The aim is to provide some training examples in the prompt before the test example. However, the chosen examples and their ordering and the format could impact performance \citep{Zhao2021CalibrateModelsb}; these three components must be tuned to optimize performance.
+Among these methods, \textit{in-context learning} is the most popular method for information extraction, question-answering or sentiment analysis. In the clinical domain, some works exist on information retrieval and question-answering. The prompt contains three components: the examples' template, the set of examples and the ordering of prompts, such as present in Figure \ref{fig:prompt}. The aim is to provide some training examples in the prompt before the test example. However, the chosen examples and their ordering and the format could impact performance \citep{Zhao2021CalibrateModels}; these three components must be tuned to optimize performance.
 
 In another way, we can cite works around the chain of thoughts (CoT). This encourages the LLM to explain its reasoning to get more accurate results, especially in mathematical and logical reasoning \citep{Wei2022ChainModels, Cobbe2021TrainingProblems}. This technique could be used with reason edited manually in the prompt or with two separate prompts where the first involves a reasoning task, then concatenated with the second prompt involving the main tasks.
 
@@ -107,7 +109,7 @@ We conduct experiments on the clinical entity extraction tasks. For each languag
 \begin{table}
     \centering
     \small
-    \resizebox{1\columnwidth}{!}{
+    \resizebox{0.8\textwidth}{!}{
         \input{figures/multi_weak_supervision/models}
     }
     \caption{The models used for each language during our experiments. We mention in this table the name of the model in the huggingface model repository}
@@ -128,7 +130,7 @@ For \layerValidate, the quantity of tokens annotated by both methods (\instruct 
 \begin{table}
 \centering
 \large
-\resizebox{1\columnwidth}{!}{
+\resizebox{0.8\textwidth}{!}{
 \input{figures/multi_weak_supervision/counts}
 }
 \caption{The number of annotated tokens for each annotation type for the \layerTwo ($l_{2}$) and \layerValidate ($l_{val}$). The notation \textit{Gold} corresponds to the original extraction, and the notation \textit{GPT} correspond to the \instruct annotation.}
@@ -140,7 +142,7 @@ For \layerValidate, the quantity of tokens annotated by both methods (\instruct 
 \begin{table}
     \centering
     \small
-    \resizebox{1\columnwidth}{!}{
+    \resizebox{0.5\textwidth}{!}{
         \input{figures/multi_weak_supervision/distilation_instruct}
     }
     \caption{The mean F1-score of the models for each language in E3C using {\layerOne~} as evaluation set. We evaluate the direct output of {\instruct} and the aggregated mean score of each model for each language listed in Table \ref{tab:models} using \SettingA and {\instruct} annotation as a train set.}
@@ -151,7 +153,7 @@ For \layerValidate, the quantity of tokens annotated by both methods (\instruct 
 In detail, {\distilmodels} display a better recall and recognizes multi-word clinical terms more easily. Still, this flexibility, balanced by the too-biased detection of false positive terms, lowered the precision score. In comparing {\distilmodels} versus {\weakModel} (Figure \ref{fig:setting_A}), we note a noticeable performance gain of almost $0.1$ in Basque, followed by French and Italian. In English, the F1-score of both models is relatively equivalent. For Spanish, the \weakModel outperformed the {\distilmodels} and still has our highest F1-Score.
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\textwidth]{figures/multi_weak_supervision/plot_A.pdf}
+    \includegraphics[width=0.6\textwidth]{figures/multi_weak_supervision/plot_A.pdf}
     \caption{A graph with the mean F1-score of the models on the y-axis and the different language on the x-axis for the \SettingA. The orange bar represents the \distilmodels F1-Scores whereas the dotted blue bars represent the \weakModel F1-score.}
     % describe figure
     \label{fig:setting_A}
@@ -181,7 +183,7 @@ This hurts the result (Table \ref{tab:global}) of the \distilmodels ($0.61$ with
 \begin{table*}
     \centering
     \small
-    \resizebox{1\textwidth}{!}{
+    \resizebox{0.9\textwidth}{!}{
         \input{figures/multi_weak_supervision/global}
     }
     \caption{The F1-score, Precision and the Recall for the different settings in section \ref{sec:prot}. $r=1$ corresponds to the \distilmodels and the $r=0$ corresponds to the \weakModel.}
@@ -190,7 +192,7 @@ This hurts the result (Table \ref{tab:global}) of the \distilmodels ($0.61$ with
 \begin{table}
     \centering
     \small
-    \resizebox{1\columnwidth}{!}{
+    \resizebox{0.6\columnwidth}{!}{
         \input{figures/multi_weak_supervision/global_d}
     }
     \caption{The F1-score, Precision, and Recall for \SettingD and \SettingE as described in Section~\ref{sec:prot}. The scores are aggregated across languages, with $r_{max}$ representing the optimal value of $r$.}
@@ -235,100 +237,100 @@ Additionally, we will consider utilising performance metrics (such as recall and
 Finally, adapting CoT or generated knowledge \citep{Wei2022ChainModels, Cobbe2021TrainingProblems} for clinical entity extraction could improve LLM's precision.
 To our knowledge, none of these techniques has been adapted to clinical information retrieval. We could craft a prompt with different annotation steps through different examples. At each annotation step, we describe a precise instruction and its result. For example, incorporating the three steps of the E3C annotation into the prompt could help encourage the LLM to better adhere to the guideline.
 
-\section{Additional Material}
-\label{section:app}
-\definecolor{mint}{RGB}{209,227,221}
-\definecolor{savoyblue}{RGB}{176,109,53}
-\definecolor{glaucous}{RGB}{110,125,171}
-\definecolor{pink}{RGB}{147,93,154}
-\begin{figure}[h!]
-\begin{Verbatim}[frame=single,fontsize=\scriptsize,commandchars=\\\{\}]
-\colorbox{glaucous}{\color{white}{Input:  The evolution was marked two months later,}}
-\colorbox{glaucous}{\color{white}{by the appearance of angiomatous plaques on the}} 
-\colorbox{glaucous}{\color{white}{right forearm, [...]}} 
-\colorbox{glaucous}{\color{white}{extract the exact match of disorders, diseases or}} 
-\colorbox{glaucous}{\color{white}{symptoms mentioned in the text or}} 
-\colorbox{glaucous}{\color{white}{return None if there is no clinical entity:}}
 
-\colorbox{glaucous}{\color{white}{- "angiomatous plaques"}}
-\colorbox{glaucous}{\color{white}{- "lymphedema"}}
-\colorbox{glaucous}{\color{white}{- "lesions"}}
+\section{Experiments on French Clinical Entity Extraction}
+\subsection{Dataset}
+We use the E3C dataset \citep{Magnini2020TheCases} for our experiments, consisting of two annotation types: temporal and clinical entities. As mentioned above, Our focus is on extracting clinical entities in French. In E3C, Clinical entities are identified as patient disorders which could map to the UMLS meta thesaurus. The annotators have linked extracted clinical entities and UMLS concepts. In our experiments, we only extract clinical entities without mapping entities.
+A layer in E3C consists of a subset of files annotated in a certain way (manually, semi-automatically).
+The E3C dataset is organized into three layers: 
+\begin{itemize}
+    \item the first layer (called \textbf{layer~1}) consists of the full manual annotation; we used this layer as a test set for our experiments;
+    \item the second layer consists of semi-automatic annotation; we use this layer as a train set with the initial annotation or the annotation inferred by InstructGPT-3. Moreover, we have access to two states of this layer; the first is the layer entirely annotated with dictionary extraction (called~\textbf{layer~2}); the second is the subset of this layer (only $10\%$) that has been fixed manually (called~\textbf{layer~2~validate}). The dictionary contains terms from UMLS and terms extracted from \textbf{layer~1};
+    \item Finally, the third layer (called~\textbf{layer~3}) is an unannotated layer that we don't use for our experiments.
+\end{itemize}
 
-\colorbox{glaucous}{\color{white}{Input:  At the same time, the patient had presented}} 
-\colorbox{glaucous}{\color{white}{a progressive alteration of the general condition,}} 
-\colorbox{glaucous}{\color{white}{a fever and night sweats}}
-\colorbox{glaucous}{\color{white}{extract the exact match of disorders, diseases}} 
-\colorbox{glaucous}{\color{white}{or symptoms mentioned in the text or}} 
-\colorbox{glaucous}{\color{white}{return None if there is no clinical entity:}}
+We selected the E3C French subset, including manually and automatically annotated data, which is well-suited for our weak-supervision experiments. However, the dataset has limited data in its various layers. We divided \textbf{layer~2} into five sections using 5-fold cross-validation to tackle this issue.
 
-\colorbox{glaucous}{\color{white}{- "progressive alteration of the general condition"}}
-\colorbox{glaucous}{\color{white}{- "fever"}}
-\colorbox{glaucous}{\color{white}{- "night sweats"}}
+\subsection{Experimental Setup} 
+\label{sec:healthnlp_prot}
+We conduct experiments on the clinical entity extraction tasks. For all our experiments, we use \textit{camembert-base} \citep{Martin2019CamemBERT:Model} as a student model for the knowledge distillation step.
+We conduct our experiments we use four different dataset settings: 
+\begin{itemize}
+    \item \textbf{Setting A}: we use \textbf{layer~2} as the train set and compare both camemBERT trained respectively with dictionary extraction annotations and InstructGPT prediction annotations;
+    \item \textbf{Setting B}: we use \textbf{layer~2~validate} as the train set, we compare camemBERT trained on manually corrected annotation and a camemBERT model trained on the same subset but using InstructGPT-3 prediction annotations;
+    \item \textbf{Setting C}: we use \textbf{layer~2} as the train set. Still, we replace weak-supervision annotations with the annotation fixed in \textbf{layer~2~validate}. So, a small part of the InstructGPT prediction annotations and the dictionary extraction annotations has been replaced by manual annotations;
+    \item \textbf{Setting D}: we use the \textbf{layer~2} as a training set but mix a ratio $r$ of annotations predicted by dictionary extraction and $(1-r)$ of annotations predicted by InstructGPT-3. In this context, we test and compare trained models for various ratio values $r$.
+\end{itemize}
 
-\colorbox{glaucous}{\color{white}{Input:  The sedimentation rate was 35mm at the}} 
-\colorbox{glaucous}{\color{white}{first hour, C-reactive protein was negative}} 
-\colorbox{glaucous}{\color{white}{and ferritin level was 900µg/l}} 
-\colorbox{glaucous}{\color{white}{(i.e., 4 times the normal value).}}
-\colorbox{glaucous}{\color{white}{extract the exact match of disorders, diseases}} 
-\colorbox{glaucous}{\color{white}{or symptoms mentioned in the text or}} 
-\colorbox{glaucous}{\color{white}{return None if there is no clinical entity:}}
+\subsection{Results and Discussion}
+\paragraph{InstructGPT-3 Prediction Analysis} We denote that InstructGPT-3 extracts almost twice more entities (Table \ref{tab:healthnlp_counts}). This trend is more important in \textbf{layer~2}, whereas the gap is reduced in \textbf{layer~2~validate}; this is certainly due to the human validation on this layer. This difference could be explained by the fact that InstructGPT-3 has no access to the guideline, and the prompt mentioned to extract "\textit{disorders}", "\textit{disease}", or "\textit{symptoms}" that is less restrictive than the E3C guideline annotation. The confusion matrices (Figure \ref{fig:healthnlp_confuse}) emphasized this trend.
 
-\colorbox{glaucous}{\color{white}{- "None"}}
+Nevertheless, both extraction methods as labelled almost the same token as O ($0.93$). The InstructGPT-3 annotation is coherent with the task. 
+We note that only $0.04$ of $B_{clin}$ has been annotated as an $I_{clin}$, which denotes that InstructGPT-3 discriminates well with the meaning of the begin and inner tokens.
+The most consequential fact is that InstructGPT-3 considers the O tokens as Inner tokens, and the extracted entities are longer than those extracted with dictionary extraction.
+This explains the most consequent number of tokens extracted by InstructGPT-3.
 
-\colorbox{savoyblue}{\color{white}{Input:  The interview revealed no history}} 
-\colorbox{savoyblue}{\color{white}{of any pathological events, in particular}} 
-\colorbox{savoyblue}{\color{white}{skin rash, gastrointestinal disorders, jaundice,}} 
-\colorbox{savoyblue}{\color{white}{respiratory infection or recent vaccination.}}
-\colorbox{pink}{\color{white}{extract the exact match of disorders, diseases}}
-\colorbox{pink}{\color{white}{or symptoms mentioned in the text or}}
-\colorbox{pink}{\color{white}{return None if there is no clinical entity:}}
-\colorbox{mint}{\color{white}{- "}}
+\begin{table}
+\centering
+\large
+\resizebox{0.85\textwidth}{!}{
+\input{figures/weak_supervision_healthnlp_2023/counts}
+}
+\caption{This table reports the number of annotated tokens for each type of annotation for each layer}
+\label{tab:healthnlp_counts}
+\end{table}
 
-\end{Verbatim}
-\caption{An example of the prompt used in our experiment. The formatted examples are shown in \colorbox{glaucous}{\color{white}{blue}}, while the formatted examples to predict are shown in \colorbox{savoyblue}{\color{white}{orange}}. The instructions are shown in \colorbox{pink}{\color{white}{purple}}, and the guidance, as used in \citet{Agrawal2022LargeExtractors}, is shown in \colorbox{mint}{\color{white}{green}}. For all languages, instruction is still in English, but the formatted examples are in the source language.}
-\label{fig:prompt}
+\begin{figure}[t!]
+    \begin{subfigure}[t]{0.5\textwidth}
+        \centering
+        \includegraphics[height=2in]{figures/weak_supervision_healthnlp_2023/fr.layer2.validation_heatmap}
+        \caption{Layer 2 validate}
+        \vspace{4mm}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.5\textwidth}
+        \centering
+        \includegraphics[height=2in]{figures/weak_supervision_healthnlp_2023/fr.layer2_heatmap}
+        \caption{Layer 2}
+    \end{subfigure}
+    \caption{This figure represents the confusion matrices for the \textbf{layer~2} and the \textbf{layer~2~validate}. The matrices show the relationship between the dictionary annotations and via InstructGPT-3. For example, in the LayerValidate, the intersection of $B_{clin}$ (x-axis) to $O$ (y-axis) indicates that InstructGPT identified 122 tokens $O$ as $B_{clin}$ based on the dictionary extraction. The blue-coloured cells highlight the overflow of tokens annotated by InstructGPT-3 compared to the Dictionary Extraction annotation.}
+    \label{fig:healthnlp_confuse}
 \end{figure}
 
+\paragraph{Knowledge Distillation Evaluation} We compare the distilled model (\textit{Instruct-Distilation}) and InstructGPT-3 on the \textbf{layer~1}. Both models have almost the same performance (Table \ref{tab:healthnlp_layer1}). Therefore, The distilled model has better precision, whereas InstructGPT performs better in recall.
+\input{figures/weak_supervision_healthnlp_2023/04_experiment_table_layer1}
 
-\begin{table*}
+\paragraph{\textbf{Setting A}} If we compare the global F1-Score (Table \ref{tab:healthnlp_layer2}), the model trained with InstructGPT-3 supervision (\textit{Instruct-Distilation}) perform better than the model (\textit{Weak-Supervised Model}) trained 
+with dictionary extraction supervision. 
+In detail, the has a better F1-Score with $B_{clin}$ class, but the Recall and F1-score of $I_{clin}$ are relatively lower. 
+The dictionary extraction tends to extract well one-word clinical terms, but this method does not cover multi-word terms. 
+InstructGPT-3 has a better recall and recognizes multi-word clinical terms more easily. Still, this flexibility, balanced by the too-biased detection of false positive terms, lowered the precision score.
+\input{figures/weak_supervision_healthnlp_2023/04_experiment_table_layer2}
+
+\paragraph{\textbf{Setting B}} The amount of annotated tokens is relatively small compared to \textbf{layer~2} (Table \ref{tab:healthnlp_counts}). 
+This hurts the result (Table \ref{tab:healthnlp_layer2validate}) of the \textit{Weak-Supervised Model} ($0.57$ with layer 2 validate vs $0.69$ with \textbf{layer~2}) in contrast to the \textit{Instruct-Distilation}, where performance is relatively equivalent. Still, the stability between the 5 folds is affected ($0.01$ with \textbf{layer~2~validate} vs $6e^{-3}$). The same fold stability issue is present for \textit{Weak-Supervised Model}, possibly due to the relatively small amounts of tokens on the train set.
+\input{figures/weak_supervision_healthnlp_2023/04_experiment_table_layer2_validate}
+
+\paragraph{\textbf{Setting C}} The results (Table \ref{tab:healthnlp_layer2blended}) shows slightly better performance for both models. We note that the \textit{Weak-Supervised Model} has a better recall for $I_{clin}$ than the \textit{Weak-Supervised Model} trained with only weak-supervision annotations ($0.24$ with \textbf{layer~2} vs. $0.35$ with \textbf{layer~2} mixture). The \textit{Instruct-Distilation} has better precision for $B_{clin}$ and $I_{clin}$ compared to \textit{Instruct-Distilation} trained with \textbf{layer~2}.   
+In conclusion, mixing datasets with a low proportion of manual annotations reduces the tendency of each method to detect predictions of clinical terms that are smaller in terms of words (\textit{Weak-Supervised Model}) or encompass larger word sets (\textit{Instruct-Distilation}). 
+\input{figures/weak_supervision_healthnlp_2023/04_experiment_table_layer2_blended}
+
+\paragraph{\textbf{Setting D}} The results indicate that using a ratio of $0.5$ between the annotation predicted by InstructGPT-3 and the annotation predicted by dictionary extraction allows improving the F1-Score by $0.03$ compared to the use of a dataset entirely annotated with the annotation predicted by InstructGPT-3 (i.e. when the ratio is 1). Moreover, incorporating a proportion of annotations predicted by InstructGPT-3 above $0.5$ allows for better stability between different folds. In conclusion, combining these two disparate annotation methods regarding recall and precision provides a good balance and increases the F1-Score.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/weak_supervision_healthnlp_2023/scatters.pdf}
+    \caption{The figure represents a graph with the F1-score on the y-axis and the ratio of dictionary annotations and annotations via InstructGPT-3 on the x-axis as specified in the \textbf{Setting D} (Section \ref{sec:healthnlp_prot}). A ratio of 0 indicates the presence of only dictionary annotations, while a ratio of 1 corresponds to exclusively InstructGPT-3 annotations. Each blue dot represents a different experiment with a different data set. Each orange dot represents the mean of the experiments for a given ratio. The light orange filled part represents the standard deviation for a given ratio}.
+    \label{fig:healthnlp_scatter}
+\end{figure}
+
+\begin{table}
     \centering
     \small
-    \resizebox{1\textwidth}{!}{
-        \input{figures/multi_weak_supervision/big_table_A}
+    \resizebox{0.6\textwidth}{!}{
+        \input{figures/weak_supervision_healthnlp_2023/global}
     }
-    \caption{This table reports the F1-Scores for the different models and annotation ratios $r \in \{0,1\}$ for \SettingD described in Section~\ref{sec:prot}.}
-\end{table*}
+    \caption{This is the F1-score, Precision and the Recall for each settings in Section \ref{sec:healthnlp_prot}.}
+    \label{tab:healthnlp_global}
+\end{table}
 
-\begin{table*}
-    \centering
-    \small
-    \resizebox{1\textwidth}{!}{
-        \input{figures/multi_weak_supervision/big_table_B}
-    }
-    \caption{This table reports the F1-Scores for the different models and annotation ratios $r \in \{0,1\}$ for \SettingB described in Section~\ref{sec:prot}.}
-\end{table*}
-
-\begin{table*}
-    \centering
-    \small
-    \resizebox{1\textwidth}{!}{
-        \input{figures/multi_weak_supervision/big_table_C}
-    }
-    \caption{This table reports F1-Scores for different models and annotation ratios $r \in \{0,1\}$ for \SettingC described in Section~\ref{sec:prot}.}
-\end{table*}
-
-\begin{table*}
-    \centering
-    \resizebox{1\textwidth}{!}{
-        \input{figures/multi_weak_supervision/big_table_D}
-    }
-        \caption{This table presents F1-Scores, Precision, and Recall for different models at annotation ratios $r \in \{0,1\}$ and at the optimal $r$ value, $r_{max}$ for \SettingD, as described in Section~\ref{sec:prot}.}
-\end{table*}
-
-\begin{table*}
-    \centering
-    \resizebox{1\textwidth}{!}{
-        \input{figures/multi_weak_supervision/big_table_E}
-    }
-    \caption{This tabie presents F1-Scores, Precision, and Recall for different models at annotation ratios $r \in \{0,1\}$ and at the optimal $r$ value, $r_{max}$ for \SettingE, as described in Section~\ref{sec:prot}.}
-\end{table*}
+\paragraph{Comparison of the different configurations} According to the results reported in Table \ref{tab:healthnlp_global}, Setting D is the one which obtained a slightly better F1-score ($0.76$). The mixture of dictionary annotations and InstructGPT-3 obtained with $r=0.5$ reduces the gap between the Recall ($0.81$) and Accuracy ($0.73$) scores. This allows us to assert that the two methods can be complementary: a combination of the two allows us to obtain a greater diversity of annotations than the use of only one of the two methods.

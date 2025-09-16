@@ -2,25 +2,25 @@
 \centering
 \resizebox{1\textwidth}{!}{
 \fbox{
-\begin{minipage}[c][2.2in]{\linewidth}
-\begin{small}
+\begin{minipage}[c][3in]{\linewidth}
 \begin{align*}
     & x = \texttt{'The patient had presented a progressive deterioration of the general condition,}\\
     & \qquad \texttt{a fever and night sweats.'}\\
     & p = concat(t, x)\\
    & \begin{aligned}
-        o = \Phi(p, \theta_h) = & \texttt{'-"fever" } \\ 
-                                & \texttt{-"night sweats"'}
+        o = \Phi(p, \theta_h) = & \texttt{"fever, night sweats"}
       \end{aligned}\\
     & \begin{aligned}
-        r(o, x) = & \; [ \\ 
-                         & \space\space(\texttt{The}, 0 , 3, O), (\texttt{patient}, 4 , 11, O), \dots, \\ 
-                         & \space\space(\texttt{fever}, 72, 77, B_{clin}), (\texttt{and}, 79, 82, O), \\
-                         & \space\space(\texttt{night}, 83, 87, B_{clin}), (\texttt{sweats}, 88, 94, I_{clin}), \dots \\
-                         & ]
+        r(o, x) = & \texttt{[} \\
+                         & \quad \texttt{\{"word": "The", "start": 0, "end": 3, "label": "O"\},} \\
+                         & \quad \texttt{\{"word": "patient", "start": 4, "end": 11, "label": "O"\}, \ldots,} \\
+                         & \quad \texttt{\{"word": "fever", "start": 72, "end": 77, "label": "B\_clin"\},} \\
+                         & \quad \texttt{\{"word": "and", "start": 79, "end": 82, "label": "O"\},} \\
+                         & \quad \texttt{\{"word": "night", "start": 83, "end": 87, "label": "B\_clin"\},} \\
+                         & \quad \texttt{\{"word": "sweats", "start": 88, "end": 94, "label": "I\_clin"\}, \ldots} \\
+                         & \texttt{]}
       \end{aligned}
 \end{align*}
-\end{small}
 \end{minipage}}
 }
     \caption{our method's prediction and structuring steps on an example. The $t$ template is illustrated in Figure \ref{fig:prompt}.}

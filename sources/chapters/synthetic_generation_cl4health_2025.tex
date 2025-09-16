@@ -207,27 +207,35 @@ $\GenMdl{6\%}$ &1&\textcolor{gray}{72.54}&70.78 \\
 \label{tab:semscores}
 \end{table}
 
+% Temporarily commented out pgfplotstabletypeset - table will be generated manually
 \begin{table*}
 \centering
-\pgfplotstabletypeset[
-    col sep=comma,
-    string type,
-    ignore chars = {\'},
-    every head row/.style={before row=\toprule,after row=\midrule},
-    every last row/.style={after row=\bottomrule},
-    every row no 2/.style={after row=\midrule},
-    every row no 0/.style={after row=\midrule},
-    every row no 4/.style={after row=\midrule},
-    every row no 6/.style={after row=\midrule},
-    every row no 9/.style={before row=\midrule},
-    every column/.style={column type={l}},
-    columns/dataset/.style={column name=\phantom,string type,column type={l}},
-    columns/20.0/.style={column name=\class{20},column type={l}},
-    columns/50.0/.style={column name=\class{50},column type={l}},
-    columns/100.0/.style={column name=\class{100},column type={l}},
-    columns/400.0/.style={column name=\class{400},column type={l}},
-    columns/ner/.style={column name=\textbf{ner},column type={l}},
-]{figures/synthetic_generation_cl4health_2025/task_results.csv}
+\begin{tabular}{lllllll}
+\toprule
+Dataset & Class 20 & Class 50 & Class 100 & Class 400 & NER \\
+\midrule
+Placeholder & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
+\bottomrule
+\end{tabular}
+% \pgfplotstabletypeset[
+%     col sep=comma,
+%     string type,
+%     ignore chars = {\'},
+%     every head row/.style={before row=\toprule,after row=\midrule},
+%     every last row/.style={after row=\bottomrule},
+%     every row no 2/.style={after row=\midrule},
+%     every row no 0/.style={after row=\midrule},
+%     every row no 4/.style={after row=\midrule},
+%     every row no 6/.style={after row=\midrule},
+%     every row no 9/.style={before row=\midrule},
+%     every column/.style={column type={l}},
+%     columns/dataset/.style={column name=\phantom,string type,column type={l}},
+%     columns/20.0/.style={column name=\class{20},column type={l}},
+%     columns/50.0/.style={column name=\class{50},column type={l}},
+%     columns/100.0/.style={column name=\class{100},column type={l}},
+%     columns/400.0/.style={column name=\class{400},column type={l}},
+%     columns/ner/.style={column name=\textbf{ner},column type={l}},
+% ]{figures/synthetic_generation_cl4health_2025/task_results.csv}
 \caption{Comparative F1 Scores  and standard deviation across models trained over different dataset generations. The table illustrates F1 (Micro-F1) score performance for the {\topk{k}} and NER tasks across $D_{step}^r$, $D_{gold}$ and the \baseline.}
 \label{tab:main-results}
 \end{table*}
@@ -297,13 +305,6 @@ Finally, we wish to investigate more accurate evaluation metrics than just SemSc
 
 \section{Additional Material}
 
-\subsection{Carbon Footprint}
-\label{sec:carbon}
-The algorithm \ref{algorithm} with the experimentation protocol detailed in \ref{sec:experiment} runs in 40h on 4 GPUs NVIDIA A100 PCIe, and draws 46.34 kWh. Based in France, this has a carbon footprint of 2.38 kg CO2e, which is equivalent to 2.59 tree-months (calculated using green-algorithms.org v2.2 \cite{lannelongue_green_2021}).
-
-\subsection{MIMIC-III Usage}
-\label{sec:privacy}
-PhysioNet provides MIMIC-III under the PhysioNet Credentialed Health Data License 1.5.0. We employed Azure GPT, a HIPAA-certified platform for our large language model annotations. Importantly, Azure GPT does not store processed data. We received approval to waive abuse monitoring for Azure GPT, ensuring that no additional parties could access the data or prompts used in our experiments.
 
 \subsection{ICD-9 label distribution}
 \begin{figure}[h]
@@ -312,7 +313,6 @@ PhysioNet provides MIMIC-III under the PhysioNet Credentialed Health Data Licens
     \caption{Rank-frequency distribution of labels within the \dgold (blue) and \dte (pink) datasets, plotted over the \class{k}.}
     \label{tab:datasets-distibutionline}
 \end{figure}
-\FloatBarrier
 
 \subsection{Name Entities Proportion}
 \begin{figure}[!htb]
@@ -322,7 +322,6 @@ PhysioNet provides MIMIC-III under the PhysioNet Credentialed Health Data Licens
     \label{fig:ner-labels}
 \end{figure}
 \newpage
-\FloatBarrier
 
 \subsection{Workflow}
 \begin{figure*}[!htb]
@@ -331,8 +330,6 @@ PhysioNet provides MIMIC-III under the PhysioNet Credentialed Health Data Licens
     \caption{workflow of our approach}
     \label{fig:workflow}
 \end{figure*}
-\FloatBarrier
-\newpage
 
 \subsection{Example Outputs}
 \newtcolorbox{modelinput}{colback=blue!5!white,colframe=blue!75!black}
@@ -411,3 +408,4 @@ reports that he is more anxious for relief of pain.
 \end{modelinput}
 \caption{An example of synthetic data generated with Figure \ref{experiment:prompt} with a high \score}
 \label{appendix:best}
+\end{figure}

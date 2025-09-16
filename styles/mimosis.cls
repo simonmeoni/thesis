@@ -296,3 +296,11 @@
  \sloppy\clubpenalty4000\widowpenalty4000
  \sfcode`\.=1000\relax}
 \let\endthesourcebibliography=\endlist
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix formatting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\startappendices}{%
+  \appendix
+  \renewcommand{\chaptername}{Appendix}
+}
