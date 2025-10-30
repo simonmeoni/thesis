@@ -20,10 +20,17 @@ Still, specific training datasets are necessary to develop a model with clinical
 
 Alternatively, we propose to create synthetic clinical notes that look like real data but do not include personally identifiable Information (PII)~\cite{melamud_towards_2019, ive_generation_2020}. This approach has several benefits: it reduces the need for human input, complies with regulations, and is suitable for annotation with external models to train local models. The local models and datasets can be shared with the community without leaking confidential information. These local models are also small enough to be hosted inside the hospital's infrastructure.
 
+\begin{figure*}[htb]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/synthetic_generation_cl4health_2025/workflow.pdf}
+    \caption{Workflow of our approach}
+    \label{fig:workflow}
+\end{figure*}
+
 Considering these issues, we implement a novel method for generating synthetic documents, enforcing privacy preservation by design, using only a tiny seed set of pseudo-anonymised data. As a proof of concept, our key contributions include:
 
 \begin{itemize}
-\item \textbf{Privacy-safe Document Generation guided by Clinical Knowledge and Reward Mechanism:} We present an methodology that leverages a minimal set of manually pseudo-anonymized data to train fine-tuned generative models. This process is enhanced by enriching prompts with keywords containing clinical knowledge, in our case extracted using QuickUMLS \citep{soldainiQuickUMLSFastUnsupervised2016}, as illustrated in Section \ref{sec:experiment} and Figure \ref{fig:workflow}. This extraction does not contain any PII in the sense that it contains only clinical entities (or keywords). Furthermore, we improve the quality of the synthetic documents thanks to an iterative refinement process that employs a private scorer to compare real and synthetic documents. This scorer returns only floats to the public side, ensuring privacy while enabling continuous improvement of the synthetic document quality.
+\item \textbf{Privacy-safe Document Generation guided by Clinical Knowledge and Reward Mechanism:} We present a methodology that leverages a minimal set of manually pseudo-anonymized data to train fine-tuned generative models. As illustrated in Figure~\ref{fig:workflow}, our approach operates across two distinct environments: a private area (hospital infrastructure) containing sensitive patient data, and a public area where synthetic documents are generated and refined. The workflow begins with keyword extraction from real documents using QuickUMLS \citep{soldainiQuickUMLSFastUnsupervised2016}, which extracts only clinical concepts without any PII. The generation process is enhanced by enriching prompts with these clinical knowledge keywords, as detailed in Section~\ref{sec:experiment}. Furthermore, we improve the quality of synthetic documents through an iterative refinement process that employs a private scorer to compare real and synthetic documents. Critically, this scorer returns only numerical scores (floats) to the public side, ensuring privacy while enabling continuous improvement of the synthetic document quality through alignment techniques. This architecture maintains strict privacy guarantees by ensuring that no sensitive information crosses the boundary from the private to the public environment.
 
 \item \textbf{Proof of Concept using MIMIC-III:} Because it's almost impossible to evaluate our methods on real private documents, we utilize the MIMIC-III clinical notes \citep{johnsonMIMICIIIFreelyAccessible2016} as a proxy to simulate a private healthcare environment, demonstrating our method's potential in a controlled setting. This proof of concept illustrates how our methodology could be applied in real-world hospital scenarios without compromising patient data.
 
@@ -212,32 +219,25 @@ $\GenMdl{6\%}$ &1&\textcolor{gray}{72.54}&70.78 \\
 % Temporarily commented out pgfplotstabletypeset - table will be generated manually
 \begin{table*}
 \centering
-\begin{tabular}{lllllll}
-\toprule
-Dataset & Class 20 & Class 50 & Class 100 & Class 400 & NER \\
-\midrule
-Placeholder & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
-\bottomrule
-\end{tabular}
-% \pgfplotstabletypeset[
-%     col sep=comma,
-%     string type,
-%     ignore chars = {\'},
-%     every head row/.style={before row=\toprule,after row=\midrule},
-%     every last row/.style={after row=\bottomrule},
-%     every row no 2/.style={after row=\midrule},
-%     every row no 0/.style={after row=\midrule},
-%     every row no 4/.style={after row=\midrule},
-%     every row no 6/.style={after row=\midrule},
-%     every row no 9/.style={before row=\midrule},
-%     every column/.style={column type={l}},
-%     columns/dataset/.style={column name=\phantom,string type,column type={l}},
-%     columns/20.0/.style={column name=\class{20},column type={l}},
-%     columns/50.0/.style={column name=\class{50},column type={l}},
-%     columns/100.0/.style={column name=\class{100},column type={l}},
-%     columns/400.0/.style={column name=\class{400},column type={l}},
-%     columns/ner/.style={column name=\textbf{ner},column type={l}},
-% ]{figures/synthetic_generation_cl4health_2025/task_results.csv}
+\pgfplotstabletypeset[
+    col sep=comma,
+    string type,
+    ignore chars = {\'},
+    every head row/.style={before row=\toprule,after row=\midrule},
+    every last row/.style={after row=\bottomrule},
+    every row no 2/.style={after row=\midrule},
+    every row no 0/.style={after row=\midrule},
+    every row no 4/.style={after row=\midrule},
+    every row no 6/.style={after row=\midrule},
+    every row no 9/.style={before row=\midrule},
+    every column/.style={column type={l}},
+    columns/dataset/.style={column name=\phantom,string type,column type={l}},
+    columns/20.0/.style={column name=\class{20},column type={l}},
+    columns/50.0/.style={column name=\class{50},column type={l}},
+    columns/100.0/.style={column name=\class{100},column type={l}},
+    columns/400.0/.style={column name=\class{400},column type={l}},
+    columns/ner/.style={column name=\textbf{ner},column type={l}},
+]{figures/synthetic_generation_cl4health_2025/task_results.csv}
 \caption{Comparative F1 Scores  and standard deviation across models trained over different dataset generations. The table illustrates F1 (Micro-F1) score performance for the {\topk{k}} and NER tasks across $D_{step}^r$, $D_{gold}$ and the \baseline.}
 \label{tab:main-results}
 \end{table*}
@@ -245,6 +245,15 @@ Placeholder & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
 Table~\ref{tab:main-results} compares F1 scores on the downstream tasks across different models and configurations, providing insights about their performance when varying task complexities and training data conditions. Notably, \mgover,trained with \dgover, outperforms the models trained with synthetic data ($M_{0,1,2}^{\mixp}$) across all tasks. Second generation models($D_{2}^{4\%}$ and $D_{2}^{6\%}$) demonstrate performance comparable to the model trained on \dgover. In particular, for the \class{400} task, the F1 scores for $D_{2}^{4\%}$ and $D_{2}^{6\%}$ match closely those for \dgover, with only minor variations. Notably, the standard deviations for the synthetic data models are lower than those of the gold data model, indicating more consistent performance. Furthermore, models trained on a combination of several generations($D_{0,1,2}^{6\%}$) outperform most cases, except on the \class{20} task. This suggests increasing data diversity and quantity through dataset mixing enhances model performance in certain scenarios.
 
 Consistently across \class{k} tasks, $M_{0}^{\mixp}$ models yield the lowest F1 scores. This indicates that initial generation models lack sufficient sophistication or diversity in training data to effectively capture necessary predictive features, particularly for $M_{0}^{4\%}$. As task complexity increases, F1 scores generally decrease for both real-based and synthetic-base models, highlighting the models' challenges in adapting to more complex interactions.
+
+\begin{figure}[htb]
+    \centering
+    \resizebox{0.65\columnwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/labels.pgf}}
+    \caption{Rank-frequency distribution of ICD-9 labels within the \dgold (blue) and \dte (pink) datasets across \class{k} tasks.}
+    \label{tab:datasets-distibutionline}
+\end{figure}
+
+Figure~\ref{tab:datasets-distibutionline} illustrates the label distribution across the different \class{k} configurations, revealing a power-law pattern characteristic of medical coding systems. The distribution exhibits strong imbalance, where top-ranked codes appear hundreds of times while tail codes occur only sporadically. Importantly, the training and test distributions remain closely aligned across all \class{k} tasks, confirming that performance variations result from model capabilities rather than distributional shift. The increasing steepness of the curves from \class{20} to \class{400} quantifies the growing challenge: expanding the label space introduces progressively rarer codes, explaining why synthetic data generation becomes more valuable for larger \class{k}—the additional training examples help compensate for the scarcity of rare label instances.
 
 In the \class{400} task, F1 scores improve from $step=1$ to $step=2$, following a general trend of performance increase. The exception is in the \class{100} task, where performance decreases between $M_{1}^{6\%}$ and $M_{2}^{6\%}$.
 
@@ -271,7 +280,20 @@ We trained several task models using different amounts of (filtered) synthetic d
 
 In Figure~\ref{fig:samplings}, the graphs demonstrate a consistent increase in F1 scores when expanding the synthetic document set from 2,000 to 10,000 documents for both sampling methods. For \class{100}, percentile sampling shows a more pronounced improvement than random sampling, particularly at lower document counts. As the document set grows, the performance gap between the two sampling methods narrows, but percentile sampling maintains a slight edge throughout. This trend suggests that the quality of synthetic documents, measured by SEMSCORE, significantly impacts performance for this task, especially when working with smaller datasets. The observation underscores the importance of quantity and quality in synthetic data generation, with quality playing a crucial role in scenarios where data quantity is limited.
 
-On the other hand, there is a sharp decrease in the performance of the NER task when $M_{2}^{6\%}$ is trained with the same number of documents as \mgold using percentile sampling. We conjecture it is partly due to the synthetic subset containing fewer annotated tokens than the gold dataset (for the same number of documents), with 510199 tokens versus 643802 tokens. To neutralize the impact of this difference, we trained a model with the same amount of annotated tokens as \dgold, as illustrated by a black star in Figure \ref{fig:samplings}. We observe less difference between \mgold and $M_{2}^{6\%}$ (with values of $57.0$ and $56.6$). We hypothesize that this difference is because the distribution of \dgold is closer to that of the synthetic subset compared to \dte as illustrated in Figure \ref{fig:ner-labels}. Furthermore, adding or removing words can affect the proportion of annotated tokens. We have not yet conducted the NER task experiment with the document generated by $M_{0,1,2}^{4\%}$ as we do not anticipate significant results for these tasks.
+On the other hand, there is a sharp decrease in the performance of the NER task when $M_{2}^{6\%}$ is trained with the same number of documents as \mgold using percentile sampling. We conjecture it is partly due to the synthetic subset containing fewer annotated tokens than the gold dataset (for the same number of documents), with 510199 tokens versus 643802 tokens. To neutralize the impact of this difference, we trained a model with the same amount of annotated tokens as \dgold, as illustrated by a black star in Figure \ref{fig:samplings}. We observe less difference between \mgold and $M_{2}^{6\%}$ (with values of $57.0$ and $56.6$).
+
+\begin{figure}[!htb]
+    \centering
+    \resizebox{1\columnwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/ner-labels.pgf}}
+    \caption{Normalized proportion of entity type in \dgold, \dte and $D_{2}^{6\%}$.}
+    \label{fig:ner-labels}
+\end{figure}
+
+To better understand the performance differences in the NER task, we analyze the entity distribution across datasets in Figure~\ref{fig:ner-labels}. The figure reveals notable distributional shifts between the training and test sets, as well as between real and synthetic data. The synthetic dataset $D_{2}^{6\%}$ exhibits a distribution pattern that more closely aligns with \dgold than with \dte, which partially explains the performance gap observed when evaluating on the test set. This distributional mismatch highlights a key challenge in synthetic data generation: while our method successfully preserves the overall structure and clinical knowledge, subtle biases in entity type proportions can emerge during the generation process.
+
+Specifically, we observe that the \textbf{problem} entity type is slightly overrepresented in the synthetic data compared to the real test set, while \textbf{treatment} entities show a complementary underrepresentation. This shift likely stems from the keyword-guided generation process, where the extracted UMLS concepts may emphasize diagnostic and symptomatic information over therapeutic interventions. The \textbf{test} entity type remains relatively stable across all datasets, suggesting that laboratory and diagnostic procedures are consistently represented regardless of the generation mechanism.
+
+Furthermore, the distributional difference between \dgold and \dte indicates that the training-test split itself contains inherent variability, making it challenging to fully attribute performance differences solely to synthetic data quality. Adding or removing words during the generation process can further affect the proportion of annotated tokens, as the generative model may produce documents of varying lengths and information density. This observation underscores the importance of not only matching semantic content but also ensuring that entity distributions remain balanced to achieve optimal downstream task performance. We have not yet conducted the NER task experiment with the documents generated by $M_{0,1,2}^{4\%}$ as we do not anticipate significant results for these tasks given the limited seed data available.
 
 \section{Discussion}
 
@@ -305,121 +327,10 @@ We are exploring alternative reinforcement learning techniques, such as KTO (Eth
 
 Finally, we wish to investigate more accurate evaluation metrics than just SemScore, in particular, by combining them with other sophisticated metrics, such as style transfer or document quality \cite{jin_deep_2022}.
 
-
-\section{Improvement of the synthetic generation pipeline}
-Our synthetic clinical document generation pipeline addresses a critical need: producing high-quality training data while preserving patient information confidentiality. The approach relies on decoder-type generative models (we use Llama2-7B \cite{touvron2023llama} and Mistral-7B \cite{jiang2023mistral} in our experiments) coupled with an iterative reinforcement improvement process, guided by feedback signals from evaluator models that compare generated documents to public and private reference corpora.
-
-The pipeline is structured around five main phases. (1) A preliminary phase of clinical entity keyword extraction using QuickUMLS \cite{soldaini2016quickumls}, an extractor based on a fixed vocabulary of specialized clinical entities derived from UMLS. This fixed-term approach ensures that no direct identification is possible during pseudonymization, as medical concepts are normalized according to a controlled taxonomy. (2) The first training step consists of supervised fine-tuning on a base of previously declassified documents or documents processed with differential privacy algorithms, integrating noise into gradients during training to guarantee confidentiality properties. (3) The second phase generates candidate synthetic documents from the fine-tuned model. (4) These documents are then evaluated by one or more scorer models that quantify their semantic quality and potential utility. (5) Finally, these scores feed an alignment phase through reinforcement learning, using algorithms such as DPO (Direct Preference Optimization) \cite{rafailov2023dpo} or KTO (Kahneman-Tversky Optimization) \cite{ethayarajh2024kto}, enabling process iteration for continuous improvement.
-
-\subsection{Extension of evaluation benchmarks}
-Since our method shares several conceptual similarities with KnowledgeSG \cite{knowledgesg2024}, we sought to establish a comparison with this approach. KnowledgeSG proposes a client-server framework where the client possesses private knowledge (for example, a clinical model trained on sensitive data) while a knowledge distillation process occurs via a remote professional model. Like our pipeline, this method adopts an iterative approach and integrates alignment mechanisms and sample selection: it generates multiple candidates then progressively filters them via a reference professional model to select the best samples, thus countering the performance degradation induced by gradient noise when using differential privacy.
-
-This methodological convergence naturally led us to adopt the AlpaCare benchmark \cite{zhang2023alpacare}, a doctor-patient conversational dataset in chatbot format, used both as a reference professional model in KnowledgeSG and as an evaluation benchmark in our context. This choice presents a dual advantage: on one hand, it enables direct comparison with KnowledgeSG on common evaluation ground, and on the other hand, it addresses a different type of task from our usual evaluations, thus broadening the validation spectrum of our approach. The evaluation follows a preference evaluation protocol where a judge compares pairwise the responses generated by our model with those from established reference models (text-davinci-003 \cite{OpenAI2022TextDavinci003}, GPT-3.5-turbo \cite{OpenAI2022GPT35Turbo}, GPT-4 \cite{OpenAI2024GPT4o}, and Claude-2 \cite{Anthropic2023Claude2}). To ensure result robustness, each sample is evaluated twice with swapped positions to avoid positional bias.
-
-For our approach to adapt to this benchmark, we modified our method as follows: our SynthKG pipeline specifically generates synthetic patient questions from extracted medical keywords, while corresponding responses are produced by AlpaCare, which serves as the reference professional model. The process is structured as follows: we first generate clinical keywords, from which we synthesize patient questions, then AlpaCare generates the associated expert responses. This combination produces a question-answer pair dataset that is then used to fine-tune a model capable of answering questions from the AlpaCare dataset during evaluation.
-
-\subsection{Attempt to improve the feedback loop}
-
-Given the results obtained with our initial pipeline, we identified potential improvement margins in the quality of synthetic document selection. The underlying principle was to improve this selection quality by using more elaborate evaluators than the simple semantic similarity measures (SemScore) initially employed.
-
-Initially, we applied a medical filtering process adapted from KnowledgeSG \cite{knowledgesg2024}, consisting of identifying whether the generated document or example constitutes a candidate whose subject is the medical domain. This filter ensures that synthetic documents are indeed relevant to the targeted clinical context, discarding off-topic or non-medical generations.
-
-Following this medical filtering, we explored advanced LLM-as-judge evaluation techniques \cite{archit2024criticalevaluation,lee2024selfjudge}, an approach where a large language model evaluates the relevance of retained documents via a prompt specifically designed to calculate a quality score. Unlike traditional automatic metrics, this method exploits LLMs' contextual understanding capabilities to provide a more nuanced evaluation of the relevance and coherence of synthetic documents that passed the first medical filter. For this step, we selected a sample of one thousand documents that obtained a score of five according to KnowledgeSG's evaluation system.
-
-The detailed results presented in Table~\ref{tab:alpacare_detailed_results} reveal several important observations regarding our pipeline's performance. Analyzing first the results without medical filtering (using only SemScore), our SynthKG variants achieve respectable performance: the DPO-1 variant reaches 0.520 on average, while the SFT variant obtains 0.510. These scores position us competitively, significantly surpassing DP-Instruct-ICL (0.266), which according to the literature represents the best of traditional differential privacy methods.
-
-The combined application of medical filter and LLM-as-judge (upper section of Table~\ref{tab:alpacare_detailed_results}) shows mixed results: DP-SFT + KTO reaches 0.539 and DP-SFT + DPO 0.525. While these more elaborate evaluation techniques yield slightly better results than the SemScore approach alone, the improvement remains limited and does not necessarily justify the additional complexity cost. The most notable gains are observed primarily against Text-davinci-003, which is the smallest of the evaluator models, while improvements remain marginal for other more sophisticated evaluation models. This performance does not surpass KnowledgeSG, which remains the reference method at 0.562, nor even AlpaCare which maintains its position at 0.536. The limited magnitude of these improvements questions the cost-effectiveness of this more complex approach and raises two hypotheses: either the bootstrap phase is insufficient, or the technique itself does not provide enough information to models for this specific domain.
-
-Our exchanges with the authors of KnowledgeSG also revealed that certain figures from the original paper should be taken with caution, identifying potential problems in how results were constructed. Moreover, the use of differential privacy can unfortunately further noise the model, although it guarantees the absence of indistinguishable leaks. The comparison between filtered and unfiltered versions thus suggests that the improvement provided by this combined approach remains moderate, questioning the effectiveness of the bootstrap process or the technique itself for this specific domain.
-
-\begin{table}[h]
-\centering
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Method} & \textbf{Text-davinci-003} & \textbf{GPT-3.5-turbo} & \textbf{GPT-4} & \textbf{Claude-2} & \textbf{Average} \\
-\midrule
-\multicolumn{6}{l}{\textit{With medical filters and LLM-as-judge}} \\
-\midrule
-DP-SFT + DPO & 0.660 & 0.515 & 0.470 & 0.470 & \textbf{0.528} \\
-DP-SFT + KTO & 0.659 & 0.512 & 0.492 & 0.490 & \textbf{0.540} \\
-\midrule
-\multicolumn{6}{l}{\textit{Without filters (SemScore only)}} \\
-\midrule
-DP-SFT + DPO & 0.592 & 0.504 & 0.478 & 0.468 & \textbf{0.513} \\
-DP-SFT + KTO & 0.630 & 0.510 & 0.476 & 0.469 & \textbf{0.521} \\
-\midrule
-\multicolumn{6}{l}{\textit{Baselines and traditional DP methods}} \\
-\midrule
-AlpaCare & 0.666 & 0.506 & 0.474 & 0.497 & 0.536 \\
-KnowledgeSG & \uline{\textbf{0.776}} & 0.530 & 0.457 & 0.488 & \uline{\textbf{0.562}} \\
-DP-Instruct-ICL & 0.382 & 0.295 & 0.187 & 0.199 & 0.266 \\
-Non-Private & 0.389 & 0.303 & 0.151 & 0.179 & 0.255 \\
-\bottomrule
-\end{tabular}
-\caption{Detailed results on the AlpaCare benchmark by evaluator model (win rates). Our methods' averages are in bold. Best performances are underlined.}
-\label{tab:alpacare_detailed_results}
-\end{table}
-
-\subsection{Privacy analysis and information leakage}
-
-Given the critical privacy issues inherent to medical synthetic data generation, we developed a rigorous evaluation protocol to quantify re-identification risks of our generated documents. The central objective is to determine whether a synthetic document can be attributed to the specific patient whose data was used for its generation, constituting an unacceptable personal information leak in a medical context.
-
-Our approach fundamentally differs from traditional methodologies such as canary attacks used in KnowledgeSG. This technique proves de facto inapplicable to our context since our method relies on keywords extracted from an ontological base (UMLS) that do not allow direct patient identification. These normalized keywords constitute by nature non-identifying elements, making the canary attack moot. Moreover, our threat model differs: the end user only accesses the synthetic dataset without being able to directly query the generative model.
-
-For the AlpaCare dataset, we had to circumvent a major methodological bias: conversational documents are not naturally attributed to unique patients. Prior clustering using BioLORD-2023-M allowed creating coherent pseudo-patients from 10,000 messages grouped into 4,000 user clusters, avoiding artifacts from initial grouping and making the evaluation more realistic and demanding.
-
-We implemented two complementary types of attacks. The linkage attack (1-vs-N) attempts to globally attribute each synthetic document to its source patient among the entire dataset, with a near-zero random baseline. The discrimination attack (1-vs-2) performs a repeated discrimination test: for each synthetic document, we compare it three times to pairs composed of the real patient's private document versus that of a different patient, with a theoretical baseline of 50\%.
-
-The obtained results reveal contrasting vulnerabilities according to datasets and methods employed (see Table~\ref{tab:privacy_attacks}). For the linkage attack, AlpaCare presents re-identification rates of 49.5\% (TF-IDF) and 44.9\% (all-mpnet-base-v2), while MIMIC-III reaches more concerning levels of 76.0\% and 73.3\% respectively. The discrimination attack reveals even more critical vulnerabilities: AlpaCare reaches 96.6\% with all-mpnet-base-v2 and 89.1\% with TF-IDF, while MIMIC-III presents comparable results at 95.2\% and 94.1\%.
-
-These results highlight a fundamental paradox of our approach. The linkage attack, which simulates an adversary attempting to identify a document's origin among all possible patients, presents moderate success rates (45-76\%). In contrast, the discrimination attack, which only requires binary distinction between two candidates, achieves near-perfect performance (89-96\%). This disparity reveals that synthetic documents, while not trivially associable with their source in a global identification context, nevertheless retain characteristic fingerprints sufficiently distinctive to enable quasi-certain attribution in direct comparisons. This observation raises questions about the actual effectiveness of our privacy preservation method and suggests the necessity of developing more robust generation techniques to mitigate these vulnerabilities in terms of re-identification.
-
-\begin{table}[h]
-\centering
-\begin{tabular}{lcc}
-\toprule
-\textbf{Dataset} & \textbf{Attribution} & \textbf{Discrimination} \\
-\midrule
-AlpaCare (TF-IDF) & 0.495 & 0.891 \\
-AlpaCare (Embeddings) & 0.449 & 0.966 \\
-AlpaCare (Random) & - & 0.485 \\
-MIMIC-III (TF-IDF) & 0.760 & 0.941 \\
-MIMIC-III (Embeddings) & 0.733 & 0.952 \\
-MIMIC-III (Random) & - & 0.499 \\
-\bottomrule
-\end{tabular}
-\caption{Privacy attack results (DP-SFT+DPO with medical filters)}
-\label{tab:privacy_attacks}
-\end{table}
-
-
 \section{Additional Material}
 
 
-\subsection{ICD-9 label distribution}
-\begin{figure}[h]
-    \centering
-    \resizebox{\columnwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/labels.pgf}}
-    \caption{Rank-frequency distribution of labels within the \dgold (blue) and \dte (pink) datasets, plotted over the \class{k}.}
-    \label{tab:datasets-distibutionline}
-\end{figure}
-
-\subsection{Name Entities Proportion}
-\begin{figure}[!htb]
-    \centering
-    \resizebox{1\columnwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/ner-labels.pgf}}
-    \caption{Normalized proportion of entity type in \dgold, \dte and $D_{2}^{6\%}$.}
-    \label{fig:ner-labels}
-\end{figure}
 \newpage
-
-\subsection{Workflow}
-\begin{figure*}[!htb]
-    \centering
-    \includegraphics[width=1\textwidth]{figures/synthetic_generation_cl4health_2025/workflow.pdf}
-    \caption{workflow of our approach}
-    \label{fig:workflow}
-\end{figure*}
 
 \subsection{Example Outputs}
 \newtcolorbox{modelinput}{colback=blue!5!white,colframe=blue!75!black}
