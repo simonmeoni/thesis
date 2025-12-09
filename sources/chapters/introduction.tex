@@ -41,8 +41,11 @@ The clinical notes contain all the patient and healthcare staff interactions. Th
 
 According to a study by \citet{Escudie2017ADisease}, some phenotypic treats of patients are exclusively present in free text. As these documents are unstructured and plenty, they need to be processed with advanced and automatic linguistic methods to be exploitable. This is why NLP research has intensified in recent years \citep{Wu2020DeepReview} and increasingly impacts clinical research \citep{Neveol2018ClinicalChallenges}.
 
-However, the Clinical NLP community faces several challenges due to domain specificities. 
-(1) The clinical reports are not freely available due to confidential issues, which makes it difficult to constitute a large corpus and causes some experimentation reproducibility issues \citep{Wu2020DeepReview,Chapman2011OvercomingSolutions}; (2) The clinical reports include a large panel of processes like outpatient visits, inpatient admissions and discharges, procedures, protocols and testing results. A large linguistic variability combines the general and specific language domains, including ambiguity, complex and wide terminology, and heavy use of abbreviations. 
+However, the Clinical NLP community faces several challenges due to domain specificities:
+\begin{enumerate}
+\item The clinical reports are not freely available due to confidential issues, which makes it difficult to constitute a large corpus and causes some experimentation reproducibility issues \citep{Wu2020DeepReview,Chapman2011OvercomingSolutions}
+\item The clinical reports include a large panel of processes like outpatient visits, inpatient admissions and discharges, procedures, protocols and testing results. A large linguistic variability combines the general and specific language domains, including ambiguity, complex and wide terminology, and heavy use of abbreviations.
+\end{enumerate}
 The community's challenges are technical, organizational, and social \citep{Roberts2017LanguageRecord}.
 
 Deep learning research has focused on architecture modelling and shown significant benefits for pretrained large-scale language models. Some few-shots and zero-shot approaches are emerging for extraction and classification tasks in the general domain. 

@@ -1,18 +1,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Custom Commands and Environments
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %\usepackage{fontawesome}
 \usepackage{arydshln}
 \usepackage{fontawesome5}
 \usepackage{tikz}
 \usepackage{pgfplotstable}
 \usetikzlibrary{positioning}
-
 % Define custom colors for synthetic_generation_cl4health_2025 chapter
 \definecolor{pinkLine}{RGB}{255,20,147}
 \definecolor{blueLine}{RGB}{30,144,255}
-
 \usepackage{stackengine}
 \def\ucr{\scalebox{1}{\stackinset{c}{}{c}{-.1pt}{%
   \textcolor{white}{\sffamily\bfseries\small ?}}{%
@@ -60,35 +57,51 @@
 \newcommand{\topk}{\class}
 \newcolumntype{d}[1]{D{.}{.}{#1}}
 \newcommand{\mixp}{\{4,6\}\%}
-\newcommand{\instruct}{\mbox{InstructGPT-3}\xspace}
-\newcommand{\distilInstruct}{\mbox{Instruct-Distilation}\xspace}
-\newcommand{\distilmodels}{\textit{distilled models}\xspace}
-\newcommand{\dict}{dictionary extraction\xspace}
-\newcommand{\weakModel}{\textit{weak-supervised models}\xspace}
+
+% === Knowledge Distillation Chapter ===
+% Nouvelles macros (principales)
+\newcommand{\dictmodel}{\textit{Dict-supervised}\xspace}
+\newcommand{\llmmodel}{\textit{LLM-supervised}\xspace}
+\newcommand{\hybridmodel}{\textit{Hybrid-supervised}\xspace}
+\newcommand{\gold}{\textbf{gold}\xspace}
+\newcommand{\silver}{\textbf{silver}\xspace}
+\newcommand{\silverval}{\textbf{silver}\textsuperscript{val}\xspace}
+\newcommand{\mono}{monolingual\xspace}
+\newcommand{\multi}{multilingual\xspace}
+\newcommand{\rmix}{$r$\xspace}
+
+% Labels IOB
 \newcommand{\iclin}{$I_{clin}$\xspace}
 \newcommand{\bclin}{$B_{clin}$\xspace}
-\newcommand{\layerOne}{\textbf{gold standard}\xspace}
-\newcommand{\layerTwo}{\mbox{\textbf{silver}}\xspace}
-\newcommand{\layerValidate}{\textbf{silver with fixed annotations}\xspace}
+
+% Modèle LLM et méthodes
+\newcommand{\instruct}{\mbox{InstructGPT-3}\xspace}
+\newcommand{\dict}{dictionary extraction\xspace}
+
+% Alias pour rétrocompatibilité avec les tableaux
+\newcommand{\distilmodels}{\llmmodel}
+\newcommand{\weakModel}{\dictmodel}
+\newcommand{\distilInstruct}{\llmmodel}
+\newcommand{\layerOne}{\gold}
+\newcommand{\layerTwo}{\silver}
+\newcommand{\layerValidate}{\silverval}
 \newcommand{\layerThree}{\textbf{layer~3}\xspace}
-\newcommand{\SettingB}{\mbox{$S_{MonoGold}$}\xspace}
-\newcommand{\SettingC}{\mbox{$S_{MonoGold~\cap~MonoSilver}$}\xspace}
-\newcommand{\SettingD}{\mbox{$S_{MonoSilver}$}\xspace}  
-\newcommand{\SettingE}{\mbox{$S_{MultiSilver}$}\xspace}  
-\newcommand{\SettingA}{\mbox{\SettingD~$with$~$r\in \{0, 1\}$}\xspace}
+\newcommand{\SettingD}{\mono \silver\xspace}
+\newcommand{\SettingB}{\mono \silverval\xspace}
+\newcommand{\SettingC}{\mono \hybridmodel\xspace}
+\newcommand{\SettingE}{\multi \silver\xspace}
+\newcommand{\SettingA}{\SettingD~($\rmix\in \{0, 1\}$)\xspace}
 
 % Additional colors for synthetic generation chapter
 \definecolor{seedStep}{HTML}{BBE3BF}
 \definecolor{genStep}{HTML}{A0CED9}
 \definecolor{scoringStep}{HTML}{F7ABDA}
 \definecolor{alignStep}{HTML}{FFC09F}
-
 % Define custom commands used in the document
 \def\Mdl#1#2{M_{\mathrm{#1}}^{#2}}
 \def\RefMdl#1{\Mdl{ref}{#1}}
 \def\ScoreMdl#1{\Mdl{score}{#1}}
 \def\GenMdl#1{\Mdl{gen}{#1}}
-
 \def\mref{$\RefMdl{}$\xspace}
 \def\me{$\ScoreMdl{}$\xspace}
 \def\mg{$\GenMdl{}$\xspace}
