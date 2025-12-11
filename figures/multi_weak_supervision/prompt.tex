@@ -1,0 +1,26 @@
+\newtcolorbox{modelinput}{colback=blue!5!white,colframe=blue!75!black}
+\begin{figure*}[!ht]
+\centering
+\begin{modelinput}
+\small
+\textbf{Instruction:} Extract all clinical entities (disorders, diseases, symptoms) from the following text. List only the extracted entities, separated by commas.
+
+\textbf{Example 1:}\\
+\textit{Text:} The patient presented with acute myocardial infarction and diabetes mellitus.\\
+\textit{Entities:} acute myocardial infarction, diabetes mellitus
+
+\textbf{Example 2:}\\
+\textit{Text:} History of hypertension and chronic kidney disease stage 3.\\
+\textit{Entities:} hypertension, chronic kidney disease stage 3
+
+\textbf{Example 3:}\\
+\textit{Text:} Patient complains of severe headache and nausea.\\
+\textit{Entities:} severe headache, nausea
+
+\textbf{Now extract entities from:}\\
+\textit{Text:} [INPUT\_TEXT]\\
+\textit{Entities:}
+\end{modelinput}
+\caption{Example prompt template for InstructGPT-3 clinical entity extraction. The prompt includes three annotated examples (few-shot learning) followed by the target text. Keywords associated with E3C guidelines (disorders, diseases, symptoms) guide the model, and the structured output format facilitates parsing.}
+\label{fig:prompt}
+\end{figure*}

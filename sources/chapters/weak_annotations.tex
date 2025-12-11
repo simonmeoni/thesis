@@ -32,7 +32,7 @@ This takes form in these contributions:
 
 \begin{figure}[htp!]
 \centering
-\includegraphics[width=0.85\textwidth]{figures/multi_weak_supervision/workflow.pdf}
+\includegraphics[width=1\textwidth]{figures/multi_weak_supervision/workflow.pdf}
 \caption{The different workflows we experiment with. The last workflow used a combination of \instruct and dictionary annotations; we tested different proportions of these annotations.}
 \label{fig: motiv}
 \end{figure}
@@ -87,9 +87,11 @@ Then, we structure $o$ such as $\Sigma^* \rightarrow Y$ using a simple string-ma
 \subsection{Prompting}
 
 We prime the model with three annotated data points, each corresponding to a sentence from our corpus (Table \ref{tab:counts}).
-For each language, we try 3 sets of data points. For each of them, we test the F1-Score performance of \instruct on the test dataset (\gold), and we select the set with the best F1-Score to perform prediction on the unannotated dataset. 
-We insert keywords associated with the E3C guideline definition of the clinical entities into prompts. 
+For each language, we try 3 sets of data points. For each of them, we test the F1-Score performance of \instruct on the test dataset (\gold), and we select the set with the best F1-Score to perform prediction on the unannotated dataset.
+We insert keywords associated with the E3C guideline definition of the clinical entities into prompts.
 We add guidance to explicit the response structure to facilitate parsing the output \citep{Agrawal2022LargeExtractors} (Figure \ref{fig:prompt}).
+
+\input{figures/multi_weak_supervision/prompt}
 
 \section{Experiments}
 \subsection{Dataset}
@@ -103,7 +105,7 @@ The E3C dataset is organized into 3 layers, each representing a different annota
     \item a third unannotated layer that we don't use for our experiments.
 \end{itemize}
 
-The E3C dataset is well-suited for our weak-supervision studies, but has limited data in its various layers (Table \ref{tab:counts}). To address this limitation, we divide \silver into five parts using 5-fold cross-validation. For \silverval, we use the entire data as the training set. Our experiments employ multiple models for each language and rely solely on \verb|xlm-roberta-base| in a \multi context. The results presented in our work are an aggregation of the means and standard deviations across models and folds. Each experiment result and model are reported in Appendix \ref{section:app}.
+The E3C dataset is well-suited for our weak-supervision studies, but has limited data in its various layers (Table \ref{tab:counts}). To address this limitation, we divide \silver into five parts using 5-fold cross-validation. For \silverval, we use the entire data as the training set. Our experiments employ multiple models for each language and rely solely on \verb|xlm-roberta-base| in a \multi context. The results presented in our work are an aggregation of the means and standard deviations across models and folds. Each experiment result and model are reported in Appendix \ref{appendix:weak_supervision}.
 
 \subsection{Experimental Setup} 
 \label{sec:prot}
@@ -128,9 +130,9 @@ We evaluate these strategies across different data configurations:
 
 \paragraph{Training on \silverval.} We use the smaller, manually corrected \silverval as training data, comparing \dictmodel and \llmmodel to assess performance with limited but higher-quality supervision.
 
-\paragraph{Hybrid annotations.} We train on \silver but replace weak-supervision annotations with manual corrections from \silverval where available, combining the volume of weak supervision with targeted manual refinement.
+\paragraph{Silver Mixed Annotations.} We train on \silver but replace weak-supervision annotations with manual corrections from \silverval where available, combining the volume of weak supervision with targeted manual refinement.
 
-\paragraph{Annotation mixing.} We vary \rmix $\in [0,1]$ to mix \dict and \instruct annotations on \silver, investigating whether combining heterogeneous annotation sources improves generalization.
+\paragraph{Hybrid Supervised.} We vary \rmix $\in [0,1]$ to mix \dict and \instruct annotations on \silver, investigating whether combining heterogeneous annotation sources improves generalization.
 
 \paragraph{Multilingual transfer.} We apply the same mixing strategy but concatenate training data from all five languages, using \verb|xlm-roberta-base| as the student model in a \multi context.
 
@@ -141,13 +143,13 @@ We evaluate these strategies across different data configurations:
 We observe that \instruct extracts more entities than \dict on \silver (Table~\ref{tab:counts}). This trend is reduced in English and Spanish, but we observed a higher quantity of \iclin tokens annotated by \instruct for all languages. On \silverval, the quantity of tokens annotated by both methods is relatively equivalent, likely due to human validation.
 
 \begin{table}
-\centering
-\large
-\resizebox{0.8\textwidth}{!}{
-\input{figures/multi_weak_supervision/counts}
-}
-\caption{Number of annotated tokens for each annotation type on \silver and \silverval. \textit{Gold} corresponds to \dict annotation, \textit{GPT} to \instruct annotation.}
-\label{tab:counts}
+    \centering
+    \small
+    \resizebox{0.85\textwidth}{!}{
+        \input{figures/multi_weak_supervision/counts}
+    }
+    \caption{Number of annotated tokens for each annotation type on \silver and \silverval. \textit{Gold} corresponds to \dict annotation, \textit{GPT} to \instruct annotation.}
+    \label{tab:counts}
 \end{table}
 
 \subsection{Knowledge Distillation Evaluation} 
@@ -157,9 +159,7 @@ We compare the \llmmodel models and direct \instruct inference on the \gold test
 \begin{table}
     \centering
     \small
-    \resizebox{0.5\textwidth}{!}{
-        \input{figures/multi_weak_supervision/distilation_instruct}
-    }
+    \input{figures/multi_weak_supervision/distilation_instruct}
     \caption{Mean F1-score on \gold comparing direct \instruct output and \llmmodel models for each language.}
     \label{tab:distilation}
 \end{table}
@@ -177,9 +177,9 @@ We compare the \llmmodel models and direct \instruct inference on the \gold test
 
 \paragraph{Training on \silverval.} The limited amount of annotated tokens in \silverval (Table \ref{tab:counts}) hurts \llmmodel performance ($0.61$ vs $0.70$ on \silver), while \dictmodel performance slightly improves ($0.70$ vs $0.67$). With limited data, the \dictmodel approach proves more stable, while \llmmodel recall drops significantly ($0.58$ vs $0.68$ on \silver).
 
-\paragraph{Hybrid annotations.} Mixing a small proportion of manual annotations from \silverval with \silver improves both models (Table \ref{tab:global}). The \llmmodel approach outperforms \dictmodel with a gain of $0.03$. In both cases, the F1-Score gain is due to improved recall ($+0.05$ compared to training on \silver alone).
+\paragraph{Silver Mixed Annotations.} Mixing a small proportion of manual annotations from \silverval with \silver improves both models (Table \ref{tab:global}). The \llmmodel approach outperforms \dictmodel with a gain of $0.03$. In both cases, the F1-Score gain is due to improved recall ($+0.05$ compared to training on \silver alone).
 
-\paragraph{Annotation mixing.} For all languages except Basque, we obtain better results when mixing \dict and \instruct annotations. The optimal ratio is reached around $\rmix \in [0.4, 0.6]$ (Figure \ref{fig:confuse}). Basque does not follow this trend: using only \instruct annotations ($\rmix = 1$) gives the best results, likely because the original \dict annotations were created using a low-resource lexicon (only 63 \iclin tokens vs 482 for \instruct).
+\paragraph{Hybrid Supervised.} For all languages except Basque, we obtain better results when mixing \dict and \instruct annotations. The optimal ratio is reached around $\rmix \in [0.4, 0.6]$ (Figure \ref{fig:confuse}). Basque does not follow this trend: using only \instruct annotations ($\rmix = 1$) gives the best results, likely because the original \dict annotations were created using a low-resource lexicon (only 63 \iclin tokens vs 482 for \instruct).
 
 \begin{figure}[t!]
     \begin{subfigure}[t]{0.5\textwidth}
@@ -192,33 +192,34 @@ We compare the \llmmodel models and direct \instruct inference on the \gold test
         \includegraphics[height=2.3in]{figures/multi_weak_supervision/conf_E.pdf}
         \caption{\multi context}
     \end{subfigure}
-    \caption{Mean F1-score as a function of the annotation mixing ratio \rmix. $\rmix=0$: \dictmodel only; $\rmix=1$: \llmmodel only. Each line represents a language.}
+    \caption{Mean F1-score as a function of the hybrid supervision ratio \rmix. $\rmix=0$: \dictmodel only; $\rmix=1$: \llmmodel only. Each line represents a language.}
     \label{fig:confuse}
 \end{figure}
 
-\begin{table*}
+\begin{table}
     \centering
-    \small
-    \resizebox{0.9\textwidth}{!}{
+    \resizebox{1\textwidth}{!}{
         \input{figures/multi_weak_supervision/global}
     }
     \caption{F1-score, Precision and Recall for different training configurations. $\rmix=1$ corresponds to \llmmodel, $\rmix=0$ to \dictmodel.}
     \label{tab:global}
-\end{table*}
+\end{table}
 
 \subsection{Multilingual Results}
 
-Using a \multi training set with \verb|xlm-roberta-base| gives inferior results compared to \mono training (Table \ref{tab:global_d}). Italian is the exception, with a slight improvement ($+0.01$) at $\rmix = 0.8$. For other languages, annotation mixing does not improve results as observed in \mono settings, likely due to noise introduced by the multilingual nature of the training data.
+Using a \multi training set with \verb|xlm-roberta-base| gives inferior results compared to \mono training (Table \ref{tab:global_d}). Italian is the exception, with a slight improvement ($+0.01$) at $\rmix = 0.8$. For other languages, hybrid supervision does not improve results as observed in \mono settings, likely due to noise introduced by the multilingual nature of the training data.
 
 \begin{table}
     \centering
     \small
-    \resizebox{0.6\columnwidth}{!}{
+    \resizebox{0.7\textwidth}{!}{
         \input{figures/multi_weak_supervision/global_d}
     }
     \caption{F1-score, Precision, and Recall for \mono and \multi contexts. Scores are aggregated across languages, with $r_{max}$ representing the optimal \rmix value.}
     \label{tab:global_d}
 \end{table}
+
+Detailed results for each language and model, including all evaluated configurations (Settings A through E), are provided in Appendix~\ref{appendix:weak_supervision}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IN-DEPTH FRENCH CASE STUDY
@@ -234,13 +235,13 @@ To better understand the differences between annotation methods and their impact
 \instruct extracts almost twice as many entities as \dict (Table \ref{tab:healthnlp_counts}). This gap is more pronounced on \silver, while on \silverval the difference is reduced due to human validation. This discrepancy arises because \instruct has no access to the E3C guidelines: the prompt instructs it to extract "\textit{disorders}", "\textit{disease}", or "\textit{symptoms}", which is less restrictive than the E3C annotation schema.
 
 \begin{table}
-\centering
-\large
-\resizebox{0.85\textwidth}{!}{
-\input{figures/weak_supervision_healthnlp_2023/counts}
-}
-\caption{Number of annotated tokens for each annotation type across French E3C layers.}
-\label{tab:healthnlp_counts}
+    \centering
+    \small
+    \resizebox{0.85\textwidth}{!}{
+        \input{figures/weak_supervision_healthnlp_2023/counts}
+    }
+    \caption{Number of annotated tokens for each annotation type across French E3C layers.}
+    \label{tab:healthnlp_counts}
 \end{table}
 
 The confusion matrices (Figure \ref{fig:healthnlp_confuse}) provide deeper insight. Both methods label approximately the same proportion of tokens as O ($0.93$), indicating that \instruct annotations are coherent with the task. Only $0.04$ of \bclin tokens are mislabeled as \iclin, demonstrating good discrimination between begin and inner tokens.
@@ -275,7 +276,7 @@ With limited training data (\silverval), the \dictmodel suffers more ($0.57$ vs 
 
 \input{figures/weak_supervision_healthnlp_2023/04_experiment_table_layer2_validate}
 
-The \hybridmodel approach improves both methods (Table \ref{tab:healthnlp_layer2blended}). The \dictmodel shows notably better recall for \iclin ($0.35$ vs $0.24$), while \llmmodel gains precision on both \bclin and \iclin. Manual annotations help calibrate each method's tendency toward under- or over-extraction.
+The \silvermixedmodel approach improves both methods (Table \ref{tab:healthnlp_layer2blended}). The \dictmodel shows notably better recall for \iclin ($0.35$ vs $0.24$), while \llmmodel gains precision on both \bclin and \iclin. Manual annotations help calibrate each method's tendency toward under- or over-extraction.
 
 \input{figures/weak_supervision_healthnlp_2023/04_experiment_table_layer2_blended}
 
@@ -295,7 +296,7 @@ Table \ref{tab:healthnlp_global} summarizes French results. The \hybridmodel app
 \begin{table}
     \centering
     \small
-    \resizebox{0.6\textwidth}{!}{
+    \resizebox{0.7\textwidth}{!}{
         \input{figures/weak_supervision_healthnlp_2023/global}
     }
     \caption{F1-score, Precision and Recall for French experiments.}
@@ -314,7 +315,7 @@ Our experiments demonstrate the potential of knowledge distillation and weak sup
 
 In English, both approaches perform similarly, likely due to superior \dict annotation quality from more extensive UMLS resources.
 
-\paragraph{Benefits of annotation mixing.} The \hybridmodel approach outperforms single-source supervision for most languages. The French case study (Section \ref{sec:french_case_study}) provides detailed evidence: \dict and \instruct have complementary error patterns. \dict tends to under-extract (missing multi-word entities), while \instruct over-extracts (longer spans). Combining them at $\rmix=0.5$ balances these biases.
+\paragraph{Benefits of hybrid supervision.} The \hybridmodel approach outperforms single-source supervision for most languages. The French case study (Section \ref{sec:french_case_study}) provides detailed evidence: \dict and \instruct have complementary error patterns. \dict tends to under-extract (missing multi-word entities), while \instruct over-extracts (longer spans). Combining them at $\rmix=0.5$ balances these biases.
 
 Basque is an exception where $\rmix=1$ works best, because the original \dict annotations used a low-resource lexicon (only 63 \iclin tokens vs 482 for \instruct).
 
