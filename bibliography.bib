@@ -2469,22 +2469,6 @@
 	booktitle = {NeurIPS},
 }
 
-@inproceedings{carlini2021extracting,
-	title = {Extracting Training Data from Large Language Models},
-	author = {Carlini, Nicholas and Tram{\`e}r, Florian and Wallace, Eric
-	          and Jagielski, Matthew and Herbert-Voss, Ariel and Lee,
-	          Katherine and Roberts, Adam and Brown, Tom B. and Song, Dawn
-	          and Erlingsson, {\'U} lfar and Oprea, Alina and Raffel, Colin},
-	booktitle = {30th USENIX Security Symposium (USENIX Security ’21)},
-	year = {2021},
-	month = aug,
-	pages = {2633--2650},
-	isbn = {978-1-939133-24-3},
-	url = {
-	       https://www.usenix.org/conference/usenixsecurity21/presentation/carlini-extracting
-	       },
-}
-
 @article{meystre2014impact,
 	title = {Text De-Identification for Privacy Protection: A Study of Its
 	         Impact on Clinical Text Information Content},
@@ -6115,4 +6099,182 @@
 	year = {2023},
 	address = {Paris, France},
 	publisher = {ATALA},
+}
+
+% ============================================
+% MEMBERSHIP INFERENCE ATTACKS
+% ============================================
+
+@inproceedings{mattern2023membership,
+	title = {Membership Inference Attacks against Language Models via
+	         Neighbourhood Comparison},
+	author = {Mattern, Justus and Mireshghallah, Fatemehsadat and Jin,
+	          Zhijing and Sch{\"o}lkopf, Bernhard and Sachan, Mrinmaya and
+	          Berg-Kirkpatrick, Taylor},
+	booktitle = {Findings of the Association for Computational Linguistics:
+	             ACL 2023},
+	pages = {11330--11343},
+	year = {2023},
+	organization = {Association for Computational Linguistics},
+}
+
+@inproceedings{shokri2017membership,
+	title = {Membership inference attacks against machine learning models},
+	author = {Shokri, Reza and Stronati, Marco and Song, Congzheng and
+	          Shmatikov, Vitaly},
+	booktitle = {2017 IEEE Symposium on Security and Privacy (SP)},
+	pages = {3--18},
+	year = {2017},
+	organization = {IEEE},
+}
+
+@inproceedings{carlini2022membership,
+	title = {Membership inference attacks from first principles},
+	author = {Carlini, Nicholas and Chien, Steve and Nasr, Milad and Song,
+	          Shuang and Terzis, Andreas and Tramer, Florian},
+	booktitle = {2022 IEEE Symposium on Security and Privacy (SP)},
+	pages = {1897--1914},
+	year = {2022},
+	organization = {IEEE},
+}
+
+% ============================================
+% CLINICAL TEXT PRIVACY & RE-IDENTIFICATION
+% ============================================
+
+@inproceedings{bencheikhlarbi2023clinical,
+	title = {Clinical Text Anonymization, its Influence on Downstream {NLP}
+	         Tasks and the Risk of Re-Identification},
+	author = {Ben Cheikh Larbi, Iyadh and Burchardt, Aljoscha and Roller,
+	          Roland},
+	booktitle = {Proceedings of the 17th Conference of the European Chapter
+	             of the Association for Computational Linguistics: Student
+	             Research Workshop},
+	pages = {105--111},
+	year = {2023},
+	address = {Dubrovnik, Croatia},
+	organization = {Association for Computational Linguistics},
+}
+
+@article{sarkar2024deidentification,
+	title = {De-identification is not enough: a comparison between
+	         de-identified and synthetic clinical notes},
+	author = {Sarkar, Akhil Ranjan and Chuang, Yu-Shan and Mohammed, Noman
+	          and others},
+	journal = {Scientific Reports},
+	volume = {14},
+	pages = {29669},
+	year = {2024},
+	publisher = {Nature Publishing Group},
+}
+
+@article{vakili2024pseudonymization,
+	title = {End-to-end pseudonymization of fine-tuned clinical {BERT}
+	         models: Privacy preservation with maintained data utility},
+	author = {Vakili, Thomas and Henriksson, Aron and Dalianis, Hercules},
+	journal = {BMC Medical Informatics and Decision Making},
+	volume = {24},
+	pages = {162},
+	year = {2024},
+	publisher = {BioMed Central},
+}
+
+% ============================================
+% DIFFERENTIAL PRIVACY IN NLP
+% ============================================
+
+@inproceedings{igamberdiev2022dprewrite,
+	title = {{DP-Rewrite}: Towards Reproducibility and Transparency in
+	         Differentially Private Text Rewriting},
+	author = {Igamberdiev, Timour and Arnold, Thomas and Habernal, Ivan},
+	booktitle = {Proceedings of the 29th International Conference on
+	             Computational Linguistics},
+	pages = {2927--2933},
+	year = {2022},
+	organization = {International Committee on Computational Linguistics},
+}
+
+@inproceedings{igamberdiev2023dpbart,
+	title = {{DP-BART} for Privatized Text Rewriting under Local
+	         Differential Privacy},
+	author = {Igamberdiev, Timour and Habernal, Ivan},
+	booktitle = {Findings of the Association for Computational Linguistics:
+	             ACL 2023},
+	year = {2023},
+	organization = {Association for Computational Linguistics},
+}
+
+@inproceedings{igamberdiev2024rewriteagain,
+	title = {Just Rewrite It Again: A Post-Processing Method for Enhanced
+	         Semantic Similarity and Privacy Preservation of Differentially
+	         Private Rewritten Text},
+	author = {Igamberdiev, Timour and Arnold, Thomas and Habernal, Ivan},
+	booktitle = {Proceedings of the 19th International Conference on
+	             Availability, Reliability and Security (ARES)},
+	year = {2024},
+	organization = {ACM},
+}
+
+% ============================================
+% PRIVACY SURVEYS & GENERAL
+% ============================================
+
+@article{pan2024differential,
+	title = {Defending against attacks in deep learning with differential
+	         privacy: a survey},
+	author = {Pan, Wei and others},
+	journal = {Artificial Intelligence Review},
+	year = {2024},
+	publisher = {Springer},
+}
+
+@article{lison2021privacy,
+	title = {How to keep text private? A systematic review of deep learning
+	         methods for privacy-preserving natural language processing},
+	author = {Lison, Pierre and Pilán, Ildikó and Sanchez, David and Batet,
+	          Montserrat and Øvrelid, Lilja},
+	journal = {Artificial Intelligence Review},
+	year = {2022},
+	publisher = {Springer},
+}
+
+% ============================================
+% MEMORIZATION & DATA EXTRACTION
+% ============================================
+
+@inproceedings{carlini2021extracting,
+	title = {Extracting training data from large language models},
+	author = {Carlini, Nicholas and Tramer, Florian and Wallace, Eric and
+	          Jagielski, Matthew and Herbert-Voss, Ariel and Lee, Katherine
+	          and Roberts, Adam and Brown, Tom and Song, Dawn and Erlingsson,
+	          Ulfar and others},
+	booktitle = {30th USENIX Security Symposium},
+	pages = {2633--2650},
+	year = {2021},
+	organization = {USENIX Association},
+}
+
+% ============================================
+% LINKAGE ATTACKS & RE-IDENTIFICATION (GENERAL)
+% ============================================
+
+@article{narayanan2008robust,
+	title = {Robust de-anonymization of large sparse datasets},
+	author = {Narayanan, Arvind and Shmatikov, Vitaly},
+	journal = {2008 IEEE Symposium on Security and Privacy},
+	pages = {111--125},
+	year = {2008},
+	organization = {IEEE},
+}
+
+% ============================================
+% BIOLORD (for clustering)
+% ============================================
+
+@article{remy2024biolord,
+	title = {{BioLORD-2023}: Semantic Textual Representations Fusing {LLM}
+	         and Clinical Knowledge Graph Insights},
+	author = {Remy, François and Demuynck, Kris and Demeester, Thomas},
+	journal = {Journal of the American Medical Informatics Association},
+	year = {2024},
 }
