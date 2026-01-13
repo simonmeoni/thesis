@@ -84,6 +84,7 @@ LaTeX-specific skills available:
 - **Tables**: Always use `\label{tab:name}` and reference with `\autoref{tab:name}`
 - **Lists**: Use proper LaTeX environments (itemize, enumerate, description)
 - **Line length**: Keep .tex lines under 100 characters when practical
+- **One sentence per line**: Write each sentence on its own line for cleaner git diffs
 
 ### Structure
 
