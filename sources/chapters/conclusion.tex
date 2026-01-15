@@ -3,38 +3,191 @@
 
 \section{Context and Problem Recap}
 
-% 0.5 page
-% - Brief reminder: medical NLP + privacy constraints
-% - The central question: generating useful and safe synthetic data
+The development of effective clinical \gls{nlp} systems rests on a fundamental tension: the need for large-scale, high-quality medical data from real-world hospital settings, and the imperative to protect patient privacy through stringent ethical and regulatory frameworks.
+Clinical text exhibits unique characteristics—pervasive abbreviations, telegraphic style, domain-specific jargon, and substantial variability across institutions—that make it fundamentally different from general-domain text.
+This heterogeneity and noise necessitate access to authentic clinical data to train robust models capable of generalizing across diverse documentation practices, patient populations, and clinical workflows.
+
+Yet health information is among the most sensitive categories of personal data, subject to strict protections under frameworks such as \gls{gdpr} and \gls{hipaa}.
+Traditional approaches to enabling data sharing—de-identification, pseudonymisation, restricted access—face inherent limitations.
+De-identified datasets remain vulnerable to re-identification attacks through linkage with external sources or contextual inference, while aggressive anonymisation degrades the clinical and linguistic richness that makes the data valuable for \gls{nlp} research.
+The result is a fragmented landscape where most publicly available datasets represent narrow slices of clinical practice, and models optimized for these benchmarks often fail to generalize to real-world deployments.
+
+This thesis addresses a central question: \textbf{how can we generate synthetic clinical data that is both useful for training \gls{nlp} models and safe according to regulatory requirements?}
+
+Beyond access to raw clinical data, manual annotation represents an additional bottleneck.
+Clinical annotation guidelines are complex, requiring deep domain expertise to distinguish between clinical entities, temporal markers, and their semantic relationships.
+Expert annotators are scarce and expensive, while the volumes required to train robust models are substantial.
+This motivates exploration of weak supervision and knowledge distillation techniques, where \glspl{llm} can serve as annotators on publicly available clinical corpora to generate silver annotations.
+These annotations are then used to train smaller, locally-deployable student models that preserve data sovereignty and reduce computational costs while maintaining competitive performance on downstream tasks.
+
+The advent of generative \gls{ai} and \glspl{llm} offers new possibilities for creating synthetic documents that preserve the statistical and linguistic properties of real clinical notes without corresponding to actual patients.
+However, several challenges remain.
+Synthetic data must achieve medical coherence and terminological accuracy, not merely surface plausibility.
+It may require coupling internal hospital data with external knowledge sources—medical ontologies, structured databases—to ensure clinical validity.
+Furthermore, the complexity of real patient records—their length, temporal structure, and increasingly multimodal nature—poses additional challenges that synthetic generation must address to deliver full data utility for both model training and institutional deployment.
+
+This work explores these challenges through a facsimile-based approach to synthetic document generation, combined with privacy-utility trade-off analysis and honest acknowledgment of residual risks.
 
 \section{Summary of Contributions}
 
 \subsection{Synthetic Medical Document Generation}
 
-% 0.5 page
-% - Summary of Chapter 2: method, main results
+This thesis introduces a facsimile-based approach to synthetic clinical document generation that preserves the structure and content of real patient records while severing the link to identifiable individuals.
+Unlike methods that generate clinical text from scratch or create purely fictional scenarios, our approach maintains a one-to-one correspondence with real documents, generating synthetic counterparts that mirror authentic clinical narratives in style, terminology, and medical coherence.
 
-\subsection{Evaluation and Pipeline Improvements}
+The generation methodology embeds privacy preservation by design through a strict architectural separation between private and public environments.
+Within the hospital's private infrastructure, \gls{umls} concept keywords are extracted from real documents using QuickUMLS, capturing only clinical semantics without any \gls{pii}.
+These keywords serve as prompts to guide generation in the public environment, where a generative \gls{llm} produces synthetic documents enriched by this clinical knowledge.
+Critically, no raw patient text crosses the privacy boundary—only concept keywords flow outward, and only numerical scores return inward to refine generation quality.
 
-% 0.5 page
-% - Summary of Chapter 3: evaluation framework, privacy analysis
+To ensure that synthetic documents preserve the distributional and linguistic properties of authentic clinical notes, we introduce a reward-based refinement mechanism.
+A contrastive scorer, trained in the private environment to distinguish real from synthetic documents, provides numerical feedback that guides alignment of the generative model through \gls{dpo}.
+This iterative process improves the fidelity of synthetic outputs without exposing sensitive information, enabling the production of high-quality training datasets that can be shared publicly or used to annotate data with external \glspl{llm} for training smaller, locally-deployable models.
+
+Evaluated on downstream clinical \gls{nlp} tasks—including ICD-9 code classification and \gls{ner}—the synthetic documents demonstrate competitive performance, particularly in low-resource settings where real annotated data are scarce.
+This validates the utility of the facsimile approach for generating privacy-preserving training data that retains clinical value.
+
+\subsection{Privacy Analysis and Mitigation Strategies}
+
+While the facsimile-based generation pipeline incorporates privacy-by-design principles, architectural safeguards alone do not guarantee protection against re-identification attacks.
+This thesis conducts a rigorous privacy analysis to quantify residual risks and proposes targeted mitigation strategies to address identified vulnerabilities.
+
+We evaluate privacy through two complementary attack scenarios.
+Linkage attacks (1-vs-N) simulate an adversary attempting to attribute each synthetic document to its source patient among all candidates in the dataset, representing a realistic but challenging global attribution task.
+Discrimination attacks (1-vs-2) represent a stronger threat model where the adversary only needs to distinguish between two candidates, assuming prior knowledge that narrows the search space.
+Both attacks employ lexical (TF-IDF) and semantic similarity metrics to quantify re-identification risks.
+
+The privacy analysis reveals that baseline synthetic documents retain patient-specific fingerprints, primarily through the selection and combination of \gls{umls} keywords.
+While the architecture prevents direct leakage of \gls{pii}, the keywords themselves—though individually non-identifying—can form distinctive patterns that enable re-identification when combined.
+Discrimination attacks achieve concerningly high success rates on baseline synthetic data, confirming that keyword combinations constitute the primary vulnerability.
+
+To address this, we propose and evaluate two post-processing mitigation strategies.
+Standard rephrasing applies generic paraphrasing to disrupt surface-level patterns, but achieves only modest privacy gains.
+Keyword perturbation, by contrast, explicitly targets the root cause: it identifies \gls{umls} concepts within synthetic documents and replaces them with semantically equivalent synonyms from the medical ontology.
+This domain-specific intervention disrupts the distinctive keyword fingerprints that enable re-identification while preserving clinical coherence.
+
+Empirical evaluation demonstrates that keyword perturbation reduces linkage attack success rates by 50-60 percentage points compared to baseline, far outperforming standard rephrasing which achieves only 2-24 percentage point reductions.
+Critically, this privacy enhancement comes at an acceptable cost to data utility: downstream task performance remains competitive, demonstrating a manageable privacy-utility trade-off.
+Keyword perturbation thus emerges as a practical, deployable solution that enables institutions to publish synthetic datasets with significantly reduced re-identification risks while preserving their value for clinical \gls{nlp} applications.
 
 \subsection{Knowledge Distillation for Entity Extraction}
 
-% 0.5 page
-% - Summary of Chapter 4: weak supervision method, multilingual results
+Conducted in early 2023, this work explored \gls{llm}-based weak supervision for clinical entity extraction at a time when the use of large language models as annotators was still emerging in the medical domain.
+
+Manual annotation of clinical entities is expensive and time-consuming, requiring expert knowledge to apply complex guidelines that distinguish clinical disorders, temporal markers, and their relationships.
+To address this bottleneck, we investigate whether \glspl{llm} can serve as effective annotators when access to proprietary cloud-based models is restricted by regulatory constraints.
+Our approach uses InstructGPT-3 to annotate publicly available clinical corpora, then distills these annotations into smaller encoder models that can be deployed locally within hospital infrastructure.
+
+We compare \gls{llm}-based weak supervision against traditional dictionary-based annotation across five languages in the E3C corpus: English, Spanish, French, Italian, and Basque.
+The analysis reveals that \gls{llm}-generated annotations exhibit complementary strengths to dictionary-based approaches.
+Dictionary methods provide precise but narrow coverage, excelling at single-word clinical terms but struggling with multi-word entities.
+\gls{llm} annotations demonstrate broader recall by recognizing complex multi-word expressions, though at the cost of occasional over-extraction.
+
+Building on this insight, we propose a hybrid supervision strategy that combines annotations from both sources during training.
+By mixing dictionary and \gls{llm} annotations at varying ratios, student models benefit from the precision of lexicon-based methods and the coverage of \gls{llm}-based extraction.
+Across most languages, optimal performance is achieved at intermediate mixing ratios, validating the complementarity of these annotation paradigms.
+
+This approach proves particularly valuable for low-resource languages.
+In Basque, where dictionary resources are limited, \gls{llm}-based annotations substantially outperform lexicon-based methods, offering a viable path for clinical \gls{nlp} development in languages where curated medical terminologies are scarce.
+More broadly, the work demonstrates that knowledge distillation from \glspl{llm} reduces annotation costs while enabling local deployment of models that preserve data sovereignty—a critical requirement for healthcare institutions operating under strict privacy regulations.
 
 \section{Answers to Research Questions}
 
-% 0.5-1 page
-% - Revisit each RQ from the introduction and answer explicitly
-% - RQ1: Yes, we have shown that...
-% - RQ2: Our framework enables...
-% - RQ3: Experiments demonstrate that...
+This thesis addresses four research questions concerning synthetic data generation and weak supervision for clinical \gls{nlp}.
+We now provide explicit answers to each.
+
+\textbf{RQ1: How can large language models be leveraged to generate synthetic clinical documents that are both linguistically realistic and medically coherent?}
+
+Large language models can generate linguistically realistic and medically coherent synthetic clinical documents, but this capability requires careful methodological design rather than relying on generation alone.
+Medical coherence demands knowledge injection through domain-specific ontologies: our approach extracts \gls{umls} concept keywords from real documents to guide generation, ensuring that synthetic outputs reflect authentic clinical terminology and semantic relationships.
+Linguistic realism requires iterative refinement: the reward-based alignment mechanism trains the generative model to match the distributional properties of real clinical notes through feedback from a contrastive scorer.
+Critically, the facsimile approach—maintaining one-to-one correspondence with real documents—preserves the narrative structure, documentation patterns, and clinical reasoning flow that characterize authentic medical records.
+Together, these components enable \glspl{llm} to produce synthetic documents that are not merely fluent text, but credible representations of clinical practice.
+
+\textbf{RQ2: To what extent can synthetic clinical documents serve as effective training data for downstream NLP tasks, and under what conditions do they provide benefit over real data alone?}
+
+Synthetic clinical documents can serve as effective training data for downstream \gls{nlp} tasks, complementing rather than replacing real data.
+Their utility depends critically on task complexity and data availability.
+For classification tasks with limited real annotated examples, synthetic data provide substantial performance gains by expanding training set diversity and coverage of rare clinical concepts.
+However, task complexity moderates these benefits: simpler tasks such as multilabel ICD-9 code prediction benefit more readily from synthetic augmentation than complex reasoning tasks that require nuanced understanding of clinical context.
+
+The conditions under which synthetic data provide greatest benefit align with the low-resource settings that motivate their use: when real annotated data are scarce, when minority classes are underrepresented, or when annotation costs prohibit manual labeling at scale.
+In these scenarios, synthetic documents enable model training that would otherwise be infeasible.
+Importantly, alignment mechanisms during generation—such as the reward-based refinement we propose—are essential to ensure that synthetic outputs remain faithful to the statistical properties of real clinical text, providing a theoretically grounded path toward safe and effective synthetic data augmentation.
+
+\textbf{RQ3: What are the privacy implications of synthetic clinical text generation, and how can generation approaches be designed to minimize re-identification risks while preserving data utility?}
+
+Synthetic clinical text generation reduces but does not eliminate privacy risks.
+While architectural safeguards such as extracting only \gls{umls} keywords prevent direct leakage of \gls{pii}, synthetic documents can retain patient-specific fingerprints through the selection and combination of medical concepts.
+Our privacy analysis demonstrates that these keyword combinations enable re-identification attacks: discrimination attacks achieve high success rates on baseline synthetic data, confirming that re-identification risks persist even when individual tokens are non-identifying.
+
+However, privacy risks can be effectively mitigated through targeted post-processing.
+Keyword perturbation—replacing \gls{umls} concepts with semantically equivalent synonyms—disrupts the distinctive patterns that enable re-identification while preserving clinical coherence and data utility.
+This intervention reduces linkage attack success rates by 50-60 percentage points, demonstrating that strong privacy protections are achievable without sacrificing the value of synthetic data for \gls{nlp} applications.
+
+Critically, no perfect solution exists: residual risks remain, and the acceptable level of risk depends on institutional requirements, regulatory frameworks, and the specific threat model.
+The privacy-utility trade-off must be negotiated among stakeholders—data controllers, ethics committees, researchers, and potentially patients—based on the sensitivity of the source data and the intended use of synthetic outputs.
+Generation approaches can be designed to minimize re-identification risks through privacy-by-design architectures and targeted mitigations, but honest acknowledgment of limitations is essential for responsible deployment.
+
+\textbf{RQ4: Can large language models serve as effective annotators for clinical text, and how does LLM-based annotation compare to traditional expert annotation for training downstream NLP models?}
+
+Yes, large language models can serve as effective annotators for clinical text, achieving competitive performance compared to traditional dictionary-based and expert annotation methods.
+Our experiments across five languages demonstrate that \gls{llm}-based weak supervision produces annotations of sufficient quality to train robust entity extraction models, reducing the need for expensive manual labeling.
+
+However, \gls{llm}-based annotation exhibits distinct error patterns compared to traditional approaches: \glspl{llm} tend toward over-extraction with broader recall but lower precision, while dictionary methods provide precise but narrow coverage.
+This complementarity suggests that hybrid annotation strategies—mixing \gls{llm}-generated labels with dictionary-based or manual annotations—yield superior performance by balancing coverage and precision.
+Such hybrid approaches can be further enhanced through ensemble methods that combine annotations from multiple \glspl{llm} or integrate model predictions with varying confidence thresholds.
+
+Moreover, \gls{llm}-based annotation proves particularly valuable when combined with human expertise: \glspl{llm} can provide pre-annotations that accelerate manual review, reducing annotation time while preserving the quality benefits of expert validation.
+For low-resource languages where curated medical lexicons are scarce, \gls{llm}-based annotation offers a viable path forward, democratizing access to clinical \gls{nlp} capabilities across linguistic contexts that would otherwise lack the resources for large-scale model development.
 
 \section{Perspectives}
 
-% 1 page
-% - 2-3 priority future directions
-% - What this thesis opens up as possibilities
-% - Final message / vision
+This thesis demonstrates that synthetic data generation and weak supervision with large language models offer viable pathways for addressing the tension between data requirements and privacy constraints in clinical \gls{nlp}.
+However, several important directions remain to be explored to realize the full potential of these approaches.
+
+\paragraph{From documents to complete multimodal patient records.}
+The work presented here focuses on generating individual clinical documents—discharge summaries, radiology reports, nursing notes—as isolated textual artifacts.
+Real patient records, however, comprise longitudinal sequences of documents across multiple modalities: free-text narratives alongside structured data (vital signs, laboratory values, medication orders), temporal events, and increasingly, imaging and other non-textual information.
+Extending synthetic generation to complete patient dossiers would require modeling not only within-document coherence but also cross-document consistency, temporal progression of disease states, and alignment between structured and unstructured elements.
+Such synthetic patients would provide richer training data for tasks requiring longitudinal reasoning and enable use cases beyond \gls{nlp} training, including clinical decision support system evaluation, medical education, and simulation environments for testing healthcare workflows without exposing real patient information.
+
+\paragraph{Toward formal privacy guarantees through differential privacy.}
+While our keyword perturbation approach demonstrably reduces re-identification risks, it provides empirical rather than formal privacy guarantees.
+Differential privacy offers a principled framework for quantifying privacy loss with mathematical rigor, but its application to text generation remains challenging due to the high-dimensional, discrete nature of language and the difficulty of maintaining linguistic coherence under noise injection.
+Future work should investigate differentially private synthetic document generation, potentially combining local \gls{dp} during keyword extraction with privacy-preserving alignment mechanisms.
+This would enable institutions to publish synthetic datasets with provable privacy bounds, facilitating compliance with regulatory requirements and providing clearer guidance for ethics review processes.
+
+\paragraph{Scaling across medical domains and linguistic contexts.}
+The methods developed in this thesis have been validated primarily on general clinical notes in a limited set of languages.
+Clinical practice encompasses diverse specialized domains—radiology, pathology, oncology, psychiatry—each with distinct terminologies, documentation conventions, and reasoning patterns.
+Similarly, while our weak supervision experiments span five languages, the majority of the world's clinical documentation occurs in languages for which curated medical resources remain scarce.
+Scaling synthetic generation and \gls{llm}-based annotation to broader medical specialties and low-resource languages would democratize access to clinical \gls{nlp} capabilities, reducing inequalities that currently concentrate advanced tools in well-resourced anglophone institutions.
+This requires not only technical adaptation but also careful validation with domain experts to ensure that generated data and annotations reflect authentic clinical practice across diverse contexts.
+
+\paragraph{Enabling open research and practical deployment.}
+Beyond technical advances, the promise of synthetic data and weak supervision lies in their potential to transform how clinical \gls{nlp} research and deployment are conducted.
+Data sovereignty—the ability of healthcare institutions to maintain control over their data assets while benefiting from advanced \gls{nlp} capabilities—remains a fundamental requirement.
+The approaches demonstrated here enable hospitals to generate shareable synthetic datasets and train locally-deployable models without exposing patient information or relying on external cloud services.
+
+This capability, in turn, supports the democratization of clinical \gls{nlp} research.
+Publicly available synthetic datasets, properly validated and accompanied by transparent documentation of their generation process and residual privacy risks, can serve as benchmarks accessible to researchers worldwide, reducing barriers to entry and accelerating methodological innovation.
+Moreover, the ability to share trained models alongside synthetic training data enables reproducibility and facilitates adoption by institutions that lack the resources or expertise to develop \gls{nlp} systems from scratch.
+
+For these possibilities to be realized, synthetic data generation must yield outputs that are not only privacy-preserving but also clinically valid and practically useful.
+This requires moving beyond benchmark performance metrics to evaluate whether models trained on synthetic data perform reliably when deployed in real clinical workflows, across diverse patient populations, and under the operational constraints of hospital environments.
+The gap between research prototypes and production systems remains substantial, and bridging it demands collaboration among \gls{nlp} researchers, clinicians, health informaticians, privacy experts, and institutional stakeholders.
+
+\paragraph{A realistic path forward.}
+Synthetic data and \gls{llm}-based weak supervision offer a promising path forward for privacy-preserving clinical \gls{nlp}, but they are not panaceas.
+Residual privacy risks must be acknowledged and managed through careful threat modeling, stakeholder engagement, and governance frameworks that reflect institutional values and regulatory requirements.
+Data utility remains constrained by the quality of generation and the complexity of downstream tasks.
+Technical challenges in scaling to multimodal records, providing formal privacy guarantees, and ensuring clinical validity across domains persist.
+
+Nonetheless, the methods developed in this thesis demonstrate that the seemingly irreconcilable demands of data-hungry models and stringent privacy protections can be partially reconciled through thoughtful design.
+By preserving the structure of real clinical practice through facsimile generation, injecting domain knowledge through ontological guidance, refining outputs through reward-based alignment, and mitigating re-identification risks through targeted perturbation, we show that high-quality synthetic data can be produced with manageable privacy-utility trade-offs.
+Similarly, by distilling large language models into smaller, locally-deployable annotators and combining their outputs with traditional methods, we demonstrate that annotation bottlenecks can be alleviated while maintaining data sovereignty.
+
+The broader vision is one of \textit{responsible innovation}: advancing clinical \gls{nlp} capabilities in ways that respect patient privacy, empower healthcare institutions, and democratize access to tools that can improve care quality and research efficiency.
+Achieving this vision requires continued technical development, but equally important is the establishment of norms, standards, and governance structures that enable synthetic data and \gls{llm}-based methods to be deployed safely and equitably.
+This thesis contributes methods and evidence toward that goal, while acknowledging the substantial work that remains.
