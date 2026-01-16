@@ -37,6 +37,7 @@ This cross-lingual validation thus serves multiple purposes: testing whether our
 \paragraph{Dataset.}
 The French corpus consists of medical reports collected from AP-HP's clinical information system.
 Unlike MIMIC-III's focus on intensive care discharge summaries, these documents span multiple clinical departments and document types, providing a more heterogeneous corpus representative of routine hospital documentation.
+% TODO: Add mention of semi-synthetic documents from Partage corpus (internal AP-HP) - documents created manually by physicians for educational/research purposes
 Following the same preprocessing pipeline as our English experiments, we extract clinical concepts using a French-adapted version of QuickUMLS and use these keyword sequences to guide synthetic document generation.
 The training set comprises \texttt{[PLACEHOLDER: X]} documents, with \texttt{[PLACEHOLDER: Y]} held out for evaluation.
 % TODO: Confirm dataset sizes with Riccardo Tripodi
