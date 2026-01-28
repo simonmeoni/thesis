@@ -20,10 +20,9 @@ Expert annotators are scarce and expensive, while the volumes required to train 
 This motivates exploration of weak supervision and knowledge distillation techniques, where \glspl{llm} can serve as annotators on publicly available clinical corpora to generate silver annotations.
 These annotations are then used to train smaller, locally-deployable student models that preserve data sovereignty and reduce computational costs while maintaining competitive performance on downstream tasks.
 
-The advent of generative \gls{ai} and \glspl{llm} offers new possibilities for creating synthetic documents that preserve the statistical and linguistic properties of real clinical notes without corresponding to actual patients.
+The advent of generative \glspl{llm} offers new possibilities for creating synthetic documents that preserve the statistical and linguistic properties of real clinical notes without corresponding to actual patients.
 However, several challenges remain.
 Synthetic data must achieve medical coherence and terminological accuracy, not merely surface plausibility.
-It may require coupling internal hospital data with external knowledge sources—medical ontologies, structured databases—to ensure clinical validity.
 Furthermore, the complexity of real patient records—their length, temporal structure, and increasingly multimodal nature—poses additional challenges that synthetic generation must address to deliver full data utility for both model training and institutional deployment.
 
 This work explores these challenges through a facsimile-based approach to synthetic document generation, combined with privacy-utility trade-off analysis and honest acknowledgment of residual risks.
@@ -66,7 +65,7 @@ Standard rephrasing applies generic paraphrasing to disrupt surface-level patter
 Keyword perturbation, by contrast, explicitly targets the root cause: it identifies \gls{umls} concepts within synthetic documents and replaces them with semantically equivalent synonyms from the medical ontology.
 This domain-specific intervention disrupts the distinctive keyword fingerprints that enable re-identification while preserving clinical coherence.
 
-Empirical evaluation demonstrates that keyword perturbation reduces linkage attack success rates by 50-60 percentage points compared to baseline, far outperforming standard rephrasing which achieves only 2-24 percentage point reductions.
+Empirical evaluation demonstrates that keyword perturbation reduces linkage attack success rates compared to baseline.
 Critically, this privacy enhancement comes at an acceptable cost to data utility: downstream task performance remains competitive, demonstrating a manageable privacy-utility trade-off.
 Keyword perturbation thus emerges as a practical, deployable solution that enables institutions to publish synthetic datasets with significantly reduced re-identification risks while preserving their value for clinical \gls{nlp} applications.
 
@@ -102,7 +101,8 @@ Large language models can generate linguistically realistic and medically cohere
 Medical coherence demands knowledge injection through domain-specific ontologies: our approach extracts \gls{umls} concept keywords from real documents to guide generation, ensuring that synthetic outputs reflect authentic clinical terminology and semantic relationships.
 Linguistic realism requires iterative refinement: the reward-based alignment mechanism trains the generative model to match the distributional properties of real clinical notes through feedback from a contrastive scorer.
 Critically, the facsimile approach—maintaining one-to-one correspondence with real documents—preserves the narrative structure, documentation patterns, and clinical reasoning flow that characterize authentic medical records.
-Together, these components enable \glspl{llm} to produce synthetic documents that are not merely fluent text, but credible representations of clinical practice.
+Together, these components enable \glspl{llm} to produce synthetic documents that serve as effective training data for downstream tasks.
+However, achieving full realism remains an open challenge: authentic clinical notes contain not only medical terminology but also institutional jargon, casual linguistic patterns, and personal anecdotes that reflect the human dimension of patient care—elements that are difficult to synthesize without access to real examples yet may carry privacy-sensitive information.
 
 \textbf{RQ2: To what extent can synthetic clinical documents serve as effective training data for downstream NLP tasks, and under what conditions do they provide benefit over real data alone?}
 
@@ -123,8 +123,6 @@ Our privacy analysis demonstrates that these keyword combinations enable re-iden
 
 However, privacy risks can be effectively mitigated through targeted post-processing.
 Keyword perturbation—replacing \gls{umls} concepts with semantically equivalent synonyms—disrupts the distinctive patterns that enable re-identification while preserving clinical coherence and data utility.
-This intervention reduces linkage attack success rates by 50-60 percentage points, demonstrating that strong privacy protections are achievable without sacrificing the value of synthetic data for \gls{nlp} applications.
-
 Critically, no perfect solution exists: residual risks remain, and the acceptable level of risk depends on institutional requirements, regulatory frameworks, and the specific threat model.
 The privacy-utility trade-off must be negotiated among stakeholders—data controllers, ethics committees, researchers, and potentially patients—based on the sensitivity of the source data and the intended use of synthetic outputs.
 Generation approaches can be designed to minimize re-identification risks through privacy-by-design architectures and targeted mitigations, but honest acknowledgment of limitations is essential for responsible deployment.
