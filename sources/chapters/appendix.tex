@@ -3,6 +3,66 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Use of Generative Artificial Intelligence}
+\label{appendix:ai_usage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This appendix documents the technical configuration used to integrate generative AI assistance into the thesis writing workflow.
+The complete configuration is available in the thesis repository at:
+
+\begin{center}
+\url{https://github.com/simonmeoni/thesis}
+\end{center}
+
+\section{Claude Code Configuration}
+
+This thesis was written with assistance from Claude Code, Anthropic's command-line interface for Claude.
+The tool was configured through a \texttt{.claude/} directory at the root of the repository, containing project-specific instructions and custom skills.
+
+\subsection{Project Instructions (CLAUDE.md)}
+
+A \texttt{CLAUDE.md} file at the repository root provides Claude with context about the thesis structure, LaTeX conventions, and writing guidelines.
+This file includes:
+\begin{itemize}
+    \item Overview of the thesis structure and chapter organization
+    \item LaTeX conventions (citation styles, acronym usage, figure references)
+    \item Writing rules specific to academic thesis formatting
+    \item Custom terminology and key concepts
+\end{itemize}
+
+\subsection{Custom Skills}
+
+Custom skills were developed to automate repetitive tasks in the thesis workflow.
+Each skill is defined in a markdown file within \texttt{.claude/skills/} and provides specialized instructions for specific tasks:
+
+\begin{description}
+    \item[\texttt{/compile}] Compiles the thesis using \texttt{latexmk} and reports errors and warnings in a structured format.
+    \item[\texttt{/word-count}] Counts words in thesis chapters using \texttt{texcount} and provides statistics by chapter.
+    \item[\texttt{/bib-check}] Checks \texttt{bibliography.bib} for syntax errors, duplicate entries, and undefined citations.
+    \item[\texttt{/check-todos}] Finds TODO and FIXME comments in LaTeX files to track remaining tasks.
+    \item[\texttt{/review}] Performs comprehensive review of chapter structure, content quality, and LaTeX best practices.
+    \item[\texttt{/biblio-review}] Critical review of bibliography content, coverage, and relevance for a given chapter or topic.
+    \item[\texttt{/web-search}] Searches the web for research papers and documentation to support literature review.
+    \item[\texttt{/commit}] Creates conventional commits with proper format following the \texttt{type(scope): description} convention.
+    \item[\texttt{/push}] Pushes commits to the remote repository.
+\end{description}
+
+\subsection{Workflow Integration}
+
+The AI-assisted workflow followed these principles:
+\begin{enumerate}
+    \item \textbf{Human-driven content}: All scientific ideas, arguments, and conclusions originated from the author.
+    \item \textbf{AI-assisted refinement}: Claude was used to improve clarity, fix LaTeX errors, and suggest structural improvements.
+    \item \textbf{Critical review}: All AI suggestions were reviewed and edited before inclusion.
+    \item \textbf{Version control}: All changes were tracked through git commits, enabling full traceability of modifications.
+\end{enumerate}
+
+\subsection{Transparency}
+
+The \texttt{.claude/} directory is included in the public repository, allowing readers to inspect the exact configuration used during thesis preparation.
+Commit messages include co-authorship attribution (\texttt{Co-Authored-By: Claude}) when AI assistance was used for the changes.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Weak Supervision: Detailed Results}
 \label{appendix:weak_supervision}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
