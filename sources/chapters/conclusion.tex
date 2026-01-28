@@ -152,12 +152,6 @@ Real patient records, however, comprise longitudinal sequences of documents acro
 Extending synthetic generation to complete patient dossiers would require modeling not only within-document coherence but also cross-document consistency, temporal progression of disease states, and alignment between structured and unstructured elements.
 Such synthetic patients would provide richer training data for tasks requiring longitudinal reasoning and enable use cases beyond \gls{nlp} training, including clinical decision support system evaluation, medical education, and simulation environments for testing healthcare workflows without exposing real patient information.
 
-\paragraph{Toward formal privacy guarantees through differential privacy.}
-While our keyword perturbation approach demonstrably reduces re-identification risks, it provides empirical rather than formal privacy guarantees.
-Differential privacy offers a principled framework for quantifying privacy loss with mathematical rigor, but its application to text generation remains challenging due to the high-dimensional, discrete nature of language and the difficulty of maintaining linguistic coherence under noise injection.
-Future work should investigate differentially private synthetic document generation, potentially combining local \gls{dp} during keyword extraction with privacy-preserving alignment mechanisms.
-This would enable institutions to publish synthetic datasets with provable privacy bounds, facilitating compliance with regulatory requirements and providing clearer guidance for ethics review processes.
-
 \paragraph{Scaling across medical domains and linguistic contexts.}
 The methods developed in this thesis have been validated primarily on general clinical notes in a limited set of languages.
 Clinical practice encompasses diverse specialized domains—radiology, pathology, oncology, psychiatry—each with distinct terminologies, documentation conventions, and reasoning patterns.
