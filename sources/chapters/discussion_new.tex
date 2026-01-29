@@ -226,15 +226,55 @@ This work provides tools and empirical measurements to inform those decisions, b
 
 \subsection{Hybrid Dictionary-LLM Approach}
 
-% TODO: Move from §2.1 "Hybrid weak supervision"
-% TODO: Condense from §3.2 "Hybrid weak supervision for multilingual" (remove redundancy)
-% TODO: Fold from §2.2 "Generalization across languages" (as limitation)
+\paragraph{Complementary error patterns.}
+
+The hybrid supervision approach combining dictionary-based and LLM-based annotations (Chapter~\ref{chap:distillation}) demonstrates clear advantages over single-source methods.
+The optimal mixing ratio ($r_{mix} \in [0.4, 0.6]$) for most languages indicates that neither source alone captures the full spectrum of clinical entities.
+
+Dictionary-based annotations provide precise coverage of standardized medical terminology present in UMLS, ensuring high precision on well-documented concepts.
+LLM-based annotations offer flexibility and recall, capturing context-dependent expressions, multi-word entities, and rare medical terms not present in lexicons.
+The analysis of complementary error patterns—dictionaries under-extract multi-word entities while LLMs over-extract longer spans—explains why their combination reduces bias and improves generalization.
+
+While dictionary-based methods and LLM-based annotation~\cite{agrawal_large_2022} have been explored independently, few studies systematically investigate their combination in multilingual clinical contexts.
+Our contribution lies in demonstrating that optimal mixing ratios vary based on resource availability.
+
+\paragraph{Language-specific adaptations.}
+
+The language-specific adaptations revealed in our experiments provide practical guidance for deploying weak supervision across linguistic contexts.
+The Basque case study provides particularly strong evidence: when dictionary resources are severely limited (only 63 annotated tokens), LLM-only annotation ($r_{mix} = 1$) becomes optimal, demonstrating that the hybrid approach gracefully degrades to the most appropriate strategy based on available resources.
+Conversely, English shows minimal gains from hybridization due to rich UMLS coverage.
+
+This adaptability makes the method applicable across both well-resourced languages (English, French) and low-resource settings.
+
+\paragraph{Generalization limitations.}
+
+While our experiments demonstrate effectiveness on MIMIC-III (English, ICD-9), E3C (multilingual NER), and AP-HP (French, ICD-10), generalization to other clinical document types and medical specialties remains unproven.
+The MIMIC-III experiments focus on discharge summary sections (History of Present Illness), representing a specific narrative structure.
+Generalization to other document types—operative notes, radiology reports, pathology findings—has not been validated.
+
+The weak supervision experiments reveal language-specific challenges that complicate cross-lingual deployment.
+Spanish shows reversed performance patterns due to dataset-specific characteristics (SPACCC corpus with different clinical entity distributions and additional preprocessing).
+These variations suggest that successful deployment requires language-specific tuning rather than one-size-fits-all application.
 
 
 \subsection{Knowledge Distillation}
 
-% TODO: Move from §3.2 "Knowledge distillation in resource-constrained"
-% TODO: Move from §3.2 "Positioning as draft annotation"
+\paragraph{Student surpassing teacher.}
+
+Our distillation experiments from InstructGPT-3.5 to smaller encoder models (DeBERTa, XLM-RoBERTa, CamemBERT) demonstrate that student models can surpass teacher performance in specific scenarios.
+For Basque, French, and Italian, distilled models achieve 6-12 F1 point improvements over direct InstructGPT inference, suggesting that the training process helps smaller models filter noise and learn robust patterns rather than reproducing the occasional errors present in LLM annotations.
+
+This finding challenges the common assumption that distilled models necessarily underperform their teachers.
+When training data is limited and LLM annotations contain noise, smaller models trained through supervised fine-tuning can learn to ignore spurious patterns and focus on consistent signals.
+This observation has practical implications for deployment in healthcare settings where small, controllable models are preferable to large API-dependent systems.
+
+\paragraph{Positioning as draft annotation.}
+
+An important distinction in our positioning: we frame weak supervision as a tool for draft or pre-annotation rather than a complete replacement for human annotation.
+Expert validation remains crucial for high-stakes clinical applications, but the ability to pre-populate annotations through hybrid weak supervision dramatically accelerates the annotation process.
+
+This positioning differs from work claiming full automation of medical annotation.
+Our honest acknowledgment of limitations—small E3C test sets, UMLS-oriented annotation guidelines that may introduce biases, language-specific performance variations—reflects a commitment to realistic assessment of capabilities rather than overstating claims of generalization.
 
 
 \section{Research Perspectives}
