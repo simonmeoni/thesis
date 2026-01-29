@@ -118,6 +118,14 @@ This timing explains why privacy analysis appears as a separate chapter rather t
 It also means that certain design choices—particularly the reward mechanism based on similarity scores—were not optimized with privacy preservation as an explicit objective.
 Had privacy evaluation been conducted earlier, alternative reward formulations (e.g., differential privacy on scores, diversity-based rewards rather than similarity-based) might have been explored from the outset.
 
+\paragraph{Computational costs and carbon footprint.}
+
+The reward-based generation pipeline requires substantial computational resources: supervised fine-tuning on seed data, multiple rounds of candidate generation (N=4 per keyword sequence), semantic scoring of all candidates, and iterative DPO training.
+While necessary for achieving high-quality synthetic documents, these computational demands translate into significant energy consumption and carbon emissions.
+
+Our experiments did not systematically measure or report carbon footprint, an increasingly important consideration for sustainable AI research.
+Future work should incorporate environmental impact assessment, exploring whether similar quality gains could be achieved with more efficient architectures or fewer training iterations.
+
 \section{Privacy Preservation in Practice}
 A central theme across this work is the commitment to privacy preservation alongside the honest acknowledgment of its limitations.
 The generation pipeline incorporates privacy-by-design principles: only UMLS concept keywords cross the boundary from private to public environments, and the reward mechanism relies solely on numerical scores rather than textual data.
@@ -140,15 +148,6 @@ Several deployment configurations can be negotiated with institutions based on t
 This range of options illustrates the flexibility of synthetic data: institutions can calibrate the privacy-utility tradeoff to their specific constraints rather than being limited to a single dissemination model.
 
 This honest assessment of capabilities and limitations provides a realistic foundation for deployment decisions in healthcare settings.
-
-\paragraph{Computational costs and carbon footprint.}
-
-The reward-based generation pipeline requires substantial computational resources: supervised fine-tuning on seed data, multiple rounds of candidate generation (N=4 per keyword sequence), semantic scoring of all candidates, and iterative DPO training.
-While necessary for achieving high-quality synthetic documents, these computational demands translate into significant energy consumption and carbon emissions.
-
-Our experiments did not systematically measure or report carbon footprint, an increasingly important consideration for sustainable AI research.
-Future work should incorporate environmental impact assessment, exploring whether similar quality gains could be achieved with more efficient architectures or fewer training iterations.
-
 
 \subsection{Keyword Perturbation: Strengths and Limits}
 
