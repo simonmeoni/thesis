@@ -279,14 +279,116 @@ Our honest acknowledgment of limitations—small E3C test sets, UMLS-oriented an
 
 \section{Research Perspectives}
 
-% TODO: Move from discussion.tex §5 (keep as is)
-
 
 \subsection{Short-term Extensions}
 
-% TODO: Move from discussion.tex §5.1
+Several direct improvements to the proposed methods could be pursued in the near term, building on the foundations established in this thesis.
+
+\paragraph{Combining formal differential privacy with reward-based generation.}
+
+The most promising direction for immediate research involves integrating formal differential privacy (DP) guarantees into the generation pipeline.
+Recent work on privacy-preserving in-context learning with differentially private few-shot generation~\cite{tangPrivacyPreservingInContextLearning2023} and DP-based text generation~\cite{nageshPrivateTextGeneration2025} provides theoretical frameworks that could be adapted to our reward-based architecture.
+
+Two integration strategies merit investigation.
+First, applying DP mechanisms directly to token generation: rather than post-processing completed documents, DP noise could be injected during the generation process itself, with few-shot examples selected through ontological or semantic guidance (UMLS, SNOMED) to maintain clinical utility despite noise injection.
+Second, applying DP to the numerical scores returned by the private scorer: adding calibrated noise to similarity scores before they reach the public environment would prevent the model from optimizing too precisely toward patient-specific patterns, potentially mitigating the privacy amplification effect observed with standard DPO.
+
+These approaches would provide formal privacy guarantees (epsilon bounds) while preserving the quality benefits of reward-based training.
+The key challenge lies in balancing the privacy budget (epsilon value) against utility requirements—a tradeoff that our empirical privacy-utility analysis suggests varies substantially across application contexts.
+
+\paragraph{Ensuring DP-guaranteed non-identifying keywords.}
+
+An alternative approach targets privacy at the keyword extraction stage rather than during generation or post-processing.
+Several concrete strategies could ensure non-identifying keyword sequences:
+\begin{itemize}
+    \item Filtering keywords to retain only those appearing above a frequency threshold (e.g., at least 10 occurrences in the corpus), ensuring no rare concept combinations can identify individual patients.
+    \item Adding small perturbations to real keyword sequences—substituting, adding, or removing concepts—to break the exact correspondence with source documents.
+    \item Training the generator on real sequences, then generating the final dataset from pseudo-sequences constructed to resemble but not match any real patient.
+\end{itemize}
+
+These strategies would produce keyword sequences that are provably non-identifying, which could then guide generation on larger models (GPT-4, Claude Opus) without re-identification risk.
+This approach shifts the privacy-utility tradeoff to the keyword extraction phase, where ontology-based filtering could preserve clinical utility despite the perturbations.
+
+\paragraph{Volume compensation for privacy mitigation.}
+
+Our results suggest that privacy mitigations impose greater utility costs on complex tasks (MIMIC-III Top-100, Top-400) than simple ones.
+An unexplored hypothesis is whether generating substantially larger synthetic datasets (10-20x rather than 4x) with keyword perturbation applied could recover performance through volume compensation.
+
+If this hypothesis holds, it would provide a practical deployment strategy: institutions with adequate computational resources could generate massive synthetic corpora with strong privacy mitigations, achieving acceptable utility through scale rather than reducing privacy protections.
+Empirical validation across multiple tasks and datasets would be necessary to establish the generality of this volume-privacy-utility relationship.
+
+\paragraph{Ensemble annotation with multiple LLM providers.}
+
+The weak supervision framework currently relies on a single LLM (InstructGPT-3.5) for annotation.
+Extending to ensemble methods using multiple providers (GPT-4, Claude, Gemini, Mistral) could improve annotation robustness by reducing model-specific biases.
+
+Different LLMs exhibit different error patterns: some may over-extract entity boundaries while others under-extract, some may excel at rare medical terms while others perform better on common conditions.
+Ensembling their annotations—either through voting mechanisms, confidence-weighted combination, or meta-learning—could produce more reliable weak supervision signals than any single model provides.
+
+This direction appears in the future work section of Chapter~\ref{chap:distillation} but remains unexplored empirically.
+The computational costs of querying multiple commercial APIs represent a practical constraint, though open-source LLMs (Llama-3, Qwen, Mixtral) could provide cost-effective alternatives for ensemble construction.
 
 
 \subsection{Long-term Directions}
 
-% TODO: Move from discussion.tex §5.2
+Beyond immediate extensions, several longer-term research directions emerge from this work.
+
+\paragraph{Integrated generation and annotation pipelines.}
+
+The current approach separates generation (Chapter~\ref{chap:synthetic}) from annotation (Chapters~\ref{chap:distillation} and~\ref{chap:french-application}) into distinct phases.
+A natural evolution would integrate these steps: a unified model that generates synthetic clinical documents already annotated with entity labels, relation markers, or classification codes.
+
+This integrated approach could leverage recent advances in structured generation and constrained decoding to produce documents with embedded annotations.
+The reward mechanism could incorporate annotation quality alongside document quality, jointly optimizing for both realistic clinical narrative and accurate entity boundaries.
+
+However, this integration introduces new challenges: how to define reward signals that balance fluent text generation with precise annotation, how to handle annotation uncertainty when generating multiple candidates, and how to prevent the model from simply copying annotation patterns from seed documents rather than learning generalizable entity recognition.
+
+\paragraph{Controllable generation with explicit privacy-utility parameters.}
+
+Current generation methods require users to choose between architectural configurations (DP-SFT versus DPO, with or without keyword perturbation) based on qualitative understanding of tradeoffs.
+A more elegant approach would expose explicit privacy-utility parameters that users could adjust based on their specific requirements.
+
+Imagine a generation interface where users specify: (1) Desired epsilon value for formal DP guarantees, (2) Target linkage attack success rate, (3) Acceptable utility loss percentage.
+The system would then automatically configure generation strategies, post-processing steps, and dataset sizes to meet these specifications, drawing on learned privacy-utility tradeoff curves calibrated across multiple tasks and domains.
+
+Achieving this vision requires substantial research into predicting privacy-utility tradeoffs from dataset characteristics, developing adaptive mitigation strategies that adjust to target privacy levels, and validating that learned tradeoff models generalize across clinical contexts.
+
+\paragraph{Multimodal synthetic clinical data.}
+
+Clinical care involves multiple data modalities: narrative notes, structured lab results, imaging studies (radiology, pathology), physiological signals (ECG, vital signs), and medication records.
+Current synthetic generation focuses exclusively on text, but realistic clinical AI systems must integrate across modalities.
+
+Future work could extend our methods to multimodal synthetic patient records: generating coherent document collections that span a patient's clinical trajectory, with temporal consistency across notes, laboratory trends that align with narrative descriptions, and imaging findings consistent with diagnostic assessments.
+
+The privacy challenges in multimodal generation multiply: each modality introduces distinct re-identification vectors (writing style in notes, genetic markers in genomic data, anatomical features in imaging).
+Comprehensive privacy evaluation would need to assess cross-modal linkage attacks where adversaries combine information from multiple synthetic modalities to identify source patients.
+
+\paragraph{Robustness to adaptive attacks.}
+
+Our privacy evaluation assumes adversaries using standard similarity metrics (TF-IDF, semantic embeddings) without knowledge of our mitigation strategies.
+Sophisticated adversaries aware that keyword perturbation has been applied could develop adaptive attacks: training models to reverse synonym substitutions by learning common replacement patterns, or exploiting semantic embeddings specifically designed to be robust to lexical variation.
+
+Evaluating robustness to such adaptive attacks remains an open challenge.
+Adversarial machine learning techniques from the security community—where defenders and attackers engage in iterative arms races—could inform this research.
+However, the medical domain introduces unique constraints: unlike image classification where adversarial examples can be arbitrarily perturbed, clinical documents must remain medically plausible to be useful, limiting the space of possible attacks.
+
+\paragraph{Open questions for the research community.}
+
+Several fundamental questions remain unresolved and would benefit from community-wide investigation:
+
+\textbf{Does a universal "privacy budget" exist for medical synthetic data?}
+Different application contexts tolerate different re-identification risks, but are there principled approaches to defining acceptable epsilon values or linkage attack thresholds based on data sensitivity, regulatory requirements, and deployment scenarios?
+
+\textbf{What is the right privacy metric for synthetic medical text?}
+Our work uses linkage and discrimination attack success rates as empirical privacy measures, but alternative metrics (k-anonymity, l-diversity, differential privacy) offer different guarantees and tradeoffs.
+Consensus on appropriate privacy metrics would facilitate comparison across studies and standardization in clinical AI deployment.
+
+\textbf{Can privacy-utility tradeoffs be predicted a priori?}
+Rather than empirically evaluating privacy-utility curves for each new dataset and task, could we develop predictive models that estimate tradeoffs from dataset characteristics (document length, vocabulary size, label distribution)?
+Such predictions would enable more informed deployment decisions without requiring expensive evaluation campaigns.
+
+\textbf{How do privacy guarantees compose across pipeline stages?}
+When synthetic data undergoes multiple transformations (keyword extraction with privacy guarantees, generation with DP mechanisms, post-processing with keyword perturbation), how do privacy guarantees propagate?
+Composition theorems from differential privacy provide formal answers for DP mechanisms, but our hybrid approach combining formal and empirical methods lacks established composition rules.
+
+These questions extend beyond the scope of a single thesis but represent important directions for the clinical NLP and privacy-preserving machine learning communities.
