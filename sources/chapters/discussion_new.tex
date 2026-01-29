@@ -135,17 +135,90 @@ Future work should incorporate environmental impact assessment, exploring whethe
 
 \subsection{Keyword Perturbation: Strengths and Limits}
 
-% TODO: Move from §2.1 "Keyword perturbation: targeted privacy mitigation"
-% TODO: Move from §2.2 "Post-processing mitigation does not eliminate all risks"
-% TODO: Move from §3.1 "Empirical privacy mitigation vs formal DP"
-% TODO: Move from §3.1 "Rigorous privacy evaluation"
+\paragraph{Dramatic gains on linkage attacks.}
+
+The keyword perturbation approach proposed in Chapter~\ref{chap:privacy} demonstrates dramatically superior effectiveness compared to generic text rewriting.
+On MIMIC-III, keyword perturbation reduces linkage attack success rates by 57-59 percentage points (from 86-90\% to 29-31\%), whereas standard rephrasing achieves only 2-5 percentage point reductions.
+
+This stark difference reveals a fundamental insight about the nature of privacy leakage in synthetic medical documents: the primary vulnerability lies not in general linguistic patterns but in the specific combination and sequence of medical concepts.
+By targeting the UMLS keywords that guided generation—precisely the elements most likely to create patient-specific fingerprints—keyword perturbation disrupts re-identification pathways while minimizing damage to clinical semantics.
+
+The localized nature of this intervention explains its superior utility preservation.
+Generic rephrasing modifies entire documents, potentially destroying subtle clinical information encoded in phrasing and structure.
+Keyword perturbation preserves narrative flow and document structure, replacing only the specific medical terms that enable linkage attacks.
+
+\paragraph{Failure on discrimination attacks.}
+
+While keyword perturbation achieves dramatic reductions in linkage attack success rates, it does not provide complete privacy protection.
+Discrimination attacks, where an adversary must distinguish between only two candidate patients, remain highly effective even after mitigation (57-95\% success rates depending on similarity metric and dataset).
+
+This persistent vulnerability reveals a fundamental limitation of post-processing approaches: they disrupt lexical patterns but cannot eliminate the underlying semantic structure that characterizes individual patients.
+Even when medical terms are replaced with synonyms, the temporal ordering of clinical events, the co-occurrence patterns of diagnoses and treatments, and the overall narrative arc retain patient-specific signatures.
+
+The frustrating aspect of this limitation is the absence of a clear signal for further mitigation.
+Semantic embeddings capture meaning beyond surface lexical forms, and current post-processing strategies do not effectively disrupt these deeper patterns.
+While discrimination attacks represent a theoretically demanding scenario—requiring an adversary to narrow the search space to just two candidates—they remain a realistic threat in settings where partial information exposure has occurred.
+
+\paragraph{Comparison with formal differential privacy.}
+
+The privacy preservation strategies explored in this thesis occupy a distinct position relative to formal differential privacy (DP) approaches.
+Recent work on DP-Rewrite~\cite{igamberdiev2022dprewrite}, DP-BART~\cite{igamberdiev2023dpbart}, and "Just Rewrite It Again"~\cite{igamberdiev2024rewriteagain} provides mathematically rigorous privacy guarantees through noise injection mechanisms calibrated to achieve specific epsilon values.
+
+Our keyword perturbation approach operates differently: rather than applying generic text rewriting with DP guarantees, we explicitly target the domain-specific medical keywords (UMLS concepts) that enabled generation.
+This targeted intervention achieves dramatically superior empirical privacy gains (57-59 percentage point reductions in linkage attacks versus 2-5 pp for generic rephrasing) while minimizing utility loss.
+
+The key insight—that privacy leakage in medical documents stems primarily from combinations of medical concepts rather than general linguistic patterns—motivates this domain-specific approach.
+However, we acknowledge a significant limitation: keyword perturbation provides empirical privacy improvements without formal mathematical guarantees.
+An adversary aware of our mitigation strategy could potentially develop adaptive attacks, and the approach lacks the provable worst-case bounds that DP methods provide.
+
+We view these approaches as complementary rather than competing.
+A promising direction for future work involves combining formal DP guarantees (applied either during generation or to the numerical scores from the private scorer) with our empirical keyword perturbation strategy.
+This layered defense would provide both theoretical privacy bounds and strong empirical protection against realistic attack scenarios.
+
+\paragraph{Rigorous privacy evaluation as contribution.}
+
+A distinctive contribution of this work lies in the comprehensive privacy evaluation methodology applied to synthetic clinical documents.
+While numerous recent studies generate synthetic medical data~\cite{kweon_publicly_2023,xie_differentially_2024,li_synthetic_2024}, few conduct rigorous empirical assessment of re-identification risks through realistic attack scenarios.
+
+Our evaluation framework combines two complementary attack types (linkage 1-vs-N and discrimination 1-vs-2) with dual similarity metrics (lexical TF-IDF and semantic embeddings), providing multifaceted assessment of privacy vulnerabilities.
+This systematic approach revealed the unexpected finding that reward-based training amplifies re-identification risks—a discovery that would not have emerged from architectural analysis alone.
 
 
 \subsection{Privacy-Utility Tradeoffs in Practice}
 
-% TODO: Move from §4.2 "Conversational and QA applications"
-% TODO: Move from §4.2 "Clinical coding and terminology-sensitive"
-% TODO: Move from §4.2 "Semi-closed vs open publication"
+The privacy evaluation in Chapter~\ref{chap:privacy} reveals that acceptable tradeoffs vary substantially across application contexts.
+
+\paragraph{Conversational and question-answering applications.}
+
+For conversational medical AI or clinical question-answering systems, keyword perturbation represents a clear win: AlpaCare experiments demonstrate that applying keyword perturbation reduces linkage attack success rates by 63 percentage points while degrading preference scores by less than 2\%.
+
+This minimal utility cost stems from the robustness of conversational quality assessment to synonym substitution.
+Replacing "myocardial infarction" with "heart attack" or "cardiac event" preserves semantic meaning sufficiently for dialogue systems, while disrupting the lexical fingerprints that enable re-identification.
+
+Healthcare institutions deploying chatbots, clinical decision support interfaces, or patient education systems should apply keyword perturbation as standard practice, given its negligible impact on user experience.
+
+\paragraph{Clinical coding and terminology-sensitive tasks.}
+
+Classification tasks requiring precise medical terminology present a more challenging tradeoff.
+MIMIC-III ICD-9 coding experiments show that keyword perturbation reduces F1 scores by 15-20 points on complex tasks (Top-50, Top-100), representing substantial utility loss.
+
+For these applications, deployment decisions must weigh privacy requirements against performance needs.
+One potential approach involves volume compensation: our results suggest that generating 10-20x more synthetic data with keyword perturbation might recover performance lost to term substitution, though this hypothesis requires empirical validation.
+
+Alternatively, institutions might apply differential privacy mechanisms during generation rather than post-processing, potentially achieving better privacy-utility tradeoffs through integrated approaches.
+
+\paragraph{Semi-closed versus open publication.}
+
+The acceptable level of re-identification risk depends critically on dissemination context.
+
+For \textbf{semi-closed systems}—where synthetic datasets are shared within controlled research consortia, accessed through secure environments, or distributed under data use agreements—the residual risks after keyword perturbation may be acceptable.
+Linkage attack success rates of 5-30\% represent substantial improvement over baseline (25-90\%), and the controlled access environment provides additional safeguards against malicious adversaries.
+
+For \textbf{open publication}—where datasets are released publicly without access controls—more aggressive privacy protections are warranted.
+Combining keyword perturbation with formal differential privacy guarantees, applying multiple rounds of rewriting, or restricting publication to highly aggregated or sanitized subsets may be necessary to achieve acceptable risk levels.
+
+Data providers must define their own risk tolerance based on the sensitivity of source data, potential adversary capabilities, regulatory requirements, and intended use cases.
+This work provides tools and empirical measurements to inform those decisions, but cannot prescribe universal thresholds.
 
 
 \section{Weak Supervision for Annotation}
