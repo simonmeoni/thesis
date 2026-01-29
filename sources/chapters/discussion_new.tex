@@ -68,16 +68,66 @@ The consistent patterns observed across MIMIC-III (English, ICD-9) and AP-HP (Fr
 
 \subsection{The Facsimile Approach}
 
-% TODO: Move from §3.1 "Facsimile vs pure generation" (KnowledgeSG comparison)
-% TODO: Move from §2.2 "Dependence on seed documents" (scalability + workarounds)
+Our approach differs fundamentally from pure generation methods such as KnowledgeSG in its reliance on seed documents.
+KnowledgeSG generates clinical documents entirely from scratch using ontological knowledge bases, achieving high scalability without requiring access to real patient data.
+This design choice prioritizes scalability and eliminates the need for pseudo-anonymization.
+While we also experimented with DP-SFT as an extension to our pipeline, discussions with the KnowledgeSG authors suggest that DP-SFT alone does not achieve comparable performance to their ontology-guided generation approach.
+
+In contrast, our facsimile approach deliberately trades scalability for structural fidelity.
+By anchoring generation in real clinical narratives through keyword extraction, we preserve subtle patterns of medical reasoning, temporal ordering of clinical events, and narrative structures that characterize actual hospital documentation.
+This distinction addresses different use cases: KnowledgeSG excels when no real clinical data is available, while our method targets healthcare institutions with limited real data who require synthetic documents that closely mirror their local clinical environment.
+
+\paragraph{Scalability considerations.}
+
+The facsimile approach ties generation to the availability of real documents for keyword extraction.
+Each synthetic document derives from keywords extracted from a specific real document, which may appear to limit diversity to variations on existing clinical narratives.
+
+However, this constraint is less restrictive than it initially seems.
+First, most hospitals possess large electronic health record collections, providing ample seed material for generation.
+Second, nothing prevents using the trained generator with pseudo-sequences constructed to resemble real keyword patterns—the model would likely produce acceptable documents even without exact correspondence to real patients.
+Third, keyword sequences could be drawn from other clinical datasets while retaining proximity to the target domain, enabling cross-institutional generation.
+
+The primary limitation applies to scenarios requiring synthetic corpora without access to any clinical documents whatsoever—a use case better addressed by pure generation approaches.
 
 
 \subsection{Reward-Based Training}
 
-% TODO: Move from §2.1 "Reward-based generation" (privacy-by-design, effectiveness)
-% TODO: Move from §2.2 "Reward-based training amplifies privacy"
-% TODO: Keep shortened from §2.2 "Discovery of privacy risks came late" (2-3 sentences)
-% TODO: Keep shortened from §2.2 "Computational costs" (1 paragraph)
+\paragraph{Privacy-by-design architecture.}
+
+The reward mechanism introduced in Chapter~\ref{chap:synthetic} demonstrates several key strengths that justify its computational cost.
+First, it provides a strong learning signal while maintaining privacy boundaries: the scorer returns only numerical scores rather than textual data, ensuring that no sensitive information crosses from the private to public environment.
+This architecture allows the model to improve through preference optimization without direct access to patient documents.
+
+The reward mechanism with logits-only communication represents a novel contribution to privacy-by-design generation.
+Our scorer-based architecture provides continuous quality feedback through numerical scores, enabling iterative refinement without exposing sensitive information.
+This architectural choice distinguishes our work from generation methods that rely solely on prompt engineering or one-shot generation without quality-based feedback loops.
+
+\paragraph{Effectiveness on low-resource scenarios.}
+
+The empirical results validate this approach across multiple datasets and tasks.
+On MIMIC-III, models trained on synthetic documents generated with reward-based refinement outperform those trained on real data when annotations are scarce, with particularly strong gains on complex tasks requiring coverage of rare labels (Top-100, Top-400 ICD-9 codes).
+The French clinical application (Chapter~\ref{chap:french-application}) confirms these patterns with consistent improvements on ICD-10 classification after DPO alignment.
+
+The reward mechanism enables a bootstrap-and-refine cycle: seed documents provide an anchor in real clinical patterns, while iterative preference optimization progressively improves quality without requiring additional manual annotation.
+This combination of fine-tuning on limited seed data followed by self-improvement through reward signals proves particularly effective for small models (7B-13B parameters) that can be deployed in hospital infrastructure, addressing the practical constraint that healthcare institutions cannot rely on external API-based models due to confidentiality requirements.
+
+\paragraph{The privacy amplification problem.}
+
+The privacy analysis in Chapter~\ref{chap:privacy} revealed an unexpected and concerning finding: reward-based training, despite using only numerical scores rather than textual data, significantly amplifies re-identification vulnerabilities.
+On AlpaCare, linkage attack success rates increase from 25\% (DP-SFT baseline) to 78\% (DPO-1), a threefold increase directly attributable to preference optimization.
+
+The mechanism underlying this amplification is subtle: by training the model to maximize similarity scores to real documents, DPO inadvertently teaches it to reproduce patient-specific patterns.
+The model learns that certain combinations of medical concepts, narrative structures, and clinical reasoning patterns yield higher scores—precisely the characteristics that enable re-identification.
+
+This finding highlights a fundamental tension in reward-based approaches: the same optimization process that improves clinical realism also reinforces identifying fingerprints.
+A potential mitigation—adding noise to the numerical scores returned by the private scorer—remains unexplored in this work but represents a promising direction for future research.
+An honest reflection on this work must acknowledge that this dimensionality of privacy risks was discovered relatively late; had privacy evaluation been conducted earlier, alternative reward formulations might have been explored from the outset.
+
+\paragraph{Computational costs.}
+
+The reward-based generation pipeline requires substantial computational resources: supervised fine-tuning on seed data, multiple rounds of candidate generation (N=4 per keyword sequence), semantic scoring of all candidates, and iterative DPO training.
+While necessary for achieving high-quality synthetic documents, these computational demands translate into significant energy consumption.
+Future work should incorporate environmental impact assessment, exploring whether similar quality gains could be achieved with more efficient architectures or fewer training iterations.
 
 
 \section{Privacy Preservation}
