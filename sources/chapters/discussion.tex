@@ -79,7 +79,7 @@ The French clinical application (Chapter~\ref{chap:french-application}) demonstr
 \paragraph{Boundaries where traditional annotation remains preferable.}
 
 Synthetic generation is not universally superior.
-When more than 10,000 well-annotated and curated documents already exist for a specific task~\citep{zhou2023lima}, the marginal utility of additional synthetic data diminishes.
+When more than \num{10000} well-annotated and curated documents already exist for a specific task~\citep{zhou2023lima}, the marginal utility of additional synthetic data diminishes.
 The computational costs of generation and the residual privacy risks may not justify deployment in data-rich scenarios.
 The method targets scenarios characterized by data scarcity, annotation costs, or privacy constraints—not scenarios where traditional supervised learning already performs well.
 
@@ -119,6 +119,7 @@ It also means that certain design choices—particularly the reward mechanism ba
 Had privacy evaluation been conducted earlier, alternative reward formulations (e.g., differential privacy on scores, diversity-based rewards rather than similarity-based) might have been explored from the outset.
 
 \paragraph{Computational costs and carbon footprint.}
+\label{sec:carbon}
 
 The reward-based generation pipeline requires substantial computational resources: supervised fine-tuning on seed data, multiple rounds of candidate generation (N=4 per keyword sequence), semantic scoring of all candidates, and iterative DPO training.
 While necessary for achieving high-quality synthetic documents, these computational demands translate into significant energy consumption and carbon emissions.

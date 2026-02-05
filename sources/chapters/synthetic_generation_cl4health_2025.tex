@@ -13,7 +13,7 @@ We validate our approach through a proof-of-concept scenario using MIMIC-III, as
 
 Electronic Health Records (EHR) contain patient and healthcare staff interactions. Professionals record their impressions, observations, and various medical procedures performed. These notes remain fairly expressive and free to save healthcare personnel time and allow for the description of unusual situations \citep{rosenbloomDataClinicalNotes2011, wuSurveyClinicalNatural2022}. Natural Language Processing (NLP) techniques speed up the decision processes~\cite{zhouDataSifterTextPartiallySynthetic2022,wuSurveyClinicalNatural2022}.
 
-In recent years, Proprietary Online Large Language Models (LLMs) such as ChatGPT have shown impressive results using zero or few-shot techniques in analyzing these notes~\cite{agrawal_large_2022, meoniLargeLanguageModels2023, hu_improving_2024}.
+In recent years, Proprietary Online Large Language Models (LLMs) such as ChatGPT have shown impressive results using zero or few-shot techniques in analyzing these notes~\cite{agrawal_large_2022, meoni2023large, hu_improving_2024}.
 
 However, clinical NLP faces challenges that arise from the sensitive, confidential, and specialized nature of its data—sending such patient information through an external API raises numerous legal issues and is often impossible. Hospitals or third parties providing NLP-based medical devices (i.e., directly impacting patient care) must maintain control over their NLP systems to ensure patient safety. Therefore, the customization of open LLMs and their execution in a secure but computationally  and legally (i.e a model trained on a Hospital A can't be trained on a Hospital B) constrained environment is an important issue.
 
@@ -33,7 +33,7 @@ Considering these issues, we implement a novel method for generating synthetic d
 \begin{itemize}
 \item \textbf{Privacy-safe Document Generation guided by Clinical Knowledge and Reward Mechanism:} We present a methodology that leverages a minimal set of manually pseudo-anonymized data to train fine-tuned generative models. As illustrated in Figure~\ref{fig:workflow}, our approach operates across two distinct environments: a private area (hospital infrastructure) containing sensitive patient data, and a public area where synthetic documents are generated and refined. The workflow begins with keyword extraction from real documents using QuickUMLS \citep{soldainiQuickUMLSFastUnsupervised2016}, which extracts only clinical concepts without any PII. The generation process is enhanced by enriching prompts with these clinical knowledge keywords, as detailed in Section~\ref{sec:experiment}. Furthermore, we improve the quality of synthetic documents through an iterative refinement process that employs a private scorer to compare real and synthetic documents. Critically, this scorer returns only numerical scores (floats) to the public side, ensuring privacy while enabling continuous improvement of the synthetic document quality through alignment techniques. This architecture maintains strict privacy guarantees by ensuring that no sensitive information crosses the boundary from the private to the public environment.
 
-\item \textbf{Proof of Concept using MIMIC-III:} Because it's almost impossible to evaluate our methods on real private documents, we utilize the MIMIC-III clinical notes \citep{johnsonMIMICIIIFreelyAccessible2016} as a proxy to simulate a private healthcare environment, demonstrating our method's potential in a controlled setting. This proof of concept illustrates how our methodology could be applied in real-world hospital scenarios without compromising patient data.
+\item \textbf{Proof of Concept using MIMIC-III:} Because it's almost impossible to evaluate our methods on real private documents, we utilize the MIMIC-III clinical notes \citep{Johnson2016MIMIC-IIIDatabase} as a proxy to simulate a private healthcare environment, demonstrating our method's potential in a controlled setting. This proof of concept illustrates how our methodology could be applied in real-world hospital scenarios without compromising patient data.
 
 \item \textbf{Evaluation on downstream tasks using MIMIC-III:} To assess the quality of the synthetic documents as training dataset for smaller models, we evaluate the generated data using two tasks: Multilabel Classification based on ICD-9 Codes (ICD-MC) and Synthetic Named Entity Recognition (NER). For ICD-MC, based on the codes proposed by \citet{mullenbach_explainable_2018} and MIMIC-III manual annotations, we have modified this task, as described in Section~\ref{subsec:multitask}, to compare the performance of the model trained with real data against the model trained with synthetic data. The NER task is conducted on annotations returned by GPT-4 on both our synthetic and real data. This allows us to compare the performance of models trained on these datasets.
 \end{itemize}
@@ -143,7 +143,7 @@ We use a dataset from \mimic as a proof of concept, involving pre-processing, ke
     \item \textit{Knowledge enrichment}: We project UMLS concepts using QuickUMLS over \dgen. QuickUMLS is an unsupervised biomedical concept extraction based on pattern matching that guarantees only medical concepts are extracted and no identifying information. We obtain \kgen (cf. Section~\ref{sec:method}) used to enrich the prompts, as illustrated in Figure~\ref{experiment:prompt}. On average, we extract 58 keywords per document.
     
     \item \textit{Post-processing}: We filter out documents without keywords. We keep ordered keywords to encourage the model to follow the same narrative as the ground truth.
-    In this way, we constitute a dataset of 4262 documents, using 70\% of them (2581) as a train set (\dtr) and 30\% (1680) as a test set (\dte). Moreover, the \dsft with 4\% and 6\% ratios have 156 and 235 documents, respectively.
+    In this way, we constitute a dataset of \num{4262} documents, using 70\% of them (\num{2581}) as a train set (\dtr) and 30\% (\num{1680}) as a test set (\dte). Moreover, the \dsft with 4\% and 6\% ratios have \num{156} and \num{235} documents, respectively.
 \end{enumerate}
 
 \section{Evaluation on Downstream Tasks}
@@ -156,7 +156,7 @@ As \mimic includes a set of expert-labeled ICD-9 codes ($L$) for each discharge 
 \item evaluate the quality of our datasets on tasks close to a real use-case
 \item test across a series of ICD-MC tasks with increasing complexity.
 \end{enumerate}
-We establish an association between these labels and the data points in \dtr and \dte, respectively, 2581 and 1681 data points.
+We establish an association between these labels and the data points in \dtr and \dte, respectively, \num{2581} and \num{1681} data points.
 
 We get annotated datasets (~\dtr,~\ltr~) and (~\dte,~\lte~) by coupling documents with labels. In defining our series of ICD-MC tasks, we prioritize the most frequent $k$ labels, denoted as class-k (see Table~\ref{tab:datasets-proportion}) with $k \in \{20,50,100,400\}$. We subsequently refine  (~\dtr,~\ltr~) and (~\dte,~\lte~) by retaining only those documents whose labels intersect with the set of \class{k} labels.
 
@@ -170,7 +170,7 @@ As an approximation, we hypothesize that the synthetic data point from \dgstar, 
 \subsection{Named Entity Recognition (NER) Task}
 \paragraph{Annotating the Overall Dataset:}
 
-Because \mimic does not include gold NER annotations, we use GPT-4 to automatically annotate all (synthetic and real) train and test datasets (\citet{noauthor_gpt-4_nodate},~\ref{sec:privacy}), focusing on three entity types: \textbf{problem}, \textbf{treatment} and \textbf{test}. We employ a few-shot learning approach inspired by \citet{hu_improving_2024}, using the prompt in Appendix~\ref{fig:prompt-ner}. To assess whether or not the annotated entities are essentially the UMLS keywords, we evaluated the overlap between keywords and annotations and found a low $22.36\%$ overlap.
+Because \mimic does not include gold NER annotations, we use GPT-4 to automatically annotate all (synthetic and real) train and test datasets (\citet{noauthor_gpt-4_nodate}), focusing on three entity types: \textbf{problem}, \textbf{treatment} and \textbf{test}. We employ a few-shot learning approach inspired by \citet{hu_improving_2024}, using the prompt in Figure~\ref{experiment:prompt}. To assess whether or not the annotated entities are essentially the UMLS keywords, we evaluated the overlap between keywords and annotations and found a low $22.36\%$ overlap.
 
 Table~\ref{tab:datasets-proportion} illustrates the distributions of labels for the ICD-MC tasks and entities for NER.
 
@@ -190,12 +190,12 @@ We apply the same methodology for the NER task but with only \dgold and \dgover 
 & \multicolumn{2}{c}{\dgold} & \multicolumn{2}{c}{\dte}\\
 \textbf{\class{k}} & \textbf{\# labels} & \textbf{\# docs} & \textbf{\# labels} & \textbf{\# docs} \\ 
 \midrule
-\class{400} & 38602 & 2564 & 25409 & 1681 \\
-\class{100} & 30015 & 2560 & 19700 & 1672 \\
-\class{50}  & 23323 & 2552 & 15246 & 1672 \\
-\class{20}  & 14619 & 2513 & 9694  & 1648 \\
+\class{400} & \num{38602} & \num{2564} & \num{25409} & \num{1681} \\
+\class{100} & \num{30015} & \num{2560} & \num{19700} & \num{1672} \\
+\class{50}  & \num{23323} & \num{2552} & \num{15246} & \num{1672} \\
+\class{20}  & \num{14619} & \num{2513} & \num{9694}  & \num{1648} \\
 \hline
-\textbf{ner}  & 72715 & 2581 & 47783  & 1681 \\
+\textbf{ner}  & \num{72715} & \num{2581} & \num{47783}  & \num{1681} \\
 \bottomrule
 \end{tabular}
 \caption{Multilabel classification \& NER task datasets, with labels size for \dgold, \dte. The number of labels for the NER task excludes label \textit{O\protect\footnotemark}.}
@@ -308,7 +308,7 @@ Furthermore, the distributional difference between \dgold and \dte indicates tha
 \section{Extended Evaluation on AlpaCare Benchmark}
 \label{sec:alpacare-eval}
 
-Since our method shares several conceptual similarities with KnowledgeSG \cite{knowledgesg2024}, we sought to establish a comparison with this approach. KnowledgeSG proposes a client-server framework where the client possesses private knowledge (for example, a clinical model trained on sensitive data) while a knowledge distillation process occurs via a remote professional model. Like our pipeline, this method adopts an iterative approach and integrates alignment mechanisms and sample selection: it generates multiple candidates then progressively filters them via a reference professional model to select the best samples, thus countering the performance degradation induced by gradient noise when using differential privacy.
+Since our method shares several conceptual similarities with KnowledgeSG \cite{wangKnowledgeSGPrivacyPreservingSynthetic2024}, we sought to establish a comparison with this approach. KnowledgeSG proposes a client-server framework where the client possesses private knowledge (for example, a clinical model trained on sensitive data) while a knowledge distillation process occurs via a remote professional model. Like our pipeline, this method adopts an iterative approach and integrates alignment mechanisms and sample selection: it generates multiple candidates then progressively filters them via a reference professional model to select the best samples, thus countering the performance degradation induced by gradient noise when using differential privacy.
 
 This methodological convergence naturally led us to adopt the AlpaCare benchmark \cite{zhang2023alpacare}, a doctor-patient conversational dataset in chatbot format, used both as a reference professional model in KnowledgeSG and as an evaluation benchmark in our context. This choice presents a dual advantage: on one hand, it enables direct comparison with KnowledgeSG on common evaluation ground, and on the other hand, it addresses a different type of task from our usual evaluations, thus broadening the validation spectrum of our approach. The evaluation follows a preference evaluation protocol where a judge compares pairwise the responses generated by our model with those from established reference models (text-davinci-003 \cite{OpenAI2022TextDavinci003}, GPT-3.5-turbo \cite{OpenAI2022GPT35Turbo}, GPT-4 \cite{OpenAI2024GPT4o}, and Claude-2 \cite{Anthropic2023Claude2}). To ensure result robustness, each sample is evaluated twice with swapped positions to avoid positional bias.
 
@@ -321,7 +321,7 @@ Given the results obtained with our initial pipeline, we identified potential im
 
 \subsection{Medical Domain Filtering}
 
-The first quality enhancement we implemented was a medical domain filtering process adapted from KnowledgeSG \cite{knowledgesg2024}. This filter addresses a fundamental quality requirement: ensuring that generated documents remain medically relevant and do not drift into non-clinical domains during the generation process. The filtering mechanism operates by identifying whether a generated document or example constitutes a candidate whose subject matter falls within the medical domain.
+The first quality enhancement we implemented was a medical domain filtering process adapted from KnowledgeSG \cite{wangKnowledgeSGPrivacyPreservingSynthetic2024}. This filter addresses a fundamental quality requirement: ensuring that generated documents remain medically relevant and do not drift into non-clinical domains during the generation process. The filtering mechanism operates by identifying whether a generated document or example constitutes a candidate whose subject matter falls within the medical domain.
 
 This filtering step serves multiple purposes. First, it discards off-topic or non-medical generations that may arise from the stochastic nature of large language models, particularly when keyword guidance is sparse or ambiguous. Second, it ensures that synthetic documents maintain clinical relevance, a critical requirement for downstream medical NLP tasks. Third, it provides a coarse-grained quality gate before more expensive evaluation mechanisms are applied, reducing computational costs by filtering out obviously unsuitable candidates early in the pipeline.
 
