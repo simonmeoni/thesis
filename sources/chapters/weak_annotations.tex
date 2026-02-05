@@ -1,28 +1,28 @@
-\chapter{Annotating syntetic data with LLMs for Multilingual Clinical Entity Extraction}
+\chapter{Annotating syntetic data with \glspl{llm} for Multilingual Clinical Entity Extraction}
 \label{chap:distillation}
 
 In clinical and other specialized domains, data are scarce due to their confidential nature. This lack of data is a major problem when fine-tuning language models.
-Nevertheless, very large language models (LLMs) are promising for the medical domain but cannot be used directly in healthcare facilities due to data confidentiality issues. We explore an approach of annotating training data with LLMs to train smaller models more adapted to our problem. 
+Nevertheless, very large language models (\glspl{llm}) are promising for the medical domain but cannot be used directly in healthcare facilities due to data confidentiality issues. We explore an approach of annotating training data with \glspl{llm} to train smaller models more adapted to our problem. 
 We show that this method yields promising results for information extraction tasks.
 
 \minitoc
 
 \section{Introduction}
-Clinical notes contain the interactions between the patient and healthcare staff. Professionals record their impressions, observations, and various medical procedures performed. Despite the computerization of clinical documents, notes should remain fairly expressive and in a free format to save time for healthcare personnel and allow for the description of unusual situations \citep{rosenbloomDataClinicalNotes2011}. Moreover, a large amount of crucial information is exclusively contained in clinical notes. According to a study by \citet{Escudie2017ADisease}, approximately 80\% of patient phenotypes (a set of observable biological and physical characteristics that can characterize a disease) are present only in free text. These documents are difficult to use without advanced methods such as deep learning in NLP. The use of such methods requires the collection and annotation of a significant amount of medical data. However, \citet{Fries2022DatasetModeling} proposes the term "\emph{dataset debt}," highlighting that learning data in the biomedical field is poorly accessible, poorly documented, and opaque as to its reusability in a commercial or a hospital context. According to the article, only 13\% of the 167 analyzed datasets are accessible and downloadable, 22\% use a standard structured format, and 40\% are in the public domain.
-In recent years, large language models (LLMs) have proved their ability to perform a wide range of tasks with high accuracy in a zero-shot or a few-shots contexts.
-This trend holds great potential for clinical NLP, as preliminary results show promise for information extraction tasks \citep{Agrawal2022LargeExtractors}. 
+Clinical notes contain the interactions between the patient and healthcare staff. Professionals record their impressions, observations, and various medical procedures performed. Despite the computerization of clinical documents, notes should remain fairly expressive and in a free format to save time for healthcare personnel and allow for the description of unusual situations \citep{rosenbloomDataClinicalNotes2011}. Moreover, a large amount of crucial information is exclusively contained in clinical notes. According to a study by \citet{Escudie2017ADisease}, approximately 80\% of patient phenotypes (a set of observable biological and physical characteristics that can characterize a disease) are present only in free text. These documents are difficult to use without advanced methods such as deep learning in \gls{nlp}. The use of such methods requires the collection and annotation of a significant amount of medical data. However, \citet{Fries2022DatasetModeling} proposes the term "\emph{dataset debt}," highlighting that learning data in the biomedical field is poorly accessible, poorly documented, and opaque as to its reusability in a commercial or a hospital context. According to the article, only 13\% of the 167 analyzed datasets are accessible and downloadable, 22\% use a standard structured format, and 40\% are in the public domain.
+In recent years, large language models (\glspl{llm}) have proved their ability to perform a wide range of tasks with high accuracy in a zero-shot or a few-shots contexts.
+This trend holds great potential for clinical \gls{nlp}, as preliminary results show promise for information extraction tasks \citep{Agrawal2022LargeExtractors}. 
 However, the clinical domain presents unique challenges due to the confidential and linguistically specific nature of its data, which can make collection and annotation time-consuming and expensive.
-Using LLMs for efficient information extraction without training data could be attractive, but it raises confidentiality concerns.
+Using \glspl{llm} for efficient information extraction without training data could be attractive, but it raises confidentiality concerns.
 The model deployment should be controllable, and the model's predictions should evolve to fit a specific and changing annotation guideline.
-Most multilingual LLMs are not freely available \citep{Scao2022BLOOM:Model,ouyang2022training,Thoppilan2022LaMDA:Applications}, to the best of our knowledge, only BLOOM is open-source and deployable in a custom infrastructure. The computing resources to use these models remains challenging for healthcare establishments.     
+Most multilingual \glspl{llm} are not freely available \citep{Scao2022BLOOM:Model,ouyang2022training,Thoppilan2022LaMDA:Applications}, to the best of our knowledge, only BLOOM is open-source and deployable in a custom infrastructure. The computing resources to use these models remains challenging for healthcare establishments.     
 
-One approach to address these issues is to distil LLMs into a smaller model via weak supervision. 
+One approach to address these issues is to distil \glspl{llm} into a smaller model via weak supervision. 
 Weak supervision has recently gained community attention because it alleviates the annotation task. This technique refers to annotating datasets using rule-based, heuristic, dictionary extraction or more advanced methods and then training the smaller model on this dataset.
 In the same way, knowledge distillation aims to transfer knowledge from a master model to a student model. It has often been used to compress large-scale models to improve memory footprint and the inference speed \citep{Li2021DynamicModels}. 
 Moreover, student models trained through knowledge distillation can be more easily monitored and versioned. Hosting them increases the healthcare centre's sovereignty, and they become more compliant with existing privacy policies, as input data or predictions don't leave the building.
 
 \section{Motivation and Contributions}
-We study the use of LLMs in the knowledge distillation technique via weak supervision in the Multilingual Clinical domain, especially in clinical entity extraction. We extend the \citet{Agrawal2022LargeExtractors} study in the sense that we propose an in-depth study of the use of \instruct to annotate a training dataset. Our work\footnote{codebase: \url{https://github.com/arkhn/bio-nlp2023}.} mainly aims to compare the annotation quality using weak supervision tasks on a smaller model (Figure \ref{fig: motiv}). Finally, we propose to combine annotations provided by \instruct and the dictionary extraction method.
+We study the use of \glspl{llm} in the knowledge distillation technique via weak supervision in the Multilingual Clinical domain, especially in clinical entity extraction. We extend the \citet{Agrawal2022LargeExtractors} study in the sense that we propose an in-depth study of the use of \instruct to annotate a training dataset. Our work\footnote{codebase: \url{https://github.com/arkhn/bio-nlp2023}.} mainly aims to compare the annotation quality using weak supervision tasks on a smaller model (Figure \ref{fig: motiv}). Finally, we propose to combine annotations provided by \instruct and the dictionary extraction method.
 
 This takes form in these contributions:
 \begin{itemize}
@@ -39,51 +39,51 @@ This takes form in these contributions:
 \end{figure}
 
 \section{Related Works}
-\paragraph{Weak Supervision} deep learning approach has achieved remarkable success in several domains beyond NLP \citep{Zhang2022ASupervision}. However, the main bottleneck is collecting massively annotated data. To address this issue, weak supervision replaces ground-truth annotation with automatic annotation based on heuristic rules, gazetteers or constraints linguistic rules to address. Some techniques called \textit{distant supervision} exploit semantic links from knowledge bases or ontologies \citep{Lison2021Skweak:NLP}. \citet{Karamanolakis2021Self-TrainingSupervision} proposes an iterative self-training method to combine classic weak supervision and inference of the learning model to extract entities not covered by the initial heuristic rules. In the clinical domain, weak supervision has already been used for specific use cases \citep{Cusick2021UsingIdeation,Fries2021Ontology-drivenRecords,Wang2019ARepresentation}.
-\paragraph{Clinical Language Models} In the clinical context, some specific terms are underrepresented or absent in the general domain. As a result, the clinical NLP community has pretrained Language Models (LMs) \citep{Alsentzer2019PubliclyEmbeddings, Lee2020BioBERT:Mining,Alsentzer2019PubliclyEmbeddings} over domain-specific corpora (i.e. MIMIC-III \citep{Johnson2016MIMIC-IIIDatabase}, Pubmed abstracts). These models could be trained from scratch or from checkpoint to specialize a domain-agnostic model \citep{Gururangan2020DontTasks}.
+\paragraph{Weak Supervision} deep learning approach has achieved remarkable success in several domains beyond \gls{nlp} \citep{Zhang2022ASupervision}. However, the main bottleneck is collecting massively annotated data. To address this issue, weak supervision replaces ground-truth annotation with automatic annotation based on heuristic rules, gazetteers or constraints linguistic rules to address. Some techniques called \textit{distant supervision} exploit semantic links from knowledge bases or ontologies \citep{Lison2021Skweak:NLP}. \citet{Karamanolakis2021Self-TrainingSupervision} proposes an iterative self-training method to combine classic weak supervision and inference of the learning model to extract entities not covered by the initial heuristic rules. In the clinical domain, weak supervision has already been used for specific use cases \citep{Cusick2021UsingIdeation,Fries2021Ontology-drivenRecords,Wang2019ARepresentation}.
+\paragraph{Clinical Language Models} In the clinical context, some specific terms are underrepresented or absent in the general domain. As a result, the clinical \gls{nlp} community has pretrained Language Models (LMs) \citep{Alsentzer2019PubliclyEmbeddings, Lee2020BioBERT:Mining,Alsentzer2019PubliclyEmbeddings} over domain-specific corpora (i.e. \gls{mimic}-III \citep{Johnson2016MIMIC-IIIDatabase}, Pubmed abstracts). These models could be trained from scratch or from checkpoint to specialize a domain-agnostic model \citep{Gururangan2020DontTasks}.
 
 Though, the performance gains are marginal compared to the general language model. The structure and the abbreviated text present in clinical notes hurt performance.
-Instead of pretraining a specialized clinical model, machine learning practitioners can fine-tune agnostic-domain LLMs such as the GPT family of models or T5 on the clinical task. Fine-tuned general-purpose models have proven effective in clinical question-answering, protected health information de-identification, and relation extraction \citep{Lehman2023DoModels}. But this approach requires an important infrastructure and a regular re-finetuning if the data distribution of the EHR shifts. Nevertheless, some LLMs have been trained from scratch over clinical domain-specific notes such as GatorTron \citep{yang2022large}, BioGPT \citep{Luo2022BioGPT:Mining} or ClinicalT5 \citep{Lu2022ClinicalT5:Text} who achieved promising performance on several tasks.
-Additionally, in-context learning with agnostic LLMs such as \instruct \citep{ouyang2022training} where no weight is modified shows good results \citep{Agrawal2022LargeExtractors, Brown2020LanguageLearners} and outperforms specialized smaller models on several clinical tasks.
+Instead of pretraining a specialized clinical model, machine learning practitioners can fine-tune agnostic-domain \glspl{llm} such as the \gls{gpt} family of models or T5 on the clinical task. Fine-tuned general-purpose models have proven effective in clinical question-answering, protected health information de-identification, and relation extraction \citep{Lehman2023DoModels}. But this approach requires an important infrastructure and a regular re-finetuning if the data distribution of the \gls{ehr} shifts. Nevertheless, some \glspl{llm} have been trained from scratch over clinical domain-specific notes such as GatorTron \citep{yang2022large}, BioGPT \citep{Luo2022BioGPT:Mining} or ClinicalT5 \citep{Lu2022ClinicalT5:Text} who achieved promising performance on several tasks.
+Additionally, in-context learning with agnostic \glspl{llm} such as \instruct \citep{ouyang2022training} where no weight is modified shows good results \citep{Agrawal2022LargeExtractors, Brown2020LanguageLearners} and outperforms specialized smaller models on several clinical tasks.
 \paragraph{Prompt-based Method}
 Prompt-based learning for generative language model treats a downstream task as a language modelling problem where a language model predicts the next tokens of the instruction given a textual prompt \citep{Sainz2021LabelExtraction}.
 
-In this paradigm, instead of fine-tuning a model to a downstream task (\textit{"pre-train, fine-tune and predict"}), we manipulate the behaviour of a pretrained LM using an appropriate prompt to give the desired output (\textit{"pre-train, prompt and predict"}). 
-\textit{prompt engineering} explores the most suitable prompt method applied to a LM to solve a task.
-This way, an unsupervised pre-trained LM can be used for many tasks \citep{Liu2023Pre-trainProcessing}.
+In this paradigm, instead of fine-tuning a model to a downstream task (\textit{"pre-train, fine-tune and predict"}), we manipulate the behaviour of a pretrained \gls{lm} using an appropriate prompt to give the desired output (\textit{"pre-train, prompt and predict"}). 
+\textit{prompt engineering} explores the most suitable prompt method applied to a \gls{lm} to solve a task.
+This way, an unsupervised pre-trained \gls{lm} can be used for many tasks \citep{Liu2023Pre-trainProcessing}.
 
 Among these methods, \textit{in-context learning} is the most popular method for information extraction, question-answering or sentiment analysis. In the clinical domain, some works exist on information retrieval and question-answering. The prompt contains three components: the examples' template, the set of examples and the ordering of prompts, such as present in Figure \ref{fig:prompt}. The aim is to provide some training examples in the prompt before the test example. However, the chosen examples and their ordering and the format could impact performance \citep{Zhao2021CalibrateModels}; these three components must be tuned to optimize performance.
 
-In another way, we can cite works around the chain of thoughts (CoT). This encourages the LLM to explain its reasoning to get more accurate results, especially in mathematical and logical reasoning \citep{Wei2022ChainModels, Cobbe2021TrainingProblems}. This technique could be used with reason edited manually in the prompt or with two separate prompts where the first involves a reasoning task, then concatenated with the second prompt involving the main tasks.
+In another way, we can cite works around the chain of thoughts (\gls{cot}). This encourages the \gls{llm} to explain its reasoning to get more accurate results, especially in mathematical and logical reasoning \citep{Wei2022ChainModels, Cobbe2021TrainingProblems}. This technique could be used with reason edited manually in the prompt or with two separate prompts where the first involves a reasoning task, then concatenated with the second prompt involving the main tasks.
 
-Other techniques involve generated knowledge similar to CoT. Instead of reasoning, the first prompt generates potentially useful information associated with the tasks concatenated in the final prompt \citep{Liu2022GeneratedReasoning}.
+Other techniques involve generated knowledge similar to \gls{cot}. Instead of reasoning, the first prompt generates potentially useful information associated with the tasks concatenated in the final prompt \citep{Liu2022GeneratedReasoning}.
 
 \section{Method}
 
 \subsection{Creating Annotations and Knowledge Distillation via Weak Supervision}
-\paragraph{Annotation Extraction from LLM Output}
-Our study is inspired by the method developed in this paper \citep{Agrawal2022LargeExtractors}. Their works benchmark how \instruct \citep{ouyang2022training} perform clinical NLP tasks in English. They show that \instruct performs well in several clinical tasks. They introduce 3 new datasets to benchmark few-shot clinical information extraction to achieve this. Also, they introduce \textit{guided prompt design} to induce easy-to-structure output with resolvers (or parsers) to convert the output into a structured prediction easily. 
+\paragraph{Annotation Extraction from \gls{llm} Output}
+Our study is inspired by the method developed in this paper \citep{Agrawal2022LargeExtractors}. Their works benchmark how \instruct \citep{ouyang2022training} perform clinical \gls{nlp} tasks in English. They show that \instruct performs well in several clinical tasks. They introduce 3 new datasets to benchmark few-shot clinical information extraction to achieve this. Also, they introduce \textit{guided prompt design} to induce easy-to-structure output with resolvers (or parsers) to convert the output into a structured prediction easily. 
 Our work differs in the following: 
 \begin{enumerate}
-    \item Our studies areas are knowledge distillation via weak supervision and the improvement of this technique combining annotations from LLMs and dictionary extraction;
+    \item Our studies areas are knowledge distillation via weak supervision and the improvement of this technique combining annotations from \glspl{llm} and dictionary extraction;
     \item our methods are applied in a multilingual context, the initial work was only done in English;
     \item we focus on the clinical entities extraction task based on the E3C dataset guidelines.
 \end{enumerate}
 
 
-In this work, the LLM is used only as a predictor; we only query the model, no additional fine-tuning step has been realized, and we can only access inference parameters such as temperature, top p, frequency or presence penalty. We set the \textit{temperature} and \textit{top p} to 0 to control randomness and have a deterministic behaviour. So as not to penalize repetitions, we set the \textit{presence penalty} and \textit{frequency penalty} to 0. We use an InstructGPT-3 model (text-davinci-003) \citep{ouyang2022training} to infer the whole annotations for all our experiments.
+In this work, the \gls{llm} is used only as a predictor; we only query the model, no additional fine-tuning step has been realized, and we can only access inference parameters such as temperature, top p, frequency or presence penalty. We set the \textit{temperature} and \textit{top p} to 0 to control randomness and have a deterministic behaviour. So as not to penalize repetitions, we set the \textit{presence penalty} and \textit{frequency penalty} to 0. We use an InstructGPT-3 model (text-davinci-003) \citep{ouyang2022training} to infer the whole annotations for all our experiments.
 We provide the model with an instruction concatenated by the example to be predicted (Figure \ref{fig:prompt}). The output of \instruct is a string of characters that we must structure to align the predicted clinical entities with the initial text (Figure~\ref{fig:formalization}).
 
- The task is to annotate the words (or tokens) of a sentence $x \in \Sigma^*$ with a set of labels such that $L=\{O, B_\text{clin}, I_{\text{clin}}\}$ where O denotes a word in the text without a label, \bclin the first word of a clinical entity and \iclin the following words according to the format \textit{IOB} \citep{Ramshaw1995TextLearning}. The goal is to identify the labels O, \bclin, \iclin and their character offsets in the sentence $x$. The task output is defined as $\hat{y}=[ y_1, y_2, \ldots, y_n ] \in Y$, where $\hat{y}$ is the set of predicted annotations, and $y_i= \langle s_i, e_i, l_i
+ The task is to annotate the words (or tokens) of a sentence $x \in \Sigma^*$ with a set of labels such that $L=\{O, B_\text{clin}, I_{\text{clin}}\}$ where O denotes a word in the text without a label, \bclin the first word of a clinical entity and \iclin the following words according to the format \textit{\gls{iob}} \citep{Ramshaw1995TextLearning}. The goal is to identify the labels O, \bclin, \iclin and their character offsets in the sentence $x$. The task output is defined as $\hat{y}=[ y_1, y_2, \ldots, y_n ] \in Y$, where $\hat{y}$ is the set of predicted annotations, and $y_i= \langle s_i, e_i, l_i
 \rangle$ such that $s_i$ is the start offset, $e_i$ is the end offset and $l_i\in L$ of the $i^{th}$ annotation.
 \input{figures/multi_weak_supervision/formalization}
 
 As mentioned, a prompt-based method requires concatenating a template $t \in \Sigma^*$ with our sentence $x$ to give our prompt, such as $p=concat(t,x)$. 
-We produce our output $o \in \Sigma^*$ from our LLM model $\Phi$ such as $o=\Phi(p, \theta_h)$, where $\theta_h$ represents the set of hyperparameters (\textit{temperature}, \textit{top p}, \textit{frequence penalty}, \textit{presence penalty}).
+We produce our output $o \in \Sigma^*$ from our \gls{llm} model $\Phi$ such as $o=\Phi(p, \theta_h)$, where $\theta_h$ represents the set of hyperparameters (\textit{temperature}, \textit{top p}, \textit{frequence penalty}, \textit{presence penalty}).
 
 Then, we structure $o$ such as $\Sigma^* \rightarrow Y$ using a simple string-matching function to produce a set of labels $\hat{y}$ where $r$ is our resolver applying the string matching function: $r(o, x)=\hat{y}$.
 
-\paragraph{Knowledge Distillation via Weak Supervision} Finally, the annotations generated via \instruct prediction are used as a training dataset to fine-tune a smaller language model to a NER downstream task. For smaller language models, we limit our study to encoder models as mentioned in Table~\ref{tab:models}.
+\paragraph{Knowledge Distillation via Weak Supervision} Finally, the annotations generated via \instruct prediction are used as a training dataset to fine-tune a smaller language model to a \gls{ner} downstream task. For smaller language models, we limit our study to encoder models as mentioned in Table~\ref{tab:models}.
 
 \subsection{Prompting}
 
@@ -96,12 +96,12 @@ We add guidance to explicit the response structure to facilitate parsing the out
 
 \section{Experiments}
 \subsection{Dataset}
-We use the annotated E3C multilingual dataset \citep{Magnini2020TheCases} for our experiments, consisting of two annotation types: temporal and clinical entities. The languages supported are English (en), Basque (eu), Spanish (es), French (fr) and Italian (it). Clinical entities are identified as patient disorders which could map to the UMLS meta thesaurus. The annotators have linked extracted clinical entities and UMLS concepts. In our experiments, we only extract clinical entities without mapping UMLS concepts. 
+We use the annotated E3C multilingual dataset \citep{Magnini2020TheCases} for our experiments, consisting of two annotation types: temporal and clinical entities. The languages supported are English (en), Basque (eu), Spanish (es), French (fr) and Italian (it). Clinical entities are identified as patient disorders which could map to the \gls{umls} meta thesaurus. The annotators have linked extracted clinical entities and \gls{umls} concepts. In our experiments, we only extract clinical entities without mapping \gls{umls} concepts. 
 
 The E3C dataset is organized into 3 layers, each representing a different annotation quality level:
 \begin{itemize}
     \item \gold: fully manual annotation, used as test set for all our experiments;
-    \item \silver: semi-automatic annotation via \dict, used as training set. The dictionary contains terms from UMLS and terms extracted from \gold;
+    \item \silver: semi-automatic annotation via \dict, used as training set. The dictionary contains terms from \gls{umls} and terms extracted from \gold;
     \item \silverval: a subset of \silver (approximately $10\%$) that has been manually corrected;
     \item a third unannotated layer that we don't use for our experiments.
 \end{itemize}
@@ -149,7 +149,7 @@ We observe that \instruct extracts more entities than \dict on \silver (Table~\r
     \resizebox{0.85\textwidth}{!}{
         \input{figures/multi_weak_supervision/counts}
     }
-    \caption{Number of annotated tokens for each annotation type on \silver and \silverval. \textit{Gold} corresponds to \dict annotation, \textit{GPT} to \instruct annotation.}
+    \caption{Number of annotated tokens for each annotation type on \silver and \silverval. \textit{Gold} corresponds to \dict annotation, \textit{\gls{gpt}} to \instruct annotation.}
     \label{tab:counts}
 \end{table}
 
@@ -229,7 +229,7 @@ Detailed results for each language and model, including all evaluated configurat
 \subsection{In-depth Analysis: French Clinical Entity Extraction}
 \label{sec:french_case_study}
 
-To better understand the differences between annotation methods and their impact on model performance, we conduct a detailed analysis on the French subset of E3C. French represents our primary deployment context for clinical NLP applications. We use \textit{camembert-base} \citep{Martin2019CamemBERT:Model} as the student model for all French experiments.
+To better understand the differences between annotation methods and their impact on model performance, we conduct a detailed analysis on the French subset of E3C. French represents our primary deployment context for clinical \gls{nlp} applications. We use \textit{camembert-base} \citep{Martin2019CamemBERT:Model} as the student model for all French experiments.
 
 \subsubsection{Annotation Discrepancy Analysis}
 
@@ -317,7 +317,7 @@ Our experiments demonstrate the potential of knowledge distillation and weak sup
 
 \paragraph{Language-specific variations.} Spanish shows reversed trends, with \dictmodel performing better. This may be due to differences in data sources: while other languages use Pan African Journal or Pubmed corpora, Spanish uses SPACCC, with different clinical entity distributions. Additional preprocessing (sentence removal, capitalization changes) may reinforce these differences.
 
-In English, both approaches perform similarly, likely due to superior \dict annotation quality from more extensive UMLS resources.
+In English, both approaches perform similarly, likely due to superior \dict annotation quality from more extensive \gls{umls} resources.
 
 \paragraph{Benefits of hybrid supervision.} The \hybridmodel approach outperforms single-source supervision for most languages. The French case study (Section \ref{sec:french_case_study}) provides detailed evidence: \dict and \instruct have complementary error patterns. \dict tends to under-extract (missing multi-word entities), while \instruct over-extracts (longer spans). Combining them at $\rmix=0.5$ balances these biases.
 
@@ -330,11 +330,11 @@ Basque is an exception where $\rmix=1$ works best, because the original \dict an
 \section{Limitations}
 One limitation is the small test set size, which may impact generalizability. We also focused solely on clinical entity extraction; future work could investigate temporal entity extraction and relation extraction using other E3C layers.
 
-The E3C guidelines were designed for entity-linking via UMLS, leading to annotation choices that may not reflect natural entity boundaries. Clinical entities may be split into separate disorder concepts or reduced to fit UMLS entries \citep{Magnini2020TheCases}, introducing biases that affect span prediction.
+The E3C guidelines were designed for entity-linking via \gls{umls}, leading to annotation choices that may not reflect natural entity boundaries. Clinical entities may be split into separate disorder concepts or reduced to fit \gls{umls} entries \citep{Magnini2020TheCases}, introducing biases that affect span prediction.
 
 \section{Conclusion}
 Our results demonstrate that \llmmodel distillation outperforms \dictmodel supervision for clinical entity extraction in most languages. The \hybridmodel approach, combining both annotation sources, further improves performance by leveraging their complementary strengths: \dict provides precise but narrow coverage, while \instruct offers broader but noisier annotations.
 
-This weak-supervision approach with LLMs reduces annotation costs while enabling deployment of small to medium-sized models that can be hosted locally, preserving data confidentiality and reducing energy costs. For low-resource languages like Basque, LLMs offer a competitive alternative when linguistic resources for \dict are limited.
+This weak-supervision approach with \glspl{llm} reduces annotation costs while enabling deployment of small to medium-sized models that can be hosted locally, preserving data confidentiality and reducing energy costs. For low-resource languages like Basque, \glspl{llm} offer a competitive alternative when linguistic resources for \dict are limited.
 
-Future work will investigate confidence-based annotation combination, using prediction uncertainty to select annotations. Ensemble approaches with multiple LLMs could increase annotation diversity. We will also explore adapting Chain-of-Thought prompting for clinical entity extraction, potentially improving \instruct precision by incorporating E3C annotation guidelines into multi-step prompts.
+Future work will investigate confidence-based annotation combination, using prediction uncertainty to select annotations. Ensemble approaches with multiple \glspl{llm} could increase annotation diversity. We will also explore adapting Chain-of-Thought prompting for clinical entity extraction, potentially improving \instruct precision by incorporating E3C annotation guidelines into multi-step prompts.

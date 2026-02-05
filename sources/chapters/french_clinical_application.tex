@@ -5,19 +5,19 @@
 
 \section{Motivation and Context}
 
-While the experiments presented in previous chapters demonstrate the effectiveness of our approach on English clinical data from MIMIC-III, a critical question remains: does this methodology generalize to other languages and healthcare systems?
-This consideration is particularly relevant given that the majority of clinical NLP research focuses on English, leaving non-English healthcare systems underserved despite facing similar---or often greater---data scarcity and privacy challenges.
+While the experiments presented in previous chapters demonstrate the effectiveness of our approach on English clinical data from \gls{mimic}-III, a critical question remains: does this methodology generalize to other languages and healthcare systems?
+This consideration is particularly relevant given that the majority of clinical \gls{nlp} research focuses on English, leaving non-English healthcare systems underserved despite facing similar---or often greater---data scarcity and privacy challenges.
 
-To address this question and validate our approach in a more applied setting, we conducted experiments on French medical reports in collaboration with Assistance Publique -- Hôpitaux de Paris (AP-HP).
-Beyond the language shift, this application involves clinical documents from a different medical context: while MIMIC-III contains intensive care unit discharge summaries from a US academic hospital, the French corpus comprises diverse medical reports reflecting routine clinical practice across multiple hospital departments.
+To address this question and validate our approach in a more applied setting, we conducted experiments on French medical reports in collaboration with Assistance Publique -- Hôpitaux de Paris (\gls{aphp}).
+Beyond the language shift, this application involves clinical documents from a different medical context: while \gls{mimic}-III contains intensive care unit discharge summaries from a US academic hospital, the French corpus comprises diverse medical reports reflecting routine clinical practice across multiple hospital departments.
 
-From a practical perspective, AP-HP faces concrete challenges that motivate this work.
-The hospital system seeks to deploy small, efficient models capable of classifying clinical documents for tasks such as automated ICD coding.
+From a practical perspective, \gls{aphp} faces concrete challenges that motivate this work.
+The hospital system seeks to deploy small, efficient models capable of classifying clinical documents for tasks such as automated \gls{icd} coding.
 However, annotated training data remains sparse, and privacy regulations prevent direct use of patient records for model development.
 Synthetic document generation addresses both constraints simultaneously.
 
 Beyond immediate operational needs, this collaboration pursues broader research objectives.
-First, generating high-quality synthetic documents enables sharing clinical data with the research community without compromising patient privacy---a significant step toward reproducible medical NLP research in French.
+First, generating high-quality synthetic documents enables sharing clinical data with the research community without compromising patient privacy---a significant step toward reproducible medical \gls{nlp} research in French.
 Second, this work lays the groundwork for a longer-term goal: generating entirely synthetic patient records that preserve the statistical and clinical properties of real data while containing no actual patient information.
 
 This setting presents several distinctive characteristics:
@@ -25,9 +25,9 @@ This setting presents several distinctive characteristics:
 \begin{itemize}
     \item \textbf{Language and clinical conventions}: French clinical writing follows distinct conventions, with specific medical terminology, abbreviation patterns, and narrative structures that differ from English documentation practices.
 
-    \item \textbf{Coding system}: French hospitals use ICD-10 codes rather than the ICD-9 codes present in MIMIC-III, representing a different classification granularity.
+    \item \textbf{Coding system}: French hospitals use \gls{icd}-10 codes rather than the \gls{icd}-9 codes present in \gls{mimic}-III, representing a different classification granularity.
 
-    \item \textbf{Regulatory context}: European healthcare data is governed by GDPR, imposing stringent requirements on data processing and transfer that make privacy-preserving approaches particularly valuable.
+    \item \textbf{Regulatory context}: European healthcare data is governed by \gls{gdpr}, imposing stringent requirements on data processing and transfer that make privacy-preserving approaches particularly valuable.
 \end{itemize}
 
 This cross-lingual validation thus serves multiple purposes: testing whether our methodology transfers across languages and clinical contexts, providing a practical solution for data-scarce healthcare systems, and opening pathways toward shareable synthetic medical corpora.
@@ -35,8 +35,8 @@ This cross-lingual validation thus serves multiple purposes: testing whether our
 \section{Experimental Setup}
 
 \paragraph{Dataset.}
-The French corpus consists of medical reports collected from AP-HP's clinical information system.
-Unlike MIMIC-III's focus on intensive care discharge summaries, these documents span multiple clinical departments and document types, providing a more heterogeneous corpus representative of routine hospital documentation.
+The French corpus consists of medical reports collected from \gls{aphp}'s clinical information system.
+Unlike \gls{mimic}-III's focus on intensive care discharge summaries, these documents span multiple clinical departments and document types, providing a more heterogeneous corpus representative of routine hospital documentation.
 % TODO: Add mention of semi-synthetic documents from Partage corpus (internal AP-HP) - documents created manually by physicians for educational/research purposes
 Following the same preprocessing pipeline as our English experiments, we extract clinical concepts using a French-adapted version of QuickUMLS and use these keyword sequences to guide synthetic document generation.
 The training set comprises \texttt{[PLACEHOLDER: X]} documents, with \texttt{[PLACEHOLDER: Y]} held out for evaluation.
@@ -44,23 +44,23 @@ The training set comprises \texttt{[PLACEHOLDER: X]} documents, with \texttt{[PL
 
 \paragraph{Generator Model.}
 We employ Qwen2.5-4B~\citep{qwen2.5} as the base generator model, selected for its strong multilingual capabilities and competitive performance on French text generation tasks.
-Compared to Mistral-7B used in our MIMIC-III experiments, Qwen2.5-4B offers a favorable trade-off between model size and generation quality for non-English languages.
-The model is fine-tuned using the same two-stage approach: initial supervised fine-tuning on a seed set of \texttt{[PLACEHOLDER: Z]} pseudo-anonymized documents, followed by three iterations of DPO alignment.
+Compared to Mistral-7B used in our \gls{mimic}-III experiments, Qwen2.5-4B offers a favorable trade-off between model size and generation quality for non-English languages.
+The model is fine-tuned using the same two-stage approach: initial supervised fine-tuning on a seed set of \texttt{[PLACEHOLDER: Z]} pseudo-anonymized documents, followed by three iterations of \gls{dpo} alignment.
 
 \paragraph{Scoring Models.}
 For semantic similarity scoring, we use BioLORD-2023-M~\citep{remy2024biolord}, a multilingual SentenceTransformer model specifically designed for biomedical text.
 Unlike general-purpose embedding models, BioLORD integrates clinical knowledge graph information, making it particularly suitable for assessing semantic fidelity in medical documents across languages.
-Beyond semantic similarity, the scoring mechanism incorporates an educational quality score computed via LLM-as-judge using Qwen2.5-7B-Instruct~\citep{qwen2.5}, evaluating clarity, medical relevance, and absence of hallucinations.
+Beyond semantic similarity, the scoring mechanism incorporates an educational quality score computed via \gls{llm}-as-judge using Qwen2.5-7B-Instruct~\citep{qwen2.5}, evaluating clarity, medical relevance, and absence of hallucinations.
 The complete scoring mechanism is detailed in Section~\ref{sec:french-scoring}.
 
 \paragraph{Downstream Task.}
-We evaluate synthetic document quality through ICD-10~\citep{who_icd10} multilabel classification, mirroring our ICD-9 experiments on MIMIC-III.
+We evaluate synthetic document quality through \gls{icd}-10~\citep{who_icd10} multilabel classification, mirroring our \gls{icd}-9 experiments on \gls{mimic}-III.
 Models are trained on synthetic datasets of varying sizes (10K, 20K, 50K documents) and evaluated on held-out real documents across three label configurations: top-20, top-50, and top-100 most frequent codes.
 
 \section{Enhanced Scoring Mechanism}
 \label{sec:french-scoring}
 
-While our MIMIC-III experiments relied primarily on SemScore for document quality assessment, the French application employs a more sophisticated composite scoring mechanism.
+While our \gls{mimic}-III experiments relied primarily on SemScore for document quality assessment, the French application employs a more sophisticated composite scoring mechanism.
 This enhancement addresses limitations observed in single-metric evaluation and provides a more comprehensive assessment of synthetic document quality.
 
 \paragraph{Semantic Similarity.}
@@ -69,11 +69,11 @@ We compute similarity through two complementary approaches: global document embe
 This dual approach ensures that both document-level meaning and fine-grained clinical details are preserved.
 
 \paragraph{Educational Quality Score.}
-The second component uses Qwen2.5-7B-Instruct as an LLM-as-judge to evaluate document quality along three dimensions:
+The second component uses Qwen2.5-7B-Instruct as an \gls{llm}-as-judge to evaluate document quality along three dimensions:
 \begin{itemize}
     \item \textbf{Clarity}: grammatical correctness, absence of code-switching between languages, proper punctuation and formatting.
     \item \textbf{Medical relevance}: clinical plausibility of described conditions, realistic treatment descriptions, appropriate use of medical terminology.
-    \item \textbf{Absence of hallucinations}: detection of characteristic LLM fabrication patterns, ensuring generated content remains grounded in clinical reality.
+    \item \textbf{Absence of hallucinations}: detection of characteristic \gls{llm} fabrication patterns, ensuring generated content remains grounded in clinical reality.
 \end{itemize}
 The judge assigns a score between 0 and 1, with strong penalization for implausible medical information.
 
@@ -86,14 +86,14 @@ The final quality score combines these three components through simple averaging
 \begin{equation}
     S_{composite} = \frac{1}{3}\left(S_{similarity} + S_{educational} + S_{keywords}\right)
 \end{equation}
-This composite score guides candidate selection during DPO alignment, with higher-scoring documents serving as preferred examples.
+This composite score guides candidate selection during \gls{dpo} alignment, with higher-scoring documents serving as preferred examples.
 The multi-faceted evaluation ensures that selected documents excel across different quality dimensions rather than optimizing for a single metric.
 
 \section{Results}
 \label{sec:french-results}
 
-Table~\ref{tab:french-results} presents classification performance across dataset sizes and DPO iterations.
-We report macro F1 scores on the held-out test set, with relative gains computed against the Step0 baseline (SFT only, no DPO alignment).
+Table~\ref{tab:french-results} presents classification performance across dataset sizes and \gls{dpo} iterations.
+We report macro F1 scores on the held-out test set, with relative gains computed against the Step0 baseline (\gls{sft} only, no \gls{dpo} alignment).
 
 \begin{table}[htb]
 \centering
@@ -117,17 +117,17 @@ We report macro F1 scores on the held-out test set, with relative gains computed
     & 100 & 0.230 & 0.276 & 0.301 & \textbf{0.316} & +37.2\% \\
 \bottomrule
 \end{tabular}
-\caption{Classification F1 scores on French ICD-10 multilabel task across dataset sizes and DPO iterations.
+\caption{Classification F1 scores on French \gls{icd}-10 multilabel task across dataset sizes and \gls{dpo} iterations.
 Relative gains computed against Step0 baseline.}
 \label{tab:french-results}
 \end{table}
 
-The results reveal consistent patterns that mirror our MIMIC-III findings while demonstrating even stronger improvements from DPO alignment.
+The results reveal consistent patterns that mirror our \gls{mimic}-III findings while demonstrating even stronger improvements from \gls{dpo} alignment.
 Relative gains range from +2\% for top-20 to +46\% for top-100, substantially higher than the +3\% to +6\% gains observed on English data.
 This difference likely stems from the enhanced composite scoring mechanism, which provides richer training signal for preference optimization compared to SemScore alone.
 
-The relationship between task complexity and DPO benefit follows the same pattern as MIMIC-III.
-For top-20 classification, a single DPO iteration often suffices, with subsequent iterations providing marginal or no additional improvement.
+The relationship between task complexity and \gls{dpo} benefit follows the same pattern as \gls{mimic}-III.
+For top-20 classification, a single \gls{dpo} iteration often suffices, with subsequent iterations providing marginal or no additional improvement.
 In contrast, top-50 and top-100 configurations benefit from continued alignment through DPO2 and DPO3, confirming that rare label prediction requires higher-quality synthetic documents regardless of language.
 
 Dataset scaling effects remain consistent: 50K models outperform 20K and 10K counterparts across all configurations.
@@ -136,33 +136,33 @@ However, the most striking observation is that even the smallest 10K dataset wit
 \section{Cross-lingual Comparison}
 \label{sec:crosslingual}
 
-To assess whether our methodology exhibits consistent behavior across languages, we compare key patterns between the English (MIMIC-III) and French (AP-HP) experiments.
+To assess whether our methodology exhibits consistent behavior across languages, we compare key patterns between the English (\gls{mimic}-III) and French (\gls{aphp}) experiments.
 
 The qualitative patterns are remarkably consistent across both languages.
-In both settings, DPO alignment provides clear benefits over the SFT baseline, with gains concentrated in higher top-k configurations where rare labels dominate.
+In both settings, \gls{dpo} alignment provides clear benefits over the \gls{sft} baseline, with gains concentrated in higher top-k configurations where rare labels dominate.
 The diminishing returns pattern for simpler tasks (top-20) appears in both experiments, with DPO1 often providing the best results before subsequent iterations plateau.
-Iterative DPO through DPO2 and DPO3 proves beneficial for complex tasks (top-100) in both languages, and dataset scaling consistently improves absolute performance.
+Iterative \gls{dpo} through DPO2 and DPO3 proves beneficial for complex tasks (top-100) in both languages, and dataset scaling consistently improves absolute performance.
 
-The quantitative differences are notable: French experiments show substantially larger relative improvements from DPO alignment (+36\% to +46\% for top-100) compared to English (+3\% to +6\%).
+The quantitative differences are notable: French experiments show substantially larger relative improvements from \gls{dpo} alignment (+36\% to +46\% for top-100) compared to English (+3\% to +6\%).
 We attribute this primarily to the enhanced composite scoring mechanism employed in the French pipeline, which combines semantic similarity, educational quality, and keyword coverage.
-This multi-faceted evaluation likely provides stronger training signal for preference optimization compared to the SemScore-only approach used on MIMIC-III.
+This multi-faceted evaluation likely provides stronger training signal for preference optimization compared to the SemScore-only approach used on \gls{mimic}-III.
 
-Additional factors may contribute to these differences: the Qwen2.5-4B model may respond more favorably to DPO than Mistral-7B, and ICD-10 classification may present different challenges than ICD-9.
+Additional factors may contribute to these differences: the Qwen2.5-4B model may respond more favorably to \gls{dpo} than Mistral-7B, and \gls{icd}-10 classification may present different challenges than \gls{icd}-9.
 However, the consistent qualitative patterns across languages provide strong evidence that the core methodology---keyword-guided generation with iterative preference optimization---transfers effectively regardless of these implementation details.
 
 \section{Discussion \& Conclusion}
 
 These results provide strong evidence that our reward-based synthetic generation approach generalizes effectively beyond English.
-The consistent improvement patterns observed across MIMIC-III and AP-HP experiments---despite differences in language, coding systems, and model architectures---suggest that the underlying methodology captures language-agnostic principles of clinical document structure.
+The consistent improvement patterns observed across \gls{mimic}-III and \gls{aphp} experiments---despite differences in language, coding systems, and model architectures---suggest that the underlying methodology captures language-agnostic principles of clinical document structure.
 
 From a practical standpoint, this cross-lingual validation is promising for the medical domain.
 Healthcare systems worldwide face similar challenges: sensitive patient data that cannot be shared, sparse annotations, and regulatory constraints on data processing.
-Our results demonstrate that synthetic document generation offers a viable pathway to address these challenges regardless of language, opening opportunities for medical NLP research in underserved linguistic communities.
+Our results demonstrate that synthetic document generation offers a viable pathway to address these challenges regardless of language, opening opportunities for medical \gls{nlp} research in underserved linguistic communities.
 
-Looking forward, the collaboration with AP-HP opens perspectives for extending this work.
+Looking forward, the collaboration with \gls{aphp} opens perspectives for extending this work.
 One objective is the generation of entirely synthetic patient records, leveraging the multimodal data available in hospital information systems to create coherent document collections that span a patient's clinical trajectory.
 Another direction concerns long-context generation: current experiments focus on relatively short documents, and scaling to longer clinical narratives such as complete discharge summaries or multi-document patient histories remains to be explored.
 
 \paragraph{Acknowledgements.}
-This work on French clinical data was conducted in collaboration with Assistance Publique -- Hôpitaux de Paris (AP-HP).
+This work on French clinical data was conducted in collaboration with Assistance Publique -- Hôpitaux de Paris (\gls{aphp}).
 We thank Riccardo Tripodi for implementing and running the experiments on French medical reports.

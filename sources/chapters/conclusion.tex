@@ -43,7 +43,7 @@ To ensure that synthetic documents preserve the distributional and linguistic pr
 A contrastive scorer, trained in the private environment to distinguish real from synthetic documents, provides numerical feedback that guides alignment of the generative model through \gls{dpo}.
 This iterative process improves the fidelity of synthetic outputs without exposing sensitive information, enabling the production of high-quality training datasets that can be shared publicly or used to annotate data with external \glspl{llm} for training smaller, locally-deployable models.
 
-Evaluated on downstream clinical \gls{nlp} tasks—including ICD-9 code classification and \gls{ner}—the synthetic documents demonstrate competitive performance, particularly in low-resource settings where real annotated data are scarce.
+Evaluated on downstream clinical \gls{nlp} tasks—including \gls{icd}-9 code classification and \gls{ner}—the synthetic documents demonstrate competitive performance, particularly in low-resource settings where real annotated data are scarce.
 This validates the utility of the facsimile approach for generating privacy-preserving training data that retains clinical value.
 
 \subsection{Privacy Analysis and Mitigation Strategies}
@@ -54,7 +54,7 @@ This thesis conducts a rigorous privacy analysis to quantify residual risks and 
 We evaluate privacy through two complementary attack scenarios.
 Linkage attacks (1-vs-N) simulate an adversary attempting to attribute each synthetic document to its source patient among all candidates in the dataset, representing a realistic but challenging global attribution task.
 Discrimination attacks (1-vs-2) represent a stronger threat model where the adversary only needs to distinguish between two candidates, assuming prior knowledge that narrows the search space.
-Both attacks employ lexical (TF-IDF) and semantic similarity metrics to quantify re-identification risks.
+Both attacks employ lexical (\gls{tfidf}) and semantic similarity metrics to quantify re-identification risks.
 
 The privacy analysis reveals that baseline synthetic documents retain patient-specific fingerprints, primarily through the selection and combination of \gls{umls} keywords.
 While the architecture prevents direct leakage of \gls{pii}, the keywords themselves—though individually non-identifying—can form distinctive patterns that enable re-identification when combined.
@@ -104,12 +104,12 @@ Critically, the facsimile approach—maintaining one-to-one correspondence with 
 Together, these components enable \glspl{llm} to produce synthetic documents that serve as effective training data for downstream tasks.
 However, achieving full realism remains an open challenge: authentic clinical notes contain not only medical terminology but also institutional jargon, casual linguistic patterns, and personal anecdotes that reflect the human dimension of patient care—elements that are difficult to synthesize without access to real examples yet may carry privacy-sensitive information.
 
-\textbf{RQ2: To what extent can synthetic clinical documents serve as effective training data for downstream NLP tasks, and under what conditions do they provide benefit over real data alone?}
+\textbf{RQ2: To what extent can synthetic clinical documents serve as effective training data for downstream \gls{nlp} tasks, and under what conditions do they provide benefit over real data alone?}
 
 Synthetic clinical documents can serve as effective training data for downstream \gls{nlp} tasks, complementing rather than replacing real data.
 Their utility depends critically on task complexity and data availability.
 For classification tasks with limited real annotated examples, synthetic data provide substantial performance gains by expanding training set diversity and coverage of rare clinical concepts.
-However, task complexity moderates these benefits: simpler tasks such as multilabel ICD-9 code prediction benefit more readily from synthetic augmentation than complex reasoning tasks that require nuanced understanding of clinical context.
+However, task complexity moderates these benefits: simpler tasks such as multilabel \gls{icd}-9 code prediction benefit more readily from synthetic augmentation than complex reasoning tasks that require nuanced understanding of clinical context.
 
 The conditions under which synthetic data provide greatest benefit align with the low-resource settings that motivate their use: when real annotated data are scarce, when minority classes are underrepresented, or when annotation costs prohibit manual labeling at scale.
 In these scenarios, synthetic documents enable model training that would otherwise be infeasible.
@@ -127,7 +127,7 @@ Critically, no perfect solution exists: residual risks remain, and the acceptabl
 The privacy-utility trade-off must be negotiated among stakeholders—data controllers, ethics committees, researchers, and potentially patients—based on the sensitivity of the source data and the intended use of synthetic outputs.
 Generation approaches can be designed to minimize re-identification risks through privacy-by-design architectures and targeted mitigations, but honest acknowledgment of limitations is essential for responsible deployment.
 
-\textbf{RQ4: Can large language models serve as effective annotators for clinical text, and how does LLM-based annotation compare to traditional expert annotation for training downstream NLP models?}
+\textbf{RQ4: Can large language models serve as effective annotators for clinical text, and how does \gls{llm}-based annotation compare to traditional expert annotation for training downstream \gls{nlp} models?}
 
 Yes, large language models can serve as effective annotators for clinical text, achieving competitive performance compared to traditional dictionary-based and expert annotation methods.
 Our experiments across five languages demonstrate that \gls{llm}-based weak supervision produces annotations of sufficient quality to train robust entity extraction models, reducing the need for expensive manual labeling.

@@ -5,15 +5,15 @@
 \section{Synthesis of Contributions}
 
 This thesis addresses a fundamental challenge in clinical natural language processing: the scarcity of annotated medical data due to confidentiality constraints, high annotation costs, and limited expert availability.
-Unlike general-domain NLP, where crowdsourcing platforms such as Amazon Mechanical Turk enable rapid annotation at scale, clinical data confidentiality prohibits exposing patient documents to untrained external annotators.
-The same confidentiality constraints forbid the use of remote large language models for annotation, as transmitting clinical text to external APIs violates data protection regulations.
+Unlike general-domain \gls{nlp}, where crowdsourcing platforms such as Amazon Mechanical Turk enable rapid annotation at scale, clinical data confidentiality prohibits exposing patient documents to untrained external annotators.
+The same confidentiality constraints forbid the use of remote large language models for annotation, as transmitting clinical text to external \gls{api} violates data protection regulations.
 Furthermore, the limited computational infrastructure of most healthcare institutions makes local deployment of large language models impractical, leaving institutions with few viable annotation options.
 We propose methods to automate both the generation of synthetic clinical documents and their annotation, enabling the creation of high-quality training datasets without massive human intervention.
 
 \subsection{A Complete Pipeline for Synthetic Medical Data}
 
 The contributions presented in Chapters~\ref{chap:synthetic} through~\ref{chap:french-application} articulate to form an integrated approach to synthetic data creation.
-Chapter~\ref{chap:synthetic} introduces a reward-based generation method that produces synthetic clinical documents guided by UMLS concept keywords extracted from real patient documents.
+Chapter~\ref{chap:synthetic} introduces a reward-based generation method that produces synthetic clinical documents guided by \gls{umls} concept keywords extracted from real patient documents.
 We term this a \emph{facsimile} approach because the synthetic documents are designed to closely reproduce the structure, style, and clinical reasoning patterns of their real counterparts—much like a facsimile copy preserves the essential characteristics of an original document.
 This structural fidelity is not merely aesthetic: models trained on synthetic data that closely resembles local clinical documents transfer more effectively to real documents from the same institution.
 Unlike pure generation approaches that generate documents from scratch, our seed-based method anchors synthetic documents in real clinical narratives while extracting only non-identifying medical concepts.
@@ -22,21 +22,21 @@ Chapter~\ref{chap:privacy} conducts a rigorous privacy analysis of the generated
 We propose and evaluate post-processing mitigation strategies, demonstrating that targeted keyword perturbation significantly reduces linkage attack success rates while maintaining acceptable data utility for certain downstream tasks.
 
 Chapters~\ref{chap:distillation} and~\ref{chap:french-application} complete the pipeline by addressing the annotation bottleneck.
-The hybrid approach combining dictionary-based and LLM-based annotations leverages the complementary strengths of each source, achieving superior performance compared to either method alone.
-More broadly, rule-based approaches remain valuable components of clinical NLP pipelines, particularly when high precision is required: hand-crafted rules can enforce domain constraints and filter false positives that statistical models might produce.
-The French clinical application (Chapter~\ref{chap:french-application}) validates this approach on real-world data from AP-HP, including semi-synthetic documents created by physicians for educational and research purposes, demonstrating that our methodology transfers effectively across languages and clinical contexts.
+The hybrid approach combining dictionary-based and \gls{llm}-based annotations leverages the complementary strengths of each source, achieving superior performance compared to either method alone.
+More broadly, rule-based approaches remain valuable components of clinical \gls{nlp} pipelines, particularly when high precision is required: hand-crafted rules can enforce domain constraints and filter false positives that statistical models might produce.
+The French clinical application (Chapter~\ref{chap:french-application}) validates this approach on real-world data from \gls{aphp}, including semi-synthetic documents created by physicians for educational and research purposes, demonstrating that our methodology transfers effectively across languages and clinical contexts.
 
 Together, these contributions establish an end-to-end process: synthetic document generation (Chapter~\ref{chap:synthetic}) produces privacy-conscious clinical text, privacy mitigation (Chapter~\ref{chap:privacy}) enables safe dissemination for certain attacks, and weak supervision (Chapters~\ref{chap:distillation} and~\ref{chap:french-application}) provides automated annotation.
 The result is a framework prototype for creating annotated clinical datasets with minimal human intervention.
 
 \subsection{Validation Across Languages and Clinical Contexts}
 
-The effectiveness of our approach is validated not only on public datasets (MIMIC-III) but also on real-world clinical data and across multiple languages.
+The effectiveness of our approach is validated not only on public datasets (\gls{mimic}-III) but also on real-world clinical data and across multiple languages.
 The weak supervision experiments in Chapter~\ref{chap:distillation} demonstrate strong performance on multilingual clinical entity extraction using the E3C dataset, covering English, Spanish, French, Italian, and Basque.
-The French clinical application (Chapter~\ref{chap:french-application}) provides further validation on AP-HP medical reports, demonstrating that the reward-based generation approach transfers effectively to French clinical documentation and ICD-10 classification tasks.
+The French clinical application (Chapter~\ref{chap:french-application}) provides further validation on \gls{aphp} medical reports, demonstrating that the reward-based generation approach transfers effectively to French clinical documentation and \gls{icd}-10 classification tasks.
 
-The substantial gap between public datasets (MIMIC-III) and real clinical documents in terms of structure, terminology, and narrative flow motivates the facsimile approach.
-The consistent patterns observed across MIMIC-III (English, ICD-9) and AP-HP (French, ICD-10) experiments—despite differences in language, coding systems, and model architectures—suggest that the underlying methodology captures language-agnostic principles of clinical document structure.
+The substantial gap between public datasets (\gls{mimic}-III) and real clinical documents in terms of structure, terminology, and narrative flow motivates the facsimile approach.
+The consistent patterns observed across \gls{mimic}-III (English, \gls{icd}-9) and \gls{aphp} (French, \gls{icd}-10) experiments—despite differences in language, coding systems, and model architectures—suggest that the underlying methodology captures language-agnostic principles of clinical document structure.
 
 \section{Synthetic Document Generation}
 
@@ -47,7 +47,7 @@ The consistent patterns observed across MIMIC-III (English, ICD-9) and AP-HP (Fr
 Our approach differs fundamentally from pure generation methods such as KnowledgeSG in its reliance on seed documents.
 KnowledgeSG generates clinical documents entirely from scratch using ontological knowledge bases, achieving high scalability without requiring access to real patient data.
 This design choice prioritizes scalability and eliminates the need for pseudo-anonymization.
-While we also experimented with DP-SFT as an extension to our pipeline, discussions with the KnowledgeSG authors suggest that DP-SFT alone does not achieve comparable performance to their ontology-guided generation approach.
+While we also experimented with DP-\gls{sft} as an extension to our pipeline, discussions with the KnowledgeSG authors suggest that DP-\gls{sft} alone does not achieve comparable performance to their ontology-guided generation approach.
 
 In contrast, our facsimile approach deliberately trades scalability for structural fidelity.
 By anchoring generation in real clinical narratives through keyword extraction, we preserve subtle patterns of medical reasoning, temporal ordering of clinical events, and narrative structures that characterize actual hospital documentation.
@@ -74,7 +74,7 @@ The primary limitation applies to scenarios requiring synthetic corpora without 
 When expanding to new medical specialties (cardiology to oncology), new document types (discharge summaries to operative notes), or new clinical tasks (diagnosis coding to treatment recommendation), synthetic generation enables faster deployment than traditional annotation pipelines.
 
 The facsimile approach proves particularly valuable here: given even a small number of real documents from the new domain, keyword extraction and generation can produce training corpora within days rather than months.
-The French clinical application (Chapter~\ref{chap:french-application}) demonstrates this scalability across languages and coding systems, transitioning from English ICD-9 to French ICD-10 classification with consistent methodology.
+The French clinical application (Chapter~\ref{chap:french-application}) demonstrates this scalability across languages and coding systems, transitioning from English \gls{icd}-9 to French \gls{icd}-10 classification with consistent methodology.
 
 \paragraph{Boundaries where traditional annotation remains preferable.}
 
@@ -91,18 +91,18 @@ First, it provides a strong learning signal while maintaining privacy boundaries
 This architecture allows the model to improve through preference optimization without direct access to patient documents.
 
 The empirical results validate this approach across multiple datasets and tasks.
-On MIMIC-III, models trained on synthetic documents generated with reward-based refinement outperform those trained on real data when annotations are scarce, with particularly strong gains on complex tasks requiring coverage of rare labels (Top-100, Top-400 ICD-9 codes).
-The French clinical application (Chapter~\ref{chap:french-application}) confirms these patterns with consistent improvements on ICD-10 classification after DPO alignment.
+On \gls{mimic}-III, models trained on synthetic documents generated with reward-based refinement outperform those trained on real data when annotations are scarce, with particularly strong gains on complex tasks requiring coverage of rare labels (Top-100, Top-400 \gls{icd}-9 codes).
+The French clinical application (Chapter~\ref{chap:french-application}) confirms these patterns with consistent improvements on \gls{icd}-10 classification after \gls{dpo} alignment.
 
 The reward mechanism enables a bootstrap-and-refine cycle: seed documents provide an anchor in real clinical patterns, while iterative preference optimization progressively improves quality without requiring additional manual annotation.
-This combination of fine-tuning on limited seed data followed by self-improvement through reward signals proves particularly effective for small models (7B-13B parameters) that can be deployed in hospital infrastructure, addressing the practical constraint that healthcare institutions cannot rely on external API-based models due to confidentiality requirements.
+This combination of fine-tuning on limited seed data followed by self-improvement through reward signals proves particularly effective for small models (7B-13B parameters) that can be deployed in hospital infrastructure, addressing the practical constraint that healthcare institutions cannot rely on external \gls{api}-based models due to confidentiality requirements.
 
 \paragraph{Reward-based training amplifies privacy risks.}
 
 The privacy analysis in Chapter~\ref{chap:privacy} revealed an unexpected and concerning finding: reward-based training, despite using only numerical scores rather than textual data, significantly amplifies re-identification vulnerabilities.
-On AlpaCare, linkage attack success rates increase from 25\% (DP-SFT baseline) to 78\% (DPO-1), a threefold increase directly attributable to preference optimization.
+On AlpaCare, linkage attack success rates increase from 25\% (DP-\gls{sft} baseline) to 78\% (\gls{dpo}-1), a threefold increase directly attributable to preference optimization.
 
-The mechanism underlying this amplification is subtle: by training the model to maximize similarity scores to real documents, DPO inadvertently teaches it to reproduce patient-specific patterns.
+The mechanism underlying this amplification is subtle: by training the model to maximize similarity scores to real documents, \gls{dpo} inadvertently teaches it to reproduce patient-specific patterns.
 The model learns that certain combinations of medical concepts, narrative structures, and clinical reasoning patterns yield higher scores—precisely the characteristics that enable re-identification.
 
 This finding was impossible to anticipate theoretically and emerged only through empirical privacy evaluation.
@@ -121,15 +121,15 @@ Had privacy evaluation been conducted earlier, alternative reward formulations (
 \paragraph{Computational costs and carbon footprint.}
 \label{sec:carbon}
 
-The reward-based generation pipeline requires substantial computational resources: supervised fine-tuning on seed data, multiple rounds of candidate generation (N=4 per keyword sequence), semantic scoring of all candidates, and iterative DPO training.
+The reward-based generation pipeline requires substantial computational resources: supervised fine-tuning on seed data, multiple rounds of candidate generation (N=4 per keyword sequence), semantic scoring of all candidates, and iterative \gls{dpo} training.
 While necessary for achieving high-quality synthetic documents, these computational demands translate into significant energy consumption and carbon emissions.
 
-Our experiments did not systematically measure or report carbon footprint, an increasingly important consideration for sustainable AI research.
+Our experiments did not systematically measure or report carbon footprint, an increasingly important consideration for sustainable \gls{ai} research.
 Future work should incorporate environmental impact assessment, exploring whether similar quality gains could be achieved with more efficient architectures or fewer training iterations.
 
 \section{Privacy Preservation in Practice}
 A central theme across this work is the commitment to privacy preservation alongside the honest acknowledgment of its limitations.
-The generation pipeline incorporates privacy-by-design principles: only UMLS concept keywords cross the boundary from private to public environments, and the reward mechanism relies solely on numerical scores rather than textual data.
+The generation pipeline incorporates privacy-by-design principles: only \gls{umls} concept keywords cross the boundary from private to public environments, and the reward mechanism relies solely on numerical scores rather than textual data.
 However, the privacy analysis in Chapter~\ref{chap:privacy} reveals that architectural safeguards alone do not eliminate re-identification risks.
 
 The empirical evaluation demonstrates that reward-based training, while improving document quality, inadvertently amplifies re-identification vulnerabilities by teaching the model to reproduce patient-specific patterns.
@@ -143,9 +143,9 @@ However, our results also show that under certain constraints—such as deployme
 What we can guarantee is the absence of direct identification: the keywords contain no personally identifiable information such as names, dates, or locations.
 What we cannot guarantee is zero re-identification risk, though this risk can be substantially reduced through post-processing.
 
-This raises a practical question: if facsimile documents still carry re-identification risks, can they be submitted to distant LLMs for annotation or other processing?
+This raises a practical question: if facsimile documents still carry re-identification risks, can they be submitted to distant \glspl{llm} for annotation or other processing?
 The answer depends on the data provider's requirements and applicable regulations.
-Several deployment configurations can be negotiated with institutions based on their acceptable risk levels: semi-closed access where synthetic datasets are shared within controlled research consortia, post-processing with keyword perturbation to meet specific privacy thresholds, completely open publication when sufficient mitigations have been applied, or transmission to secured infrastructure hosting larger LLMs under appropriate data agreements.
+Several deployment configurations can be negotiated with institutions based on their acceptable risk levels: semi-closed access where synthetic datasets are shared within controlled research consortia, post-processing with keyword perturbation to meet specific privacy thresholds, completely open publication when sufficient mitigations have been applied, or transmission to secured infrastructure hosting larger \glspl{llm} under appropriate data agreements.
 This range of options illustrates the flexibility of synthetic data: institutions can calibrate the privacy-utility tradeoff to their specific constraints rather than being limited to a single dissemination model.
 
 This honest assessment of capabilities and limitations provides a realistic foundation for deployment decisions in healthcare settings.
@@ -155,16 +155,16 @@ This honest assessment of capabilities and limitations provides a realistic foun
 \paragraph{A targeted privacy mitigation.}
 
 The keyword perturbation approach proposed in Chapter~\ref{chap:privacy} demonstrates dramatically superior effectiveness compared to generic text rewriting.
-On MIMIC-III, keyword perturbation reduces linkage attack success rates by 57-59 percentage points (from 86-90\% to 29-31\%), whereas standard rephrasing achieves only 2-5 percentage point reductions.
+On \gls{mimic}-III, keyword perturbation reduces linkage attack success rates by 57-59 percentage points (from 86-90\% to 29-31\%), whereas standard rephrasing achieves only 2-5 percentage point reductions.
 
 This stark difference reveals a fundamental insight about the nature of privacy leakage in synthetic medical documents: the primary vulnerability lies not in general linguistic patterns but in the specific combination and sequence of medical concepts.
-By targeting the UMLS keywords that guided generation—precisely the elements most likely to create patient-specific fingerprints—keyword perturbation disrupts re-identification pathways while minimizing damage to clinical semantics.
+By targeting the \gls{umls} keywords that guided generation—precisely the elements most likely to create patient-specific fingerprints—keyword perturbation disrupts re-identification pathways while minimizing damage to clinical semantics.
 
 The localized nature of this intervention explains its superior utility preservation.
 Generic rephrasing modifies entire documents, potentially destroying subtle clinical information encoded in phrasing and structure.
 Keyword perturbation preserves narrative flow and document structure, replacing only the specific medical terms that enable linkage attacks.
 This targeted approach achieves the best of both worlds: substantial privacy gains with acceptable utility costs, particularly for conversational tasks where AlpaCare experiments show negligible performance degradation (less than 2\% preference score reduction).
-The differential impact across tasks may also reflect model capacity: the larger models used for AlpaCare conversational tasks possess greater capacity to compensate for lexical perturbations through contextual understanding, whereas the smaller DeBERTa models used for ICD coding rely more heavily on exact terminology matches.
+The differential impact across tasks may also reflect model capacity: the larger models used for AlpaCare conversational tasks possess greater capacity to compensate for lexical perturbations through contextual understanding, whereas the smaller DeBERTa models used for \gls{icd} coding rely more heavily on exact terminology matches.
 
 \paragraph{Post-processing mitigation does not eliminate all risks.}
 
@@ -183,7 +183,7 @@ While discrimination attacks represent a theoretically demanding scenario—requ
 The privacy preservation strategies explored in this thesis occupy a distinct position relative to formal differential privacy (DP) approaches.
 Recent work on DP-Rewrite~\cite{igamberdiev2022dprewrite}, DP-BART~\cite{igamberdiev2023dpbart}, and "Just Rewrite It Again"~\cite{igamberdiev2024rewriteagain} provides mathematically rigorous privacy guarantees through noise injection mechanisms calibrated to achieve specific epsilon values.
 
-Our keyword perturbation approach operates differently: rather than applying generic text rewriting with DP guarantees, we explicitly target the domain-specific medical keywords (UMLS concepts) that enabled generation.
+Our keyword perturbation approach operates differently: rather than applying generic text rewriting with DP guarantees, we explicitly target the domain-specific medical keywords (\gls{umls} concepts) that enabled generation.
 This targeted intervention achieves dramatically superior empirical privacy gains (57-59 percentage point reductions in linkage attacks versus 2-5 pp for generic rephrasing) while minimizing utility loss.
 
 The key insight—that privacy leakage in medical documents stems primarily from combinations of medical concepts rather than general linguistic patterns—motivates this domain-specific approach.
@@ -199,10 +199,10 @@ This layered defense would provide both theoretical privacy bounds and strong em
 A distinctive contribution of this work lies in the comprehensive privacy evaluation methodology applied to synthetic clinical documents.
 While numerous recent studies generate synthetic medical data~\cite{kweon_publicly_2023,xie_differentially_2024,li_synthetic_2024}, few conduct rigorous empirical assessment of re-identification risks through realistic attack scenarios.
 
-Our evaluation framework combines two complementary attack types (linkage 1-vs-N and discrimination 1-vs-2) with dual similarity metrics (lexical TF-IDF and semantic embeddings), providing multifaceted assessment of privacy vulnerabilities.
+Our evaluation framework combines two complementary attack types (linkage 1-vs-N and discrimination 1-vs-2) with dual similarity metrics (lexical \gls{tfidf} and semantic embeddings), providing multifaceted assessment of privacy vulnerabilities.
 This systematic approach revealed the unexpected finding that reward-based training amplifies re-identification risks—a discovery that would not have emerged from architectural analysis alone and represents an important insight for the community developing similarity-based reward mechanisms.
 
-Furthermore, our privacy-utility tradeoff analysis demonstrates dataset-dependent dynamics: keyword perturbation imposes minimal utility costs on conversational tasks (AlpaCare) but more substantial costs on terminology-sensitive classification (MIMIC-III ICD coding).
+Furthermore, our privacy-utility tradeoff analysis demonstrates dataset-dependent dynamics: keyword perturbation imposes minimal utility costs on conversational tasks (AlpaCare) but more substantial costs on terminology-sensitive classification (\gls{mimic}-III \gls{icd} coding).
 This nuanced characterization helps practitioners make informed deployment decisions based on their specific use cases and acceptable risk levels.
 
 
@@ -212,7 +212,7 @@ The privacy evaluation in Chapter~\ref{chap:privacy} reveals that acceptable tra
 
 \paragraph{Conversational and question-answering applications.}
 
-For conversational medical AI or clinical question-answering systems, keyword perturbation represents a clear win: AlpaCare experiments demonstrate that applying keyword perturbation reduces linkage attack success rates by 63 percentage points while degrading preference scores by less than 2\%.
+For conversational medical \gls{ai} or clinical question-answering systems, keyword perturbation represents a clear win: AlpaCare experiments demonstrate that applying keyword perturbation reduces linkage attack success rates by 63 percentage points while degrading preference scores by less than 2\%.
 
 This minimal utility cost stems from the robustness of conversational quality assessment to synonym substitution.
 Replacing "myocardial infarction" with "heart attack" or "cardiac event" preserves semantic meaning sufficiently for dialogue systems, while disrupting the lexical fingerprints that enable re-identification.
@@ -222,7 +222,7 @@ Healthcare institutions deploying chatbots, clinical decision support interfaces
 \paragraph{Clinical coding and terminology-sensitive tasks.}
 
 Classification tasks requiring precise medical terminology present a more challenging tradeoff.
-MIMIC-III ICD-9 coding experiments show that keyword perturbation reduces F1 scores by 15-20 points on complex tasks (Top-50, Top-100), representing substantial utility loss.
+\gls{mimic}-III \gls{icd}-9 coding experiments show that keyword perturbation reduces F1 scores by 15-20 points on complex tasks (Top-50, Top-100), representing substantial utility loss.
 
 For these applications, deployment decisions must weigh privacy requirements against performance needs.
 One potential approach involves volume compensation: our results suggest that generating 10-20x more synthetic data with keyword perturbation might recover performance lost to term substitution, though this hypothesis requires empirical validation.
@@ -248,22 +248,22 @@ Medical professionals possess limited availability for annotation tasks due to c
 
 Synthetic generation combined with weak supervision addresses this cost barrier through two mechanisms.
 First, reward-based generation reduces the number of seed documents requiring manual pseudo-anonymization.
-Second, hybrid weak supervision (dictionary + LLM annotations) produces draft annotations that experts can validate rather than creating from scratch, reducing annotation time by an estimated factor of 3-5 based on our qualitative observations during the AP-HP collaboration.
+Second, hybrid weak supervision (dictionary + \gls{llm} annotations) produces draft annotations that experts can validate rather than creating from scratch, reducing annotation time by an estimated factor of 3-5 based on our qualitative observations during the \gls{aphp} collaboration.
 
-\subsection{Hybrid Dictionary-LLM Approach}
+\subsection{Hybrid Dictionary-\gls{llm} Approach}
 
 \paragraph{Hybrid weak supervision: complementary annotation sources.}
 
-The hybrid supervision approach combining dictionary-based and LLM-based annotations (Chapter~\ref{chap:distillation}) extends prior work on weak supervision in clinical NLP.
-While dictionary-based methods and LLM-based annotation~\cite{agrawal_large_2022} have been explored independently, few studies systematically investigate their combination in multilingual clinical contexts.
+The hybrid supervision approach combining dictionary-based and \gls{llm}-based annotations (Chapter~\ref{chap:distillation}) extends prior work on weak supervision in clinical \gls{nlp}.
+While dictionary-based methods and \gls{llm}-based annotation~\cite{agrawal_large_2022} have been explored independently, few studies systematically investigate their combination in multilingual clinical contexts.
 
 The optimal mixing ratio ($r_{mix} \in [0.4, 0.6]$) for most languages indicates that neither source alone captures the full spectrum of clinical entities.
-Dictionary-based annotations provide precise coverage of standardized medical terminology present in UMLS, ensuring high precision on well-documented concepts.
-LLM-based annotations offer flexibility and recall, capturing context-dependent expressions, multi-word entities, and rare medical terms not present in lexicons.
-The analysis of complementary error patterns—dictionaries under-extract multi-word entities while LLMs over-extract longer spans—explains why their combination reduces bias and improves generalization.
+Dictionary-based annotations provide precise coverage of standardized medical terminology present in \gls{umls}, ensuring high precision on well-documented concepts.
+\gls{llm}-based annotations offer flexibility and recall, capturing context-dependent expressions, multi-word entities, and rare medical terms not present in lexicons.
+The analysis of complementary error patterns—dictionaries under-extract multi-word entities while \glspl{llm} over-extract longer spans—explains why their combination reduces bias and improves generalization.
 
-The Basque case study provides particularly strong evidence for this framework's value: when dictionary resources are severely limited (only 63 annotated tokens), LLM-only annotation ($r_{mix} = 1$) becomes optimal, demonstrating that the hybrid approach gracefully degrades to the most appropriate strategy based on available resources.
-This adaptability makes the method applicable across both well-resourced languages (English, French) and low-resource settings, though language-specific tuning remains important—English shows minimal gains due to rich UMLS coverage, while Basque benefits most from LLM-only annotation.
+The Basque case study provides particularly strong evidence for this framework's value: when dictionary resources are severely limited (only 63 annotated tokens), \gls{llm}-only annotation ($r_{mix} = 1$) becomes optimal, demonstrating that the hybrid approach gracefully degrades to the most appropriate strategy based on available resources.
+This adaptability makes the method applicable across both well-resourced languages (English, French) and low-resource settings, though language-specific tuning remains important—English shows minimal gains due to rich \gls{umls} coverage, while Basque benefits most from \gls{llm}-only annotation.
 
 \subsection{Knowledge Distillation}
 \paragraph{Knowledge distillation in resource-constrained settings.}
@@ -272,8 +272,8 @@ Our distillation experiments from InstructGPT-3.5 to smaller encoder models (DeB
 For Basque, French, and Italian, distilled models achieve 6-12 F1 point improvements over direct InstructGPT inference, suggesting that the training process helps smaller models filter noise and learn robust patterns.
 
 This finding challenges the common assumption that distilled models necessarily underperform their teachers.
-When training data is limited and LLM annotations contain noise, smaller models trained through supervised fine-tuning can learn to ignore spurious patterns and focus on consistent signals.
-This observation has practical implications for deployment in healthcare settings where small, controllable models are preferable to large API-dependent systems.
+When training data is limited and \gls{llm} annotations contain noise, smaller models trained through supervised fine-tuning can learn to ignore spurious patterns and focus on consistent signals.
+This observation has practical implications for deployment in healthcare settings where small, controllable models are preferable to large \gls{api}-dependent systems.
 
 \paragraph{Positioning as draft annotation rather than replacement.}
 
@@ -281,16 +281,16 @@ An important distinction in our positioning: we frame weak supervision as a tool
 Expert validation remains crucial for high-stakes clinical applications, but the ability to pre-populate annotations through hybrid weak supervision dramatically accelerates the annotation process.
 
 This positioning differs from work claiming full automation of medical annotation.
-Our honest acknowledgment of limitations—small E3C test sets, UMLS-oriented annotation guidelines that may introduce biases, language-specific performance variations—reflects a commitment to realistic assessment of capabilities rather than overstating claims of generalization.
+Our honest acknowledgment of limitations—small E3C test sets, \gls{umls}-oriented annotation guidelines that may introduce biases, language-specific performance variations—reflects a commitment to realistic assessment of capabilities rather than overstating claims of generalization.
 
 \paragraph{Generalization across languages and domains remains limited.}
 
-While our experiments demonstrate effectiveness on MIMIC-III (English, ICD-9), E3C (multilingual NER), and AP-HP (French, ICD-10), generalization to other clinical document types and medical specialties remains unproven.
-The MIMIC-III experiments focus on discharge summary sections (History of Present Illness), representing a specific narrative structure.
+While our experiments demonstrate effectiveness on \gls{mimic}-III (English, \gls{icd}-9), E3C (multilingual \gls{ner}), and \gls{aphp} (French, \gls{icd}-10), generalization to other clinical document types and medical specialties remains unproven.
+The \gls{mimic}-III experiments focus on discharge summary sections (History of Present Illness), representing a specific narrative structure.
 Generalization to other document types—operative notes, radiology reports, pathology findings—has not been validated.
 
 The weak supervision experiments reveal language-specific challenges that complicate cross-lingual deployment.
-Spanish shows reversed performance patterns due to dataset-specific characteristics (SPACCC corpus with different clinical entity distributions and additional preprocessing), while Basque benefits from LLM-only annotation due to severely limited dictionary resources.
+Spanish shows reversed performance patterns due to dataset-specific characteristics (SPACCC corpus with different clinical entity distributions and additional preprocessing), while Basque benefits from \gls{llm}-only annotation due to severely limited dictionary resources.
 These variations suggest that successful deployment requires language-specific tuning rather than one-size-fits-all application.
 
 \section{Research Perspectives}
@@ -305,8 +305,8 @@ The most promising direction for immediate research involves integrating formal 
 Recent work on privacy-preserving in-context learning with differentially private few-shot generation~\cite{tangPrivacyPreservingInContextLearning2023} and DP-based text generation~\cite{nageshPrivateTextGeneration2025} provides theoretical frameworks that could be adapted to our reward-based architecture.
 
 Two integration strategies merit investigation.
-First, applying DP mechanisms directly to token generation: rather than post-processing completed documents, DP noise could be injected during the generation process itself, with few-shot examples selected through ontological or semantic guidance (UMLS, SNOMED) to maintain clinical utility despite noise injection.
-Second, applying DP to the numerical scores returned by the private scorer: adding calibrated noise to similarity scores before they reach the public environment would prevent the model from optimizing too precisely toward patient-specific patterns, potentially mitigating the privacy amplification effect observed with standard DPO.
+First, applying DP mechanisms directly to token generation: rather than post-processing completed documents, DP noise could be injected during the generation process itself, with few-shot examples selected through ontological or semantic guidance (\gls{umls}, \gls{snomed}) to maintain clinical utility despite noise injection.
+Second, applying DP to the numerical scores returned by the private scorer: adding calibrated noise to similarity scores before they reach the public environment would prevent the model from optimizing too precisely toward patient-specific patterns, potentially mitigating the privacy amplification effect observed with standard \gls{dpo}.
 
 These approaches would provide formal privacy guarantees (epsilon bounds) while preserving the quality benefits of reward-based training.
 The key challenge lies in balancing the privacy budget (epsilon value) against utility requirements—a tradeoff that our empirical privacy-utility analysis suggests varies substantially across application contexts.
@@ -326,22 +326,22 @@ This approach shifts the privacy-utility tradeoff to the keyword extraction phas
 
 \paragraph{Volume compensation for privacy mitigation.}
 
-Our results suggest that privacy mitigations impose greater utility costs on complex tasks (MIMIC-III Top-100, Top-400) than simple ones.
+Our results suggest that privacy mitigations impose greater utility costs on complex tasks (\gls{mimic}-III Top-100, Top-400) than simple ones.
 An unexplored hypothesis is whether generating substantially larger synthetic datasets (10-20x rather than 4x) with keyword perturbation applied could recover performance through volume compensation.
 
 If this hypothesis holds, it would provide a practical deployment strategy: institutions with adequate computational resources could generate massive synthetic corpora with strong privacy mitigations, achieving acceptable utility through scale rather than reducing privacy protections.
 Empirical validation across multiple tasks and datasets would be necessary to establish the generality of this volume-privacy-utility relationship.
 
-\paragraph{Ensemble annotation with multiple LLM providers.}
+\paragraph{Ensemble annotation with multiple \gls{llm} providers.}
 
-The weak supervision framework currently relies on a single LLM (InstructGPT-3.5) for annotation.
+The weak supervision framework currently relies on a single \gls{llm} (InstructGPT-3.5) for annotation.
 Extending to ensemble methods using multiple providers (GPT-4, Claude, Gemini, Mistral) could improve annotation robustness by reducing model-specific biases.
 
-Different LLMs exhibit different error patterns: some may over-extract entity boundaries while others under-extract, some may excel at rare medical terms while others perform better on common conditions.
+Different \glspl{llm} exhibit different error patterns: some may over-extract entity boundaries while others under-extract, some may excel at rare medical terms while others perform better on common conditions.
 Ensembling their annotations—either through voting mechanisms, confidence-weighted combination, or meta-learning—could produce more reliable weak supervision signals than any single model provides.
 
 This direction appears in the future work section of Chapter~\ref{chap:distillation} but remains unexplored empirically.
-The computational costs of querying multiple commercial APIs represent a practical constraint, though open-source LLMs (Llama-3, Qwen, Mixtral) could provide cost-effective alternatives for ensemble construction.
+The computational costs of querying multiple commercial \gls{api} represent a practical constraint, though open-source \glspl{llm} (Llama-3, Qwen, Mixtral) could provide cost-effective alternatives for ensemble construction.
 
 
 \subsection{Long-term Directions}
@@ -360,7 +360,7 @@ However, this integration introduces new challenges: how to define reward signal
 
 \paragraph{Controllable generation with explicit privacy-utility parameters.}
 
-Current generation methods require users to choose between architectural configurations (DP-SFT versus DPO, with or without keyword perturbation) based on qualitative understanding of tradeoffs.
+Current generation methods require users to choose between architectural configurations (DP-\gls{sft} versus \gls{dpo}, with or without keyword perturbation) based on qualitative understanding of tradeoffs.
 A more elegant approach would expose explicit privacy-utility parameters that users could adjust based on their specific requirements.
 
 Imagine a generation interface where users specify: (1) Desired epsilon value for formal DP guarantees, (2) Target linkage attack success rate, (3) Acceptable utility loss percentage.
@@ -370,7 +370,7 @@ Achieving this vision requires substantial research into predicting privacy-util
 
 \paragraph{Robustness to adaptive attacks.}
 
-Our privacy evaluation assumes adversaries using standard similarity metrics (TF-IDF, semantic embeddings) without knowledge of our mitigation strategies.
+Our privacy evaluation assumes adversaries using standard similarity metrics (\gls{tfidf}, semantic embeddings) without knowledge of our mitigation strategies.
 Sophisticated adversaries aware that keyword perturbation has been applied could develop adaptive attacks: training models to reverse synonym substitutions by learning common replacement patterns, or exploiting semantic embeddings specifically designed to be robust to lexical variation.
 
 Evaluating robustness to such adaptive attacks remains an open challenge.
@@ -386,7 +386,7 @@ Different application contexts tolerate different re-identification risks, but a
 
 \textbf{What is the right privacy metric for synthetic medical text?}
 Our work uses linkage and discrimination attack success rates as empirical privacy measures, but alternative metrics (k-anonymity, l-diversity, differential privacy) offer different guarantees and tradeoffs.
-Consensus on appropriate privacy metrics would facilitate comparison across studies and standardization in clinical AI deployment.
+Consensus on appropriate privacy metrics would facilitate comparison across studies and standardization in clinical \gls{ai} deployment.
 
 \textbf{Can privacy-utility tradeoffs be predicted a priori?}
 Rather than empirically evaluating privacy-utility curves for each new dataset and task, could we develop predictive models that estimate tradeoffs from dataset characteristics (document length, vocabulary size, label distribution)?
@@ -396,4 +396,4 @@ Such predictions would enable more informed deployment decisions without requiri
 When synthetic data undergoes multiple transformations (keyword extraction with privacy guarantees, generation with DP mechanisms, post-processing with keyword perturbation), how do privacy guarantees propagate?
 Composition theorems from differential privacy provide formal answers for DP mechanisms, but our hybrid approach combining formal and empirical methods lacks established composition rules.
 
-These questions extend beyond the scope of a single thesis but represent important directions for the clinical NLP and privacy-preserving machine learning communities.
+These questions extend beyond the scope of a single thesis but represent important directions for the clinical \gls{nlp} and privacy-preserving machine learning communities.

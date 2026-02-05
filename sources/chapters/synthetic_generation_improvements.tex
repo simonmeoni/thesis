@@ -7,16 +7,16 @@
 
 While the previous chapter demonstrated that our synthetic generation approach produces high-quality documents that can match or exceed the performance of models trained on real data across multiple benchmarks, a critical question remains: \textit{do these synthetic documents truly preserve patient privacy, or do they inadvertently leak identifying information?} This question is paramount in medical contexts, where even seemingly anonymized data can pose re-identification risks that violate patient confidentiality and regulatory requirements.
 
-Our generation pipeline was designed with privacy preservation as a core principle—using only UMLS concept keywords rather than raw text, and ensuring that only numerical scores cross the privacy boundary between private and public environments. However, architectural safeguards alone do not guarantee privacy. The primary risk lies in re-identification: an adversary with access to the published synthetic dataset may attempt to link synthetic documents back to specific patients whose data informed their creation. Even without explicit personally identifiable information, the selection, ordering, and combination of medical concepts may retain patient-specific patterns that enable such attacks.
+Our generation pipeline was designed with privacy preservation as a core principle—using only \gls{umls} concept keywords rather than raw text, and ensuring that only numerical scores cross the privacy boundary between private and public environments. However, architectural safeguards alone do not guarantee privacy. The primary risk lies in re-identification: an adversary with access to the published synthetic dataset may attempt to link synthetic documents back to specific patients whose data informed their creation. Even without explicit personally identifiable information, the selection, ordering, and combination of medical concepts may retain patient-specific patterns that enable such attacks.
 
 This chapter conducts a rigorous privacy analysis of our synthetic document generation pipeline and proposes mitigation strategies to address identified vulnerabilities. Our contributions are threefold:
 
 \begin{enumerate}
-    \item \textbf{Privacy vulnerability assessment:} We implement two complementary attack scenarios—linkage attacks (1-vs-N) and discrimination attacks (1-vs-2)—using both lexical (TF-IDF) and semantic similarity metrics to quantify re-identification risks across MIMIC-III and AlpaCare datasets.
+    \item \textbf{Privacy vulnerability assessment:} We implement two complementary attack scenarios—linkage attacks (1-vs-N) and discrimination attacks (1-vs-2)—using both lexical (\gls{tfidf}) and semantic similarity metrics to quantify re-identification risks across \gls{mimic}-III and AlpaCare datasets.
     
     \item \textbf{Post-processing mitigation strategies:} We propose and evaluate two privacy-enhancing post-processing methods: standard rephrasing and keyword perturbation. Our results demonstrate that keyword perturbation reduces linkage attack success rates by 50-60 percentage points, achieving 57-63 pp reduction compared to only 2-24 pp for standard rephrasing.
     
-    \item \textbf{Privacy-utility trade-off analysis:} We measure the impact of privacy mitigations on downstream task performance, demonstrating that strong privacy guarantees can be achieved while preserving data utility for clinical NLP applications.
+    \item \textbf{Privacy-utility trade-off analysis:} We measure the impact of privacy mitigations on downstream task performance, demonstrating that strong privacy guarantees can be achieved while preserving data utility for clinical \gls{nlp} applications.
 \end{enumerate}
 
 The findings reveal that while baseline synthetic documents exhibit concerning re-identification vulnerabilities—with discrimination attacks achieving 98-99\% accuracy—targeted keyword perturbation effectively disrupts patient-specific fingerprints. Our mitigation strategies enable the production of high-quality synthetic datasets with significantly reduced re-identification risks. These datasets may be published or shared according to the security requirements defined by the data provider, offering a practical pathway for privacy-conscious medical data dissemination.
@@ -45,13 +45,13 @@ Most relevant to our work, Igamberdiev et al.~\cite{igamberdiev2024rewriteagain}
 Our approach builds upon these existing methods and combines several strengths:
 
 \begin{itemize}
-    \item \textbf{Domain-specific targeting:} We leverage the medical ontology (UMLS) used during generation to identify and perturb the specific terms most likely to enable re-identification, rather than applying generic text rewriting.
+    \item \textbf{Domain-specific targeting:} We leverage the medical ontology (\gls{umls}) used during generation to identify and perturb the specific terms most likely to enable re-identification, rather than applying generic text rewriting.
     
     \item \textbf{Post-processing flexibility:} Our mitigation strategies operate as post-processing steps, making them applicable to any synthetic generation pipeline without requiring architectural modifications or retraining.
     
     \item \textbf{Empirical attack evaluation:} We evaluate privacy through realistic attack scenarios (linkage and discrimination) using both lexical and semantic similarity metrics, providing practical insights into re-identification risks.
     
-    \item \textbf{Privacy-utility trade-off analysis:} We systematically measure the impact of privacy mitigations on downstream clinical NLP tasks, enabling informed decisions based on the security requirements of the data provider.
+    \item \textbf{Privacy-utility trade-off analysis:} We systematically measure the impact of privacy mitigations on downstream clinical \gls{nlp} tasks, enabling informed decisions based on the security requirements of the data provider.
 \end{itemize}
 
 % [PLACEHOLDER: ajouter autres éléments si nécessaire]
@@ -73,7 +73,7 @@ We consider an adversary with the following characteristics and capabilities:
 
 \begin{itemize}
     \item End users only access the published synthetic dataset without the ability to query the generative model directly, precluding completion-based extraction attacks.
-    \item Our generation method relies on UMLS keywords that are inherently non-identifying—they contain no personal information such as names or identifiers that could be memorized and later extracted.
+    \item Our generation method relies on \gls{umls} keywords that are inherently non-identifying—they contain no personal information such as names or identifiers that could be memorized and later extracted.
     \item The model generates new text guided by these keywords rather than performing direct completion of patient documents, reducing the risk of verbatim memorization.
 \end{itemize}
 
@@ -122,13 +122,13 @@ The discrimination attack evaluates whether an adversary can distinguish between
 
 We evaluate attacks using two complementary similarity approaches to capture different types of information leakage:
 
-\paragraph{Lexical similarity (TF-IDF).} We compute Term Frequency-Inverse Document Frequency vectors for each document and measure cosine similarity between synthetic and real documents:
+\paragraph{Lexical similarity (\gls{tfidf}).} We compute Term Frequency-Inverse Document Frequency vectors for each document and measure cosine similarity between synthetic and real documents:
 
 \begin{equation}
     \text{sim}_{\text{TF-IDF}}(s, r) = \frac{\text{TF-IDF}(s) \cdot \text{TF-IDF}(r)}{||\text{TF-IDF}(s)|| \cdot ||\text{TF-IDF}(r)||}
 \end{equation}
 
-We use a vocabulary of up to \num{5000} features. TF-IDF captures lexical overlap and is particularly sensitive to rare medical terms that may serve as patient fingerprints.
+We use a vocabulary of up to \num{5000} features. \gls{tfidf} captures lexical overlap and is particularly sensitive to rare medical terms that may serve as patient fingerprints.
 
 \paragraph{Semantic similarity} We encode documents using a pre-trained sentence transformer (all-mpnet-base-v2) and compute cosine similarity in the embedding space:
 
@@ -140,7 +140,7 @@ where $E(\cdot)$ denotes the embedding function. Semantic similarity captures me
 
 % [PLACEHOLDER: ajouter autres détails sur semantic similarity si nécessaire]
 
-\paragraph{Complementary evaluation.} These two metrics capture different vulnerability profiles. TF-IDF is sensitive to keyword-level leakage, while semantic embeddings may reveal deeper structural or conceptual similarities. Evaluating both provides a comprehensive view of privacy risks and helps assess the effectiveness of different mitigation strategies.
+\paragraph{Complementary evaluation.} These two metrics capture different vulnerability profiles. \gls{tfidf} is sensitive to keyword-level leakage, while semantic embeddings may reveal deeper structural or conceptual similarities. Evaluating both provides a comprehensive view of privacy risks and helps assess the effectiveness of different mitigation strategies.
 
 \section{Privacy Vulnerabilities in Baseline Generation}
 \label{sec:baseline_vulnerabilities}
@@ -149,15 +149,15 @@ Before evaluating mitigation strategies, we first assess the privacy vulnerabili
 
 \subsection{Experimental Setup}
 
-We evaluate re-identification risks on synthetic documents generated at step 2 (DPO-2) of our reward-based generation pipeline, using both seed ratios (4\% and 6\%) for MIMIC-III, and DPO-1 and DP-SFT configurations for AlpaCare.
+We evaluate re-identification risks on synthetic documents generated at step 2 (\gls{dpo}-2) of our reward-based generation pipeline, using both seed ratios (4\% and 6\%) for \gls{mimic}-III, and \gls{dpo}-1 and DP-\gls{sft} configurations for AlpaCare.
 
 \subsubsection{Datasets and Patient Identification}
 
 Each dataset requires specific preprocessing to establish patient identifiers suitable for re-identification evaluation.
 
-\paragraph{MIMIC-III} We use the History of Present Illness sections extracted from discharge summaries. Each document is naturally associated with a unique patient admission. To ensure meaningful evaluation, we filtered the dataset to retain only patients with more than 5 documents in the evaluation subset, ensuring sufficient material for robust similarity computation. After filtering, our evaluation dataset comprises 1,764 documents for the 4\% configuration and 1,819 documents for the 6\% configuration.
+\paragraph{\gls{mimic}-III} We use the History of Present Illness sections extracted from discharge summaries. Each document is naturally associated with a unique patient admission. To ensure meaningful evaluation, we filtered the dataset to retain only patients with more than 5 documents in the evaluation subset, ensuring sufficient material for robust similarity computation. After filtering, our evaluation dataset comprises 1,764 documents for the 4\% configuration and 1,819 documents for the 6\% configuration.
 
-\paragraph{AlpaCare} The AlpaCare dataset presents a methodological challenge: conversational medical messages are not naturally attributed to unique patients. To enable meaningful privacy evaluation, we created pseudo-patient identifiers through clustering. We applied k-means clustering (k=4000) on 10,000 source response texts using BioLORD-2023-M~\cite{remy2024biolord} sentence embeddings via FAISS, then filtered out clusters containing fewer than 3 samples. Since each synthetic document generated in Chapter~\ref{chap:synthetic} is derived from keywords extracted from a specific source response, we propagate the cluster ID from the source to its corresponding synthetic document. This mapping enables re-identification evaluation by linking synthetic documents to their pseudo-patient origins. Our evaluation includes 3,698 documents for the DPO-1 configuration and 6,062 documents for the DP-SFT configuration. Table~\ref{tab:privacy_datasets} summarizes the dataset characteristics for privacy evaluation.
+\paragraph{AlpaCare} The AlpaCare dataset presents a methodological challenge: conversational medical messages are not naturally attributed to unique patients. To enable meaningful privacy evaluation, we created pseudo-patient identifiers through clustering. We applied k-means clustering (k=4000) on 10,000 source response texts using BioLORD-2023-M~\cite{remy2024biolord} sentence embeddings via FAISS, then filtered out clusters containing fewer than 3 samples. Since each synthetic document generated in Chapter~\ref{chap:synthetic} is derived from keywords extracted from a specific source response, we propagate the cluster ID from the source to its corresponding synthetic document. This mapping enables re-identification evaluation by linking synthetic documents to their pseudo-patient origins. Our evaluation includes 3,698 documents for the \gls{dpo}-1 configuration and 6,062 documents for the DP-\gls{sft} configuration. Table~\ref{tab:privacy_datasets} summarizes the dataset characteristics for privacy evaluation.
 
 \begin{table}[h]
 \centering
@@ -165,25 +165,25 @@ Each dataset requires specific preprocessing to establish patient identifiers su
 \toprule
 \textbf{Dataset} & \textbf{Configuration} & \textbf{Documents} & \textbf{Patient ID Source} \\
 \midrule
-MIMIC-III & 4\% DPO-2 & \num{1764} & Natural (filtered $>$5 docs) \\
-MIMIC-III & 6\% DPO-2 & \num{1819} & Natural (filtered $>$5 docs) \\
-AlpaCare & DPO-1 & \num{3698} & BioLORD k-means (k=\num{4000}, $\geq$3 samples) \\
-AlpaCare & DP-SFT & \num{6062} & BioLORD k-means (k=\num{4000}, $\geq$3 samples) \\
+\gls{mimic}-III & 4\% \gls{dpo}-2 & \num{1764} & Natural (filtered $>$5 docs) \\
+\gls{mimic}-III & 6\% \gls{dpo}-2 & \num{1819} & Natural (filtered $>$5 docs) \\
+AlpaCare & \gls{dpo}-1 & \num{3698} & BioLORD k-means (k=\num{4000}, $\geq$3 samples) \\
+AlpaCare & DP-\gls{sft} & \num{6062} & BioLORD k-means (k=\num{4000}, $\geq$3 samples) \\
 \bottomrule
 \end{tabular}
-\caption{Dataset characteristics for privacy evaluation. MIMIC-III uses natural patient identifiers filtered to retain patients with sufficient documents. AlpaCare uses pseudo-patient clusters propagated from source responses to synthetic documents via keyword-based generation traceability.}
+\caption{Dataset characteristics for privacy evaluation. \gls{mimic}-III uses natural patient identifiers filtered to retain patients with sufficient documents. AlpaCare uses pseudo-patient clusters propagated from source responses to synthetic documents via keyword-based generation traceability.}
 \label{tab:privacy_datasets}
 \end{table}
 
 \subsubsection{Attack Configuration}
 
-For both linkage and discrimination attacks, we compute similarity using TF-IDF vectorization with a maximum of \num{5000} features and cosine similarity matching. Each synthetic document is compared against all real patient documents to identify the most similar candidate.
+For both linkage and discrimination attacks, we compute similarity using \gls{tfidf} vectorization with a maximum of \num{5000} features and cosine similarity matching. Each synthetic document is compared against all real patient documents to identify the most similar candidate.
 
 % [PLACEHOLDER: ajouter configuration semantic similarity si nécessaire]
 
 \subsection{Linkage Attack Results}
 
-The results reveal substantial re-identification vulnerabilities in baseline synthetic documents. MIMIC-III exhibits particularly high linkage success rates (86-90\% TF-IDF), indicating that clinical notes retain strong patient-specific fingerprints despite the keyword-based generation process. AlpaCare shows more variance: DPO-1 documents are vulnerable (78\% TF-IDF, 82\% embeddings), while DP-SFT documents demonstrate inherently lower re-identification risk (25-26\%), likely due to the absence of the preference optimization step that may reinforce patient-specific patterns.
+The results reveal substantial re-identification vulnerabilities in baseline synthetic documents. \gls{mimic}-III exhibits particularly high linkage success rates (86-90\% \gls{tfidf}), indicating that clinical notes retain strong patient-specific fingerprints despite the keyword-based generation process. AlpaCare shows more variance: \gls{dpo}-1 documents are vulnerable (78\% \gls{tfidf}, 82\% embeddings), while DP-\gls{sft} documents demonstrate inherently lower re-identification risk (25-26\%), likely due to the absence of the preference optimization step that may reinforce patient-specific patterns.
 
 \begin{table}[h]
 \centering
@@ -191,19 +191,19 @@ The results reveal substantial re-identification vulnerabilities in baseline syn
 \toprule
 \textbf{Dataset} & \textbf{TF-IDF} & \textbf{Embeddings} \\
 \midrule
-MIMIC-III 4\% DPO-2 & 85.94 & 59.47 \\
-MIMIC-III 6\% DPO-2 & \textbf{89.72} & 55.74 \\
-AlpaCare DPO-1 & 77.88 & \textbf{81.99} \\
-AlpaCare DP-SFT & \textbf{24.78} & \textbf{26.31} \\
+\gls{mimic}-III 4\% \gls{dpo}-2 & 85.94 & 59.47 \\
+\gls{mimic}-III 6\% \gls{dpo}-2 & \textbf{89.72} & 55.74 \\
+AlpaCare \gls{dpo}-1 & 77.88 & \textbf{81.99} \\
+AlpaCare DP-\gls{sft} & \textbf{24.78} & \textbf{26.31} \\
 \midrule
 Random Baseline & \multicolumn{2}{c}{$\approx$0.06} \\
 \bottomrule
 \end{tabular}
-\caption{Linkage attack success rates (\%) on baseline synthetic documents. Bold values indicate highest vulnerability (MIMIC-III 6\% TF-IDF, AlpaCare DPO-1 semantic) and lowest vulnerability (AlpaCare DP-SFT).}
+\caption{Linkage attack success rates (\%) on baseline synthetic documents. Bold values indicate highest vulnerability (\gls{mimic}-III 6\% \gls{tfidf}, AlpaCare \gls{dpo}-1 semantic) and lowest vulnerability (AlpaCare DP-\gls{sft}).}
 \label{tab:baseline_linkage}
 \end{table}
 
-Notably, semantic similarity attacks (embeddings) show lower success rates than TF-IDF on MIMIC-III (56-59\% vs 86-90\%), suggesting that lexical patterns—particularly medical terminology—are the primary vector of privacy leakage. In contrast, AlpaCare DPO-1 shows higher semantic vulnerability (81.99\%) than TF-IDF (77.88\%), indicating that conversational medical content may leak more through semantic patterns.
+Notably, semantic similarity attacks (embeddings) show lower success rates than \gls{tfidf} on \gls{mimic}-III (56-59\% vs 86-90\%), suggesting that lexical patterns—particularly medical terminology—are the primary vector of privacy leakage. In contrast, AlpaCare \gls{dpo}-1 shows higher semantic vulnerability (81.99\%) than \gls{tfidf} (77.88\%), indicating that conversational medical content may leak more through semantic patterns.
 
 \subsection{Discrimination Attack Results}
 
@@ -215,27 +215,27 @@ Table~\ref{tab:baseline_discrimination} presents discrimination attack results, 
 \toprule
 \textbf{Dataset} & \textbf{TF-IDF} & \textbf{Embeddings} \\
 \midrule
-MIMIC-III 4\% DPO-2 & 99.72 & 99.26 \\
-MIMIC-III 6\% DPO-2 & \textbf{99.95} & 99.29 \\
-AlpaCare DPO-1 & 98.38 & \textbf{99.89} \\
-AlpaCare DP-SFT & \textbf{69.65} & \textbf{79.00} \\
+\gls{mimic}-III 4\% \gls{dpo}-2 & 99.72 & 99.26 \\
+\gls{mimic}-III 6\% \gls{dpo}-2 & \textbf{99.95} & 99.29 \\
+AlpaCare \gls{dpo}-1 & 98.38 & \textbf{99.89} \\
+AlpaCare DP-\gls{sft} & \textbf{69.65} & \textbf{79.00} \\
 \midrule
 Random Baseline & \multicolumn{2}{c}{50.0} \\
 \bottomrule
 \end{tabular}
-\caption{Discrimination attack success rates (\%) on baseline synthetic documents. Bold values indicate highest vulnerability (MIMIC-III 6\% TF-IDF, AlpaCare DPO-1 semantic) and lowest vulnerability (AlpaCare DP-SFT).}
+\caption{Discrimination attack success rates (\%) on baseline synthetic documents. Bold values indicate highest vulnerability (\gls{mimic}-III 6\% \gls{tfidf}, AlpaCare \gls{dpo}-1 semantic) and lowest vulnerability (AlpaCare DP-\gls{sft}).}
 \label{tab:baseline_discrimination}
 \end{table}
 
-Discrimination attacks achieve near-perfect accuracy (98-99\%) on MIMIC-III and AlpaCare DPO-1, substantially exceeding the 50\% random baseline. This indicates that synthetic documents preserve highly distinctive patient-specific characteristics that enable reliable pairwise attribution. AlpaCare DP-SFT shows lower but still concerning discrimination rates (69.65\% TF-IDF, 79.00\% embeddings), consistent with its intrinsically more private generation approach observed in linkage attacks.
+Discrimination attacks achieve near-perfect accuracy (98-99\%) on \gls{mimic}-III and AlpaCare \gls{dpo}-1, substantially exceeding the 50\% random baseline. This indicates that synthetic documents preserve highly distinctive patient-specific characteristics that enable reliable pairwise attribution. AlpaCare DP-\gls{sft} shows lower but still concerning discrimination rates (69.65\% \gls{tfidf}, 79.00\% embeddings), consistent with its intrinsically more private generation approach observed in linkage attacks.
 
 \subsection{Analysis of Information Leakage Sources}
 
-The results reveal an important finding regarding the source of privacy leakage in our pipeline. Comparing DP-SFT and DPO configurations on AlpaCare highlights a critical pattern:
+The results reveal an important finding regarding the source of privacy leakage in our pipeline. Comparing DP-\gls{sft} and \gls{dpo} configurations on AlpaCare highlights a critical pattern:
 
-\paragraph{DP-SFT exhibits lower re-identification risk.} The DP-SFT configuration, where the model is trained only with an initial supervised fine-tuning phase on a small seed dataset, achieves linkage attack success rates of 24.78\% (TF-IDF) and 26.31\% (embeddings). This relatively lower vulnerability suggests that the base generation process, guided solely by keyword prompts, does not inherently produce highly identifiable documents. Discrimination attacks on DP-SFT also show reduced effectiveness (69.65\% TF-IDF, 79.00\% embeddings) compared to other configurations.
+\paragraph{DP-\gls{sft} exhibits lower re-identification risk.} The DP-\gls{sft} configuration, where the model is trained only with an initial supervised fine-tuning phase on a small seed dataset, achieves linkage attack success rates of 24.78\% (\gls{tfidf}) and 26.31\% (embeddings). This relatively lower vulnerability suggests that the base generation process, guided solely by keyword prompts, does not inherently produce highly identifiable documents. Discrimination attacks on DP-\gls{sft} also show reduced effectiveness (69.65\% \gls{tfidf}, 79.00\% embeddings) compared to other configurations.
 
-\paragraph{DPO reinforcement amplifies leakage.} In contrast, the DPO-1 configuration exhibits substantially higher linkage attack success rates of 77.88\% (TF-IDF) and 81.99\% (embeddings). The key difference is the preference optimization step, which trains the model to generate documents that score higher similarity to real patient documents. This reinforcement mechanism, while improving document quality (as demonstrated in Chapter~\ref{chap:synthetic}), inadvertently teaches the model to reproduce patient-specific patterns. Notably, DPO-1 shows higher semantic vulnerability (81.99\%) than lexical vulnerability (77.88\%), suggesting that preference optimization reinforces deep semantic patterns beyond surface-level terminology.
+\paragraph{\gls{dpo} reinforcement amplifies leakage.} In contrast, the \gls{dpo}-1 configuration exhibits substantially higher linkage attack success rates of 77.88\% (\gls{tfidf}) and 81.99\% (embeddings). The key difference is the preference optimization step, which trains the model to generate documents that score higher similarity to real patient documents. This reinforcement mechanism, while improving document quality (as demonstrated in Chapter~\ref{chap:synthetic}), inadvertently teaches the model to reproduce patient-specific patterns. Notably, \gls{dpo}-1 shows higher semantic vulnerability (81.99\%) than lexical vulnerability (77.88\%), suggesting that preference optimization reinforces deep semantic patterns beyond surface-level terminology.
 
 \paragraph{Implications for reward-based generation.} This observation reveals a fundamental tension in our approach: the reward signal based on similarity to real documents is effective at improving synthetic document quality, but it simultaneously reinforces patterns that enable re-identification. The model learns features that are both clinically relevant and patient-identifying, as these characteristics are correlated in real medical documents.
 
@@ -244,7 +244,7 @@ This finding also demonstrates that even a simple similarity-based reinforcement
 \paragraph{Sources of leakage.} We hypothesize that the reinforced patterns include:
 
 \begin{itemize}
-    \item \textbf{Keyword sequences:} The ordered sequence of UMLS concepts extracted from a patient's document creates a distinctive fingerprint, even though individual concepts are non-identifying.
+    \item \textbf{Keyword sequences:} The ordered sequence of \gls{umls} concepts extracted from a patient's document creates a distinctive fingerprint, even though individual concepts are non-identifying.
     
     \item \textbf{Concept co-occurrence patterns:} Specific combinations of diagnoses, treatments, and procedures may be rare enough to enable re-identification.
     
@@ -297,9 +297,9 @@ Both mitigation strategies leverage a large language model to rewrite synthetic 
 \subsection{Standard Rephrasing Approach}
 \label{subsec:rephrasing}
 
-The standard rephrasing approach prompts the LLM to paraphrase the entire synthetic document without targeting specific terms. The model is instructed to rewrite the document while preserving its clinical meaning and structure. This generic approach aims to disrupt lexical patterns that may enable re-identification by introducing linguistic variation.
+The standard rephrasing approach prompts the \gls{llm} to paraphrase the entire synthetic document without targeting specific terms. The model is instructed to rewrite the document while preserving its clinical meaning and structure. This generic approach aims to disrupt lexical patterns that may enable re-identification by introducing linguistic variation.
 
-Table~\ref{tab:rephrasing_results} presents the attack success rates after applying standard rephrasing. We evaluate both linkage attacks (1-vs-N) and discrimination attacks (1-vs-2) using TF-IDF and semantic similarity (all-mpnet-base-v2). We use a general-purpose sentence encoder rather than domain-specific embeddings (e.g., BioLORD) to avoid biasing the evaluation, since AlpaCare pseudo-patient clusters were constructed using BioLORD embeddings.
+Table~\ref{tab:rephrasing_results} presents the attack success rates after applying standard rephrasing. We evaluate both linkage attacks (1-vs-N) and discrimination attacks (1-vs-2) using \gls{tfidf} and semantic similarity (all-mpnet-base-v2). We use a general-purpose sentence encoder rather than domain-specific embeddings (e.g., BioLORD) to avoid biasing the evaluation, since AlpaCare pseudo-patient clusters were constructed using BioLORD embeddings.
 
 \begin{table}[h]
 \centering
@@ -308,26 +308,26 @@ Table~\ref{tab:rephrasing_results} presents the attack success rates after apply
 \toprule
 \textbf{Dataset} & \textbf{Link. TF-IDF} & \textbf{Link. Emb.} & \textbf{Discr. TF-IDF} & \textbf{Discr. Emb.} \\
 \midrule
-MIMIC-III 4\% DPO-2 & 83.73 {\scriptsize(\textcolor{green!50!black}{-2.21})} & 51.19 {\scriptsize(\textcolor{green!50!black}{-8.28})} & 98.87 {\scriptsize(\textcolor{green!50!black}{-0.85})} & 98.75 {\scriptsize(\textcolor{green!50!black}{-0.51})} \\
-MIMIC-III 6\% DPO-2 & 84.99 {\scriptsize(\textcolor{green!50!black}{-4.73})} & 48.43 {\scriptsize(\textcolor{green!50!black}{-7.31})} & 99.73 {\scriptsize(\textcolor{green!50!black}{-0.22})} & 99.23 {\scriptsize(\textcolor{green!50!black}{-0.06})} \\
-AlpaCare DPO-1 & 54.38 {\scriptsize(\textbf{\textcolor{green!50!black}{-23.50}})} & 70.28 {\scriptsize(\textbf{\textcolor{green!50!black}{-11.71}})} & 97.38 {\scriptsize(\textcolor{green!50!black}{-1.00})} & 99.86 {\scriptsize(\textcolor{green!50!black}{-0.03})} \\
-AlpaCare DP-SFT & 18.53 {\scriptsize(\textcolor{green!50!black}{-6.25})} & 23.34 {\scriptsize(\textcolor{green!50!black}{-2.97})} & 66.66 {\scriptsize(\textbf{\textcolor{green!50!black}{-2.99}})} & 79.38 {\scriptsize(\textcolor{red!70!black}{+0.38})} \\
+\gls{mimic}-III 4\% \gls{dpo}-2 & 83.73 {\scriptsize(\textcolor{green!50!black}{-2.21})} & 51.19 {\scriptsize(\textcolor{green!50!black}{-8.28})} & 98.87 {\scriptsize(\textcolor{green!50!black}{-0.85})} & 98.75 {\scriptsize(\textcolor{green!50!black}{-0.51})} \\
+\gls{mimic}-III 6\% \gls{dpo}-2 & 84.99 {\scriptsize(\textcolor{green!50!black}{-4.73})} & 48.43 {\scriptsize(\textcolor{green!50!black}{-7.31})} & 99.73 {\scriptsize(\textcolor{green!50!black}{-0.22})} & 99.23 {\scriptsize(\textcolor{green!50!black}{-0.06})} \\
+AlpaCare \gls{dpo}-1 & 54.38 {\scriptsize(\textbf{\textcolor{green!50!black}{-23.50}})} & 70.28 {\scriptsize(\textbf{\textcolor{green!50!black}{-11.71}})} & 97.38 {\scriptsize(\textcolor{green!50!black}{-1.00})} & 99.86 {\scriptsize(\textcolor{green!50!black}{-0.03})} \\
+AlpaCare DP-\gls{sft} & 18.53 {\scriptsize(\textcolor{green!50!black}{-6.25})} & 23.34 {\scriptsize(\textcolor{green!50!black}{-2.97})} & 66.66 {\scriptsize(\textbf{\textcolor{green!50!black}{-2.99}})} & 79.38 {\scriptsize(\textcolor{red!70!black}{+0.38})} \\
 \bottomrule
 \end{tabular}
 \caption{Attack success rates (\%) after standard rephrasing. Values in parentheses indicate reduction from baseline (in pp). \textcolor{green!50!black}{Green} = privacy gain, \textcolor{red!70!black}{red} = privacy loss, \textbf{bold} = best reduction per column. Link. = Linkage, Discr. = Discrimination, Emb. = Semantic embeddings.}
 \label{tab:rephrasing_results}
 \end{table}
 
-The results show modest privacy improvements for TF-IDF linkage attacks, with reductions ranging from 2.21 to 23.50 percentage points compared to baseline. The effectiveness varies substantially across datasets: AlpaCare conversational text benefits more from rephrasing (up to 23.50 pp reduction) as natural language variation disrupts TF-IDF patterns effectively. In contrast, MIMIC-III clinical notes show minimal improvement (2-5 pp), likely because standardized medical terminology remains largely intact after generic paraphrasing.
+The results show modest privacy improvements for \gls{tfidf} linkage attacks, with reductions ranging from 2.21 to 23.50 percentage points compared to baseline. The effectiveness varies substantially across datasets: AlpaCare conversational text benefits more from rephrasing (up to 23.50 pp reduction) as natural language variation disrupts \gls{tfidf} patterns effectively. In contrast, \gls{mimic}-III clinical notes show minimal improvement (2-5 pp), likely because standardized medical terminology remains largely intact after generic paraphrasing.
 
-Semantic similarity attacks reveal that rephrasing provides limited protection against embedding-based linkage, with reductions of 3-12 pp. Notably, AlpaCare DPO-1 shows higher semantic vulnerability (70.28\%) than its TF-IDF rate (54.38\%), suggesting that while rephrasing introduces surface-level lexical variation, the underlying semantic content remains patient-specific.
+Semantic similarity attacks reveal that rephrasing provides limited protection against embedding-based linkage, with reductions of 3-12 pp. Notably, AlpaCare \gls{dpo}-1 shows higher semantic vulnerability (70.28\%) than its \gls{tfidf} rate (54.38\%), suggesting that while rephrasing introduces surface-level lexical variation, the underlying semantic content remains patient-specific.
 
-Discrimination attacks remain highly effective across all configurations (97-99\% for MIMIC-III and AlpaCare DPO-1), with reductions of less than 1 pp for most configurations. This indicates that standard rephrasing fails to disrupt patient-specific patterns sufficiently to prevent pairwise discrimination. Only AlpaCare DP-SFT shows lower discrimination rates (66.66\% TF-IDF, 79.38\% semantic), reflecting its intrinsically more private generation approach.
+Discrimination attacks remain highly effective across all configurations (97-99\% for \gls{mimic}-III and AlpaCare \gls{dpo}-1), with reductions of less than 1 pp for most configurations. This indicates that standard rephrasing fails to disrupt patient-specific patterns sufficiently to prevent pairwise discrimination. Only AlpaCare DP-\gls{sft} shows lower discrimination rates (66.66\% \gls{tfidf}, 79.38\% semantic), reflecting its intrinsically more private generation approach.
 
 \subsection{Keyword Perturbation Approach}
 \label{subsec:keyword_perturbation}
 
-The keyword perturbation approach specifically targets the medical keywords that were used to guide document generation. Rather than generic paraphrasing, we provide the LLM with the list of UMLS keywords extracted from the original patient document and instruct it to replace each of these terms with synonyms or alternative phrasings guided with a prompt \ref{fig:mitigation_prompts}. The model autonomously selects appropriate replacements while preserving clinical accuracy. This targeted approach aims to disrupt the distinctive keyword sequences that enable re-identification.
+The keyword perturbation approach specifically targets the medical keywords that were used to guide document generation. Rather than generic paraphrasing, we provide the \gls{llm} with the list of \gls{umls} keywords extracted from the original patient document and instruct it to replace each of these terms with synonyms or alternative phrasings guided with a prompt \ref{fig:mitigation_prompts}. The model autonomously selects appropriate replacements while preserving clinical accuracy. This targeted approach aims to disrupt the distinctive keyword sequences that enable re-identification.
 
 Table~\ref{tab:keyword_results} presents the attack success rates after applying keyword perturbation.
 
@@ -338,28 +338,28 @@ Table~\ref{tab:keyword_results} presents the attack success rates after applying
 \toprule
 \textbf{Dataset} & \textbf{Link. TF-IDF} & \textbf{Link. Emb.} & \textbf{Discr. TF-IDF} & \textbf{Discr. Emb.} \\
 \midrule
-MIMIC-III 4\% DPO-2 & 28.91 {\scriptsize(\textcolor{green!50!black}{-57.03})} & 30.16 {\scriptsize(\textcolor{green!50!black}{-29.31})} & 91.10 {\scriptsize(\textcolor{green!50!black}{-8.62})} & 97.34 {\scriptsize(\textcolor{green!50!black}{-1.92})} \\
-MIMIC-III 6\% DPO-2 & 30.68 {\scriptsize(\textcolor{green!50!black}{-59.04})} & 29.63 {\scriptsize(\textcolor{green!50!black}{-26.11})} & 94.61 {\scriptsize(\textcolor{green!50!black}{-5.34})} & 98.74 {\scriptsize(\textcolor{green!50!black}{-0.55})} \\
-AlpaCare DPO-1 & 14.41 {\scriptsize(\textbf{\textcolor{green!50!black}{-63.47}})} & 44.40 {\scriptsize(\textbf{\textcolor{green!50!black}{-37.59}})} & 86.72 {\scriptsize(\textcolor{green!50!black}{-11.66})} & 99.62 {\scriptsize(\textcolor{green!50!black}{-0.27})} \\
-AlpaCare DP-SFT & 5.28 {\scriptsize(\textcolor{green!50!black}{-19.50})} & 14.02 {\scriptsize(\textcolor{green!50!black}{-12.29})} & 57.21 {\scriptsize(\textbf{\textcolor{green!50!black}{-12.44}})} & 79.68 {\scriptsize(\textcolor{red!70!black}{+0.68})} \\
+\gls{mimic}-III 4\% \gls{dpo}-2 & 28.91 {\scriptsize(\textcolor{green!50!black}{-57.03})} & 30.16 {\scriptsize(\textcolor{green!50!black}{-29.31})} & 91.10 {\scriptsize(\textcolor{green!50!black}{-8.62})} & 97.34 {\scriptsize(\textcolor{green!50!black}{-1.92})} \\
+\gls{mimic}-III 6\% \gls{dpo}-2 & 30.68 {\scriptsize(\textcolor{green!50!black}{-59.04})} & 29.63 {\scriptsize(\textcolor{green!50!black}{-26.11})} & 94.61 {\scriptsize(\textcolor{green!50!black}{-5.34})} & 98.74 {\scriptsize(\textcolor{green!50!black}{-0.55})} \\
+AlpaCare \gls{dpo}-1 & 14.41 {\scriptsize(\textbf{\textcolor{green!50!black}{-63.47}})} & 44.40 {\scriptsize(\textbf{\textcolor{green!50!black}{-37.59}})} & 86.72 {\scriptsize(\textcolor{green!50!black}{-11.66})} & 99.62 {\scriptsize(\textcolor{green!50!black}{-0.27})} \\
+AlpaCare DP-\gls{sft} & 5.28 {\scriptsize(\textcolor{green!50!black}{-19.50})} & 14.02 {\scriptsize(\textcolor{green!50!black}{-12.29})} & 57.21 {\scriptsize(\textbf{\textcolor{green!50!black}{-12.44}})} & 79.68 {\scriptsize(\textcolor{red!70!black}{+0.68})} \\
 \bottomrule
 \end{tabular}
 \caption{Attack success rates (\%) after keyword perturbation. Values in parentheses indicate reduction from baseline (in pp). \textcolor{green!50!black}{Green} = privacy gain, \textcolor{red!70!black}{red} = privacy loss, \textbf{bold} = best reduction per column. Link. = Linkage, Discr. = Discrimination, Emb. = Semantic embeddings.}
 \label{tab:keyword_results}
 \end{table}
 
-The results demonstrate dramatic privacy improvements for TF-IDF linkage attacks across all datasets, with reductions ranging from 19.50 to 63.47 percentage points. The final linkage attack success rates (5.28\% to 30.68\%) represent a substantial reduction in re-identification risk. Notably, MIMIC-III benefits most from this approach: while standard rephrasing achieved only 2-5 pp reduction, keyword perturbation achieves 57-59 pp reduction. This confirms our hypothesis that standardized medical terminology is the primary vector of privacy leakage in clinical notes.
+The results demonstrate dramatic privacy improvements for \gls{tfidf} linkage attacks across all datasets, with reductions ranging from 19.50 to 63.47 percentage points. The final linkage attack success rates (5.28\% to 30.68\%) represent a substantial reduction in re-identification risk. Notably, \gls{mimic}-III benefits most from this approach: while standard rephrasing achieved only 2-5 pp reduction, keyword perturbation achieves 57-59 pp reduction. This confirms our hypothesis that standardized medical terminology is the primary vector of privacy leakage in clinical notes.
 
-Keyword perturbation shows substantial effectiveness against semantic linkage attacks, with reductions of 12-38 pp across all configurations. For MIMIC-III, semantic linkage decreases from 56-59\% to 30\% (-26 to -29 pp). AlpaCare DPO-1 shows the largest semantic reduction (-37.59 pp), though it remains more vulnerable to semantic attacks (44.40\%) than TF-IDF attacks (14.41\%), indicating that conversational medical content retains semantic patient-specific patterns even after keyword perturbation.
+Keyword perturbation shows substantial effectiveness against semantic linkage attacks, with reductions of 12-38 pp across all configurations. For \gls{mimic}-III, semantic linkage decreases from 56-59\% to 30\% (-26 to -29 pp). AlpaCare \gls{dpo}-1 shows the largest semantic reduction (-37.59 pp), though it remains more vulnerable to semantic attacks (44.40\%) than \gls{tfidf} attacks (14.41\%), indicating that conversational medical content retains semantic patient-specific patterns even after keyword perturbation.
 
-In contrast to the dramatic improvements observed for linkage attacks, discrimination attacks remain highly effective. TF-IDF-based discrimination achieves 86-95\% success rates on MIMIC-III and AlpaCare DPO-1 (reductions of 5-12 pp from baseline), while semantic discrimination remains virtually unchanged at 97-99\% (reductions of less than 2 pp). This indicates that while keyword perturbation successfully disrupts global re-identification patterns, patient-specific semantic structure persists sufficiently for pairwise discrimination. The only exception is AlpaCare DP-SFT, which shows substantially lower discrimination rates (57.21\% TF-IDF, 79.68\% semantic), confirming that DP-SFT training produces intrinsically more private synthetic documents.
+In contrast to the dramatic improvements observed for linkage attacks, discrimination attacks remain highly effective. \gls{tfidf}-based discrimination achieves 86-95\% success rates on \gls{mimic}-III and AlpaCare \gls{dpo}-1 (reductions of 5-12 pp from baseline), while semantic discrimination remains virtually unchanged at 97-99\% (reductions of less than 2 pp). This indicates that while keyword perturbation successfully disrupts global re-identification patterns, patient-specific semantic structure persists sufficiently for pairwise discrimination. The only exception is AlpaCare DP-\gls{sft}, which shows substantially lower discrimination rates (57.21\% \gls{tfidf}, 79.68\% semantic), confirming that DP-\gls{sft} training produces intrinsically more private synthetic documents.
 
 \subsection{Comparative Analysis}
 \label{subsec:mitigation_comparison}
 
-Table~\ref{tab:comprehensive_summary} provides a comprehensive comparison of both mitigation strategies across all attack types and similarity metrics. Keyword perturbation consistently outperforms rephrasing for TF-IDF linkage attacks: MIMIC-III achieves 57-59 pp reduction with keyword perturbation versus only 2-5 pp with rephrasing. The dramatic difference in effectiveness demonstrates that generic paraphrasing fails to address the specific vocabulary that enables re-identification in medical documents. The best configuration, combining DP-SFT generation with keyword perturbation, reduces linkage attack success to 5.28\% (-19.50 pp), while AlpaCare DPO-1 achieves 14.41\% (-63.47 pp).
+Table~\ref{tab:comprehensive_summary} provides a comprehensive comparison of both mitigation strategies across all attack types and similarity metrics. Keyword perturbation consistently outperforms rephrasing for \gls{tfidf} linkage attacks: \gls{mimic}-III achieves 57-59 pp reduction with keyword perturbation versus only 2-5 pp with rephrasing. The dramatic difference in effectiveness demonstrates that generic paraphrasing fails to address the specific vocabulary that enables re-identification in medical documents. The best configuration, combining DP-\gls{sft} generation with keyword perturbation, reduces linkage attack success to 5.28\% (-19.50 pp), while AlpaCare \gls{dpo}-1 achieves 14.41\% (-63.47 pp).
 
-However, discrimination attacks remain highly effective even after keyword perturbation (57-95\% TF-IDF, 80-99\% semantic), indicating that while global re-identification is disrupted, patient-specific semantic structure persists sufficiently for pairwise discrimination. This represents a fundamental limitation of post-processing mitigation approaches.
+However, discrimination attacks remain highly effective even after keyword perturbation (57-95\% \gls{tfidf}, 80-99\% semantic), indicating that while global re-identification is disrupted, patient-specific semantic structure persists sufficiently for pairwise discrimination. This represents a fundamental limitation of post-processing mitigation approaches.
 
 \begin{table}[h]
 \centering
@@ -368,19 +368,19 @@ However, discrimination attacks remain highly effective even after keyword pertu
 \toprule
 \textbf{Dataset} & \textbf{Mitigation} & \textbf{Link. TF-IDF} & \textbf{Link. Emb.} & \textbf{Discr. TF-IDF} & \textbf{Discr. Emb.} \\
 \midrule
-\multirow{3}{*}{MIMIC-III 4\%} & Baseline & 85.94 & 59.47 & 99.72 & 99.26 \\
+\multirow{3}{*}{\gls{mimic}-III 4\%} & Baseline & 85.94 & 59.47 & 99.72 & 99.26 \\
  & Rephrased & 83.73 {\scriptsize(\textcolor{green!50!black}{-2.21})} & 51.19 {\scriptsize(\textcolor{green!50!black}{-8.28})} & 98.87 {\scriptsize(\textcolor{green!50!black}{-0.85})} & 98.75 {\scriptsize(\textcolor{green!50!black}{-0.51})} \\
  & Keyword & 28.91 {\scriptsize(\textbf{\textcolor{green!50!black}{-57.03}})} & 30.16 {\scriptsize(\textbf{\textcolor{green!50!black}{-29.31}})} & 91.10 {\scriptsize(\textbf{\textcolor{green!50!black}{-8.62}})} & 97.34 {\scriptsize(\textbf{\textcolor{green!50!black}{-1.92}})} \\
 \midrule
-\multirow{3}{*}{MIMIC-III 6\%} & Baseline & 89.72 & 55.74 & 99.95 & 99.29 \\
+\multirow{3}{*}{\gls{mimic}-III 6\%} & Baseline & 89.72 & 55.74 & 99.95 & 99.29 \\
  & Rephrased & 84.99 {\scriptsize(\textcolor{green!50!black}{-4.73})} & 48.43 {\scriptsize(\textcolor{green!50!black}{-7.31})} & 99.73 {\scriptsize(\textcolor{green!50!black}{-0.22})} & 99.23 {\scriptsize(\textcolor{green!50!black}{-0.06})} \\
  & Keyword & 30.68 {\scriptsize(\textbf{\textcolor{green!50!black}{-59.04}})} & 29.63 {\scriptsize(\textbf{\textcolor{green!50!black}{-26.11}})} & 94.61 {\scriptsize(\textbf{\textcolor{green!50!black}{-5.34}})} & 98.74 {\scriptsize(\textbf{\textcolor{green!50!black}{-0.55}})} \\
 \midrule
-\multirow{3}{*}{AlpaCare DPO-1} & Baseline & 77.88 & 81.99 & 98.38 & 99.89 \\
+\multirow{3}{*}{AlpaCare \gls{dpo}-1} & Baseline & 77.88 & 81.99 & 98.38 & 99.89 \\
  & Rephrased & 54.38 {\scriptsize(\textcolor{green!50!black}{-23.50})} & 70.28 {\scriptsize(\textcolor{green!50!black}{-11.71})} & 97.38 {\scriptsize(\textcolor{green!50!black}{-1.00})} & 99.86 {\scriptsize(\textcolor{green!50!black}{-0.03})} \\
  & Keyword & 14.41 {\scriptsize(\textbf{\textcolor{green!50!black}{-63.47}})} & 44.40 {\scriptsize(\textbf{\textcolor{green!50!black}{-37.59}})} & 86.72 {\scriptsize(\textbf{\textcolor{green!50!black}{-11.66}})} & 99.62 {\scriptsize(\textbf{\textcolor{green!50!black}{-0.27}})} \\
 \midrule
-\multirow{3}{*}{AlpaCare DP-SFT} & Baseline & 24.78 & 26.31 & 69.65 & 79.00 \\
+\multirow{3}{*}{AlpaCare DP-\gls{sft}} & Baseline & 24.78 & 26.31 & 69.65 & 79.00 \\
  & Rephrased & 18.53 {\scriptsize(\textcolor{green!50!black}{-6.25})} & 23.34 {\scriptsize(\textcolor{green!50!black}{-2.97})} & 66.66 {\scriptsize(\textcolor{green!50!black}{-2.99})} & 79.38 {\scriptsize(\textcolor{red!70!black}{+0.38})} \\
  & Keyword & 5.28 {\scriptsize(\textbf{\textcolor{green!50!black}{-19.50}})} & 14.02 {\scriptsize(\textbf{\textcolor{green!50!black}{-12.29}})} & 57.21 {\scriptsize(\textbf{\textcolor{green!50!black}{-12.44}})} & 79.68 {\scriptsize(\textcolor{red!70!black}{+0.68})} \\
 \bottomrule
@@ -392,11 +392,11 @@ However, discrimination attacks remain highly effective even after keyword pertu
 The results reveal a clear hierarchy of privacy protection:
 
 \begin{enumerate}
-    \item \textbf{Linkage attacks (TF-IDF)} are effectively mitigated by keyword perturbation, with reductions of 19-63 pp, dropping success rates from 25-90\% to 5-31\%.
+    \item \textbf{Linkage attacks (\gls{tfidf})} are effectively mitigated by keyword perturbation, with reductions of 19-63 pp, dropping success rates from 25-90\% to 5-31\%.
     
     \item \textbf{Linkage attacks (semantic)} show substantial mitigation, with reductions of 12-38 pp, dropping success rates from 26-82\% to 14-44\%.
     
-    \item \textbf{Discrimination attacks (TF-IDF)} show moderate mitigation for some configurations, with reductions of 5-12 pp, though success rates remain high (57-95\%).
+    \item \textbf{Discrimination attacks (\gls{tfidf})} show moderate mitigation for some configurations, with reductions of 5-12 pp, though success rates remain high (57-95\%).
     
     \item \textbf{Discrimination attacks (semantic)} remain largely unchanged (79-99\%), with reductions of less than 2 pp, indicating persistent semantic patient-specific structure.
 \end{enumerate}
@@ -404,12 +404,12 @@ The results reveal a clear hierarchy of privacy protection:
 \section{Privacy-Utility Trade-off Analysis}
 \label{sec:privacy_utility}
 
-While the previous section demonstrated that our mitigation strategies significantly reduce re-identification risks, a critical question remains: do these privacy enhancements degrade the utility of synthetic documents for downstream tasks? This section evaluates the impact of both mitigation methods on clinical NLP performance.
+While the previous section demonstrated that our mitigation strategies significantly reduce re-identification risks, a critical question remains: do these privacy enhancements degrade the utility of synthetic documents for downstream tasks? This section evaluates the impact of both mitigation methods on clinical \gls{nlp} performance.
 
-\subsection{Impact on MIMIC-III Downstream Tasks}
+\subsection{Impact on \gls{mimic}-III Downstream Tasks}
 \label{subsec:mimic_utility}
 
-We evaluate utility preservation on the ICD-9 multilabel classification tasks introduced in Chapter~\ref{chap:synthetic}. Models are trained on synthetic documents (with and without privacy mitigations) and evaluated on real MIMIC-III test data. Table~\ref{tab:mimic_utility} presents the F1 scores across task complexities.
+We evaluate utility preservation on the \gls{icd}-9 multilabel classification tasks introduced in Chapter~\ref{chap:synthetic}. Models are trained on synthetic documents (with and without privacy mitigations) and evaluated on real \gls{mimic}-III test data. Table~\ref{tab:mimic_utility} presents the F1 scores across task complexities.
 
 \begin{table}[h]
 \centering
@@ -431,7 +431,7 @@ $D_{2}^{6\%}$ & $51.7 \pm 1.1$ & $40.7 \pm 1.0$ & $31.9 \pm 7.5$ & $26.5 \pm 2.5
 6\% + Rephrasing & 36.7 & 23.4 & 11.6 & 0.0 \\
 \bottomrule
 \end{tabular}
-\caption{F1 scores (\%) on MIMIC-III ICD-9 multilabel classification tasks. Baseline results from Chapter~\ref{chap:synthetic} (with standard deviation over 5 runs) compared with privacy-mitigated versions (single run, preliminary evaluation).}
+\caption{F1 scores (\%) on \gls{mimic}-III \gls{icd}-9 multilabel classification tasks. Baseline results from Chapter~\ref{chap:synthetic} (with standard deviation over 5 runs) compared with privacy-mitigated versions (single run, preliminary evaluation).}
 \label{tab:mimic_utility}
 \end{table}
 
@@ -450,12 +450,12 @@ We evaluate utility on the AlpaCare preference benchmark, where judge models (GP
 \toprule
 \textbf{Configuration} & \textbf{text-davinci} & \textbf{GPT-3.5} & \textbf{GPT-4} & \textbf{Claude-2} & \textbf{Average} \\
 \midrule
-\multicolumn{6}{l}{\textit{DPO configurations}} \\
+\multicolumn{6}{l}{\textit{\gls{dpo} configurations}} \\
 baseline & 0.695 & 0.514 & 0.482 & 0.490 & \textbf{0.545} \\
 Keyword Perturb. & 0.673 & 0.514 & 0.464 & 0.477 & \textbf{0.532} \\
 Rephrasing & 0.669 & 0.502 & 0.458 & 0.462 & \textbf{0.523} \\
 \midrule
-\multicolumn{6}{l}{\textit{DP-SFT configurations}} \\
+\multicolumn{6}{l}{\textit{DP-\gls{sft} configurations}} \\
 baseline & 0.674 & 0.497 & 0.455 & 0.454 & \textbf{0.520} \\
 Keyword Perturb. & 0.660 & 0.501 & 0.451 & 0.464 & \textbf{0.519} \\
 Rephrasing & 0.661 & 0.497 & 0.444 & 0.456 & \textbf{0.514} \\
@@ -465,7 +465,7 @@ Rephrasing & 0.661 & 0.497 & 0.444 & 0.456 & \textbf{0.514} \\
 \label{tab:alpacare_utility}
 \end{table}
 
-In contrast to MIMIC-III, the AlpaCare preference scores remain stable across all configurations, with average win rates varying by less than 0.03 between baseline and mitigated versions. This stability indicates that privacy mitigations have minimal impact on the perceived quality of generated medical responses in conversational settings. The difference between MIMIC-III and AlpaCare may be attributed to the nature of the tasks: ICD-9 classification relies heavily on specific medical terminology, while conversational quality assessment is more robust to synonym substitution.
+In contrast to \gls{mimic}-III, the AlpaCare preference scores remain stable across all configurations, with average win rates varying by less than 0.03 between baseline and mitigated versions. This stability indicates that privacy mitigations have minimal impact on the perceived quality of generated medical responses in conversational settings. The difference between \gls{mimic}-III and AlpaCare may be attributed to the nature of the tasks: \gls{icd}-9 classification relies heavily on specific medical terminology, while conversational quality assessment is more robust to synonym substitution.
 
 \subsection{Trade-off Summary}
 
@@ -483,7 +483,7 @@ Tables~\ref{tab:tradeoff_mimic} and~\ref{tab:tradeoff_alpacare} summarize the pr
 6\% + Keyword Perturb. & -59.04 pp & -26.11 pp & -15.8 F1 & -19.1 F1 \\
 \bottomrule
 \end{tabular}
-\caption{MIMIC-III privacy-utility trade-off. Link. = Linkage attack, Emb. = Semantic embeddings (all-mpnet-base-v2). Utility cost indicates F1 score degradation compared to non-mitigated baselines.}
+\caption{\gls{mimic}-III privacy-utility trade-off. Link. = Linkage attack, Emb. = Semantic embeddings (all-mpnet-base-v2). Utility cost indicates F1 score degradation compared to non-mitigated baselines.}
 \label{tab:tradeoff_mimic}
 \end{table}
 
@@ -493,21 +493,21 @@ Tables~\ref{tab:tradeoff_mimic} and~\ref{tab:tradeoff_alpacare} summarize the pr
 \toprule
 \textbf{Configuration} & \textbf{Link. TF-IDF} & \textbf{Link. Emb.} & \textbf{Utility Cost} \\
 \midrule
-DPO + Rephrasing & -23.50 pp & -11.71 pp & -2.2\% \\
-DPO + Keyword Perturb. & -63.47 pp & -37.59 pp & -1.3\% \\
-DP-SFT + Rephrasing & -6.25 pp & -2.97 pp & -0.6\% \\
-DP-SFT + Keyword Perturb. & -19.50 pp & -12.29 pp & -0.1\% \\
+\gls{dpo} + Rephrasing & -23.50 pp & -11.71 pp & -2.2\% \\
+\gls{dpo} + Keyword Perturb. & -63.47 pp & -37.59 pp & -1.3\% \\
+DP-\gls{sft} + Rephrasing & -6.25 pp & -2.97 pp & -0.6\% \\
+DP-\gls{sft} + Keyword Perturb. & -19.50 pp & -12.29 pp & -0.1\% \\
 \bottomrule
 \end{tabular}
 \caption{AlpaCare privacy-utility trade-off. Link. = Linkage attack, Emb. = Semantic embeddings (all-mpnet-base-v2). Utility cost indicates average preference degradation (\%).}
 \label{tab:tradeoff_alpacare}
 \end{table}
 
-The trade-off analysis reveals dataset-dependent dynamics. For MIMIC-III, privacy mitigations come at a measurable utility cost, particularly for complex classification tasks requiring fine-grained medical terminology: Top-50 F1 drops by 17-21 points. However, keyword perturbation provides dramatically better privacy protection than rephrasing (57-59 pp vs 2-5 pp reduction for TF-IDF, 26-29 pp vs 7-8 pp for semantic) for similar utility costs, making it the clearly superior choice. For AlpaCare, the trade-off is highly favorable: keyword perturbation achieves substantial privacy gains (19-63 pp TF-IDF, 12-38 pp semantic) with negligible utility degradation ($<$2\% preference).
+The trade-off analysis reveals dataset-dependent dynamics. For \gls{mimic}-III, privacy mitigations come at a measurable utility cost, particularly for complex classification tasks requiring fine-grained medical terminology: Top-50 F1 drops by 17-21 points. However, keyword perturbation provides dramatically better privacy protection than rephrasing (57-59 pp vs 2-5 pp reduction for \gls{tfidf}, 26-29 pp vs 7-8 pp for semantic) for similar utility costs, making it the clearly superior choice. For AlpaCare, the trade-off is highly favorable: keyword perturbation achieves substantial privacy gains (19-63 pp \gls{tfidf}, 12-38 pp semantic) with negligible utility degradation ($<$2\% preference).
 
-Note that these privacy gains reflect linkage attacks. Discrimination attacks remain largely effective (57-95\% TF-IDF, 79-99\% semantic after keyword perturbation), as detailed in Table~\ref{tab:comprehensive_summary}. This indicates that while global re-identification is substantially reduced, pairwise patient distinction remains feasible even after mitigation.
+Note that these privacy gains reflect linkage attacks. Discrimination attacks remain largely effective (57-95\% \gls{tfidf}, 79-99\% semantic after keyword perturbation), as detailed in Table~\ref{tab:comprehensive_summary}. This indicates that while global re-identification is substantially reduced, pairwise patient distinction remains feasible even after mitigation.
 
-These findings suggest that deployment decisions should consider the specific downstream use case. For applications where precise medical terminology is critical (e.g., clinical coding), practitioners may need to balance privacy requirements against utility needs. For conversational or general medical QA applications, keyword perturbation offers strong privacy with minimal quality impact.
+These findings suggest that deployment decisions should consider the specific downstream use case. For applications where precise medical terminology is critical (e.g., clinical coding), practitioners may need to balance privacy requirements against utility needs. For conversational or general medical \gls{qa} applications, keyword perturbation offers strong privacy with minimal quality impact.
 
 \section{Discussion}
 \label{sec:privacy_discussion}
@@ -518,17 +518,17 @@ This section synthesizes our findings, discusses their implications for practica
 
 Our privacy analysis reveals several important insights about synthetic medical document generation:
 
-The primary vector of privacy leakage in clinical documents is medical terminology. The dramatic effectiveness of keyword perturbation (19-63 pp reduction in TF-IDF linkage attacks, 12-38 pp for semantic) compared to standard rephrasing (2-24 pp TF-IDF, 3-12 pp semantic) demonstrates that patient-specific fingerprints are primarily encoded in the selection and combination of medical concepts rather than in general linguistic patterns.
+The primary vector of privacy leakage in clinical documents is medical terminology. The dramatic effectiveness of keyword perturbation (19-63 pp reduction in \gls{tfidf} linkage attacks, 12-38 pp for semantic) compared to standard rephrasing (2-24 pp \gls{tfidf}, 3-12 pp semantic) demonstrates that patient-specific fingerprints are primarily encoded in the selection and combination of medical concepts rather than in general linguistic patterns.
 
-The reward-based training process amplifies re-identification risks. The comparison between DP-SFT (24.78\% TF-IDF, 26.31\% semantic linkage success) and DPO (77.88\% TF-IDF, 81.99\% semantic linkage success) configurations on AlpaCare reveals that preference optimization, while improving document quality, teaches the model to reproduce patient-specific patterns. This finding highlights a fundamental tension in similarity-based reward mechanisms: optimizing for resemblance to real documents inadvertently reinforces identifying characteristics.
+The reward-based training process amplifies re-identification risks. The comparison between DP-\gls{sft} (24.78\% \gls{tfidf}, 26.31\% semantic linkage success) and \gls{dpo} (77.88\% \gls{tfidf}, 81.99\% semantic linkage success) configurations on AlpaCare reveals that preference optimization, while improving document quality, teaches the model to reproduce patient-specific patterns. This finding highlights a fundamental tension in similarity-based reward mechanisms: optimizing for resemblance to real documents inadvertently reinforces identifying characteristics.
 
-Targeted keyword perturbation achieves 19-63 pp reduction in TF-IDF linkage attacks and 12-38 pp in semantic linkage attacks, compared to only 2-24 pp and 3-12 pp respectively for generic rephrasing, for comparable utility costs. This substantial difference underscores the importance of domain-specific privacy interventions in medical NLP, where standardized terminology creates distinctive patterns that generic text rewriting fails to address. However, discrimination attacks remain largely effective (57-95\% TF-IDF, 79-99\% semantic after keyword perturbation), indicating that lexical disruption alone does not eliminate patient-specific structure.
+Targeted keyword perturbation achieves 19-63 pp reduction in \gls{tfidf} linkage attacks and 12-38 pp in semantic linkage attacks, compared to only 2-24 pp and 3-12 pp respectively for generic rephrasing, for comparable utility costs. This substantial difference underscores the importance of domain-specific privacy interventions in medical \gls{nlp}, where standardized terminology creates distinctive patterns that generic text rewriting fails to address. However, discrimination attacks remain largely effective (57-95\% \gls{tfidf}, 79-99\% semantic after keyword perturbation), indicating that lexical disruption alone does not eliminate patient-specific structure.
 
 \paragraph{Implications for Deployment}
 
 Our findings have concrete implications for the deployment of synthetic medical datasets:
 
-Synthetic datasets can be published with appropriate mitigations. Applying keyword perturbation reduces linkage attack success rates to 5.28-30.68\%, substantially lowering re-identification risks. These mitigated datasets may be shared according to the security requirements defined by the data provider, enabling broader access to medical NLP training data while respecting patient privacy.
+Synthetic datasets can be published with appropriate mitigations. Applying keyword perturbation reduces linkage attack success rates to 5.28-30.68\%, substantially lowering re-identification risks. These mitigated datasets may be shared according to the security requirements defined by the data provider, enabling broader access to medical \gls{nlp} training data while respecting patient privacy.
 
 The generative model itself should not be publicly deployed. While synthetic datasets can be released after mitigation, the underlying generative model poses greater risks. Direct access to the model would enable adversaries to generate targeted queries, potentially extracting more patient-specific information than what is present in a fixed synthetic dataset.
 
@@ -542,23 +542,23 @@ A promising direction for future work is combining both approaches: using DP dur
 
 Several limitations should be considered when interpreting our results.
 
-\paragraph{Discrimination attacks remain effective.} While our mitigations significantly reduce linkage attack success rates (from 25-90\% to 5-31\% for TF-IDF, from 26-82\% to 14-44\% for semantic), discrimination attacks remain highly effective even after keyword perturbation (57-95\% TF-IDF, 79-99\% semantic). This indicates that although global re-identification becomes difficult, patient-specific semantic patterns persist in the synthetic documents. When an adversary can narrow down candidates to a small set, distinguishing between them remains feasible. This represents a fundamental limitation: our approach disrupts lexical fingerprints but does not fully eliminate the underlying patient-specific structure.
+\paragraph{Discrimination attacks remain effective.} While our mitigations significantly reduce linkage attack success rates (from 25-90\% to 5-31\% for \gls{tfidf}, from 26-82\% to 14-44\% for semantic), discrimination attacks remain highly effective even after keyword perturbation (57-95\% \gls{tfidf}, 79-99\% semantic). This indicates that although global re-identification becomes difficult, patient-specific semantic patterns persist in the synthetic documents. When an adversary can narrow down candidates to a small set, distinguishing between them remains feasible. This represents a fundamental limitation: our approach disrupts lexical fingerprints but does not fully eliminate the underlying patient-specific structure.
 
-\paragraph{Robustness to adaptive attacks is untested.} Our evaluation assumes an adversary using standard similarity metrics (TF-IDF, cosine similarity). A sophisticated adversary aware of our mitigation strategy could potentially develop adaptive attacks, such as training a model to reverse keyword perturbations by learning common synonym substitution patterns, or exploiting semantic embeddings that capture meaning beyond lexical overlap. Evaluating robustness against such adaptive adversaries remains an important direction for future work.
+\paragraph{Robustness to adaptive attacks is untested.} Our evaluation assumes an adversary using standard similarity metrics (\gls{tfidf}, cosine similarity). A sophisticated adversary aware of our mitigation strategy could potentially develop adaptive attacks, such as training a model to reverse keyword perturbations by learning common synonym substitution patterns, or exploiting semantic embeddings that capture meaning beyond lexical overlap. Evaluating robustness against such adaptive adversaries remains an important direction for future work.
 
-\paragraph{Utility evaluation on MIMIC-III is preliminary.} The downstream task evaluation for privacy-mitigated documents was conducted with a single run rather than multiple seeds, limiting our ability to assess variance. While the consistency of trends across configurations suggests reliable observations, more comprehensive evaluation would strengthen these conclusions.
+\paragraph{Utility evaluation on \gls{mimic}-III is preliminary.} The downstream task evaluation for privacy-mitigated documents was conducted with a single run rather than multiple seeds, limiting our ability to assess variance. While the consistency of trends across configurations suggests reliable observations, more comprehensive evaluation would strengthen these conclusions.
 
 \section{Conclusion}
 \label{sec:privacy_conclusion}
 
 This chapter presented a comprehensive privacy analysis of synthetic clinical document generation and proposed effective mitigation strategies to reduce re-identification risks.
 
-Our evaluation revealed that baseline synthetic documents, despite being generated from non-identifying UMLS keywords, retain patient-specific fingerprints that enable linkage attacks with 25-90\% success rates. We identified that the reward-based training process amplifies these vulnerabilities: preference optimization, while improving document quality, teaches the model to reproduce patterns that facilitate re-identification.
+Our evaluation revealed that baseline synthetic documents, despite being generated from non-identifying \gls{umls} keywords, retain patient-specific fingerprints that enable linkage attacks with 25-90\% success rates. We identified that the reward-based training process amplifies these vulnerabilities: preference optimization, while improving document quality, teaches the model to reproduce patterns that facilitate re-identification.
 
-To address these vulnerabilities, we proposed and evaluated two post-processing mitigation strategies. Keyword perturbation, which explicitly targets and replaces medical terminology with synonyms, achieves dramatic privacy improvements, reducing linkage attack success by 50-60 percentage points across all evaluated datasets. This approach consistently outperforms standard rephrasing (57-63 pp reduction vs 2-24 pp), demonstrating that domain-specific interventions are essential for privacy preservation in medical NLP.
+To address these vulnerabilities, we proposed and evaluated two post-processing mitigation strategies. Keyword perturbation, which explicitly targets and replaces medical terminology with synonyms, achieves dramatic privacy improvements, reducing linkage attack success by 50-60 percentage points across all evaluated datasets. This approach consistently outperforms standard rephrasing (57-63 pp reduction vs 2-24 pp), demonstrating that domain-specific interventions are essential for privacy preservation in medical \gls{nlp}.
 
-The privacy-utility trade-off analysis shows that keyword perturbation can be applied with acceptable utility costs. On conversational medical tasks (AlpaCare), utility degradation is negligible ($<$0.03 average preference). On terminology-sensitive tasks (MIMIC-III ICD classification), the trade-off is more pronounced but remains manageable for simpler classification tasks.
+The privacy-utility trade-off analysis shows that keyword perturbation can be applied with acceptable utility costs. On conversational medical tasks (AlpaCare), utility degradation is negligible ($<$0.03 average preference). On terminology-sensitive tasks (\gls{mimic}-III \gls{icd} classification), the trade-off is more pronounced but remains manageable for simpler classification tasks.
 
-Our contributions enable the production of high-quality synthetic medical datasets with significantly reduced re-identification risks. These datasets may be published or shared according to the security requirements defined by the data provider, offering a practical pathway for privacy-conscious medical data dissemination. The best configuration identified—DP-SFT generation combined with keyword perturbation—achieves a linkage attack success rate of only 5.28\%, providing strong privacy guarantees suitable for broader data sharing.
+Our contributions enable the production of high-quality synthetic medical datasets with significantly reduced re-identification risks. These datasets may be published or shared according to the security requirements defined by the data provider, offering a practical pathway for privacy-conscious medical data dissemination. The best configuration identified—DP-\gls{sft} generation combined with keyword perturbation—achieves a linkage attack success rate of only 5.28\%, providing strong privacy guarantees suitable for broader data sharing.
 
 Future work should address remaining challenges, including discrimination attacks which remain effective even after mitigation, robustness to adaptive adversaries, and the combination of our empirical mitigations with formal differential privacy guarantees.
