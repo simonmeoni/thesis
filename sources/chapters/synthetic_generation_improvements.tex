@@ -93,7 +93,7 @@ The linkage attack simulates an adversary attempting to globally attribute each 
 \paragraph{Success metric.} The attack succeeds if the predicted patient $\hat{p}_i$ matches the true source patient $p_i$. We report the overall success rate across all synthetic documents:
 
 \begin{equation}
-    \text{Linkage Success Rate} = \frac{1}{M} \sum_{i=1}^{M} \mathbb{1}[\hat{p}_i = p_i]
+\text{Linkage Success Rate} = \frac{|\{i : \hat{p}_i = p_i, \, i \in [1,M]\}|}{M}
 \end{equation}
 
 where $M$ is the number of synthetic documents.
@@ -327,7 +327,7 @@ Discrimination attacks remain highly effective across all configurations (97-99\
 \subsection{Keyword Perturbation Approach}
 \label{subsec:keyword_perturbation}
 
-The keyword perturbation approach specifically targets the medical keywords that were used to guide document generation. Rather than generic paraphrasing, we provide the LLM with the list of UMLS keywords extracted from the original patient document and instruct it to replace each of these terms with synonyms or alternative phrasings of its choice. The model autonomously selects appropriate replacements while preserving clinical accuracy. This targeted approach aims to disrupt the distinctive keyword sequences that enable re-identification.
+The keyword perturbation approach specifically targets the medical keywords that were used to guide document generation. Rather than generic paraphrasing, we provide the LLM with the list of UMLS keywords extracted from the original patient document and instruct it to replace each of these terms with synonyms or alternative phrasings guided with a prompt \ref{ig:mitigation_prompts}. The model autonomously selects appropriate replacements while preserving clinical accuracy. This targeted approach aims to disrupt the distinctive keyword sequences that enable re-identification.
 
 Table~\ref{tab:keyword_results} presents the attack success rates after applying keyword perturbation.
 
@@ -427,8 +427,8 @@ $D_{2}^{6\%}$ & $51.7 \pm 1.1$ & $40.7 \pm 1.0$ & $31.9 \pm 7.5$ & $26.5 \pm 2.5
 6\% + Keyword Perturb. & 35.9 & 21.6 & 10.5 & 0.0 \\
 \midrule
 \multicolumn{5}{l}{\textit{With Standard Rephrasing}} \\
-4\% + Rephrasing & 40.0 & 20.3 & 8.6 & 0.0 \\
-6\% + Rephrasing & 36.7 & 23.4 & 10.5 & 0.0 \\
+4\% + Rephrasing & 40.0 & 20.3 & 9.8 & 0.0 \\
+6\% + Rephrasing & 36.7 & 23.4 & 11.6 & 0.0 \\
 \bottomrule
 \end{tabular}
 \caption{F1 scores (\%) on MIMIC-III ICD-9 multilabel classification tasks. Baseline results from Chapter~\ref{chap:synthetic} (with standard deviation over 5 runs) compared with privacy-mitigated versions (single run, preliminary evaluation).}
