@@ -1,6 +1,13 @@
 \chapter{Privacy Analysis and Mitigation for Synthetic Clinical Documents}
 \label{chap:privacy}
 
+The previous chapter demonstrated that synthetic documents generated from keyword sequences can effectively support downstream clinical tasks.
+By design, our generation pipeline prevents direct identification: no personally identifiable information crosses the privacy boundary, only medical concept keywords and numerical scores.
+
+However, a subtler risk remains: can an adversary link synthetic documents back to the source patients whose data informed their creation?
+This chapter investigates re-identification vulnerabilities through two attack scenarios (linkage attacks and discrimination attacks) and proposes mitigation strategies to disrupt patient-specific patterns.
+A central goal is to evaluate the effectiveness of these mitigations and to quantify the resulting privacy-utility trade-off: how much downstream task performance must we sacrifice to achieve acceptable privacy guarantees?
+
 \minitoc
 
 \section{Introduction}

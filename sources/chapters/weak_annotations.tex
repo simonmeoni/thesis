@@ -1,9 +1,14 @@
-\chapter{Annotating syntetic data with \glspl{llm} for Multilingual Clinical Entity Extraction}
+\chapter{Annotating Synthetic Data with \glspl{llm} for Multilingual Clinical Entity Extraction}
 \label{chap:distillation}
 
-In clinical and other specialized domains, data are scarce due to their confidential nature. This lack of data is a major problem when fine-tuning language models.
-Nevertheless, very large language models (\glspl{llm}) are promising for the medical domain but cannot be used directly in healthcare facilities due to data confidentiality issues. We explore an approach of annotating training data with \glspl{llm} to train smaller models more adapted to our problem. 
-We show that this method yields promising results for information extraction tasks.
+The previous chapters addressed the generation of synthetic clinical documents that preserve privacy while retaining medical knowledge.
+However, raw documents alone are insufficient for training supervised models: they require annotations.
+This chapter explores how \glspl{llm} can reduce or replace human annotation effort for clinical entity extraction.
+
+Conducted early in this thesis following the release of InstructGPT~\citep{ouyang2022training}, this work was inspired by \citet{Agrawal2022LargeExtractors} who demonstrated that \glspl{llm} are effective few-shot clinical information extractors.
+We extend their findings to multilingual settings and investigate whether \gls{llm}-generated annotations can train smaller, deployable models.
+The central question is whether \glspl{llm} can complement, replace, or be combined with traditional annotation methods (such as dictionary-based extraction) to produce effective training data for clinical \gls{nlp}.
+This work was published at the BioNLP workshop~\citep{meoni2023large}.
 
 \minitoc
 

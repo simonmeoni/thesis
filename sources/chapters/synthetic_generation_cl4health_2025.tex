@@ -1,11 +1,15 @@
 \chapter{Synthetic Documents for Medical Tasks: Bridging Privacy with Knowledge Injection and Reward Mechanism}
 \label{chap:synthetic}
 
-Electronic Health Records (\gls{ehr}) store valuable patient-staff interaction data. Recent advancements in proprietary online large language models (\glspl{llm}) have shown promising capabilities in analyzing \gls{ehr} notes. However, transmitting patient information through external \gls{api} to \glspl{llm} like ChatGPT introduces privacy risks, necessitating alternative approaches that conform to hospital practices.
+Generating synthetic clinical documents that preserve both privacy and utility remains a central challenge in medical \gls{nlp}.
+Existing approaches often face a tension: methods prioritizing privacy tend to sacrifice clinical utility, while those preserving rich medical knowledge may leak identifying information through direct text exposure.
+This chapter addresses this gap by proposing a generation methodology that decouples knowledge transfer from identity exposure.
 
-To address privacy concerns, we propose generating synthetic documents based on a reward-mechanism-trained model from real documents without leaking sensitive information but keeping relevant clinical knowledge. These synthetic documents may be annotated by large proprietary models or existing public ones, and used to train small specialized models that can run on constrained medical infrastructure. 
+Our core insight is that clinical knowledge can be transported through medical concept keywords extracted via ontologies, without requiring access to the original document text.
+This raises two fundamental questions that guide our investigation: \textit{Are extracted keywords sufficient to convey the clinical knowledge necessary for downstream tasks?} and \textit{Can an iterative reinforcement mechanism, operating solely on numerical quality indicators, improve generation quality without compromising privacy?}
 
-We validate our approach through a proof-of-concept scenario using \gls{mimic}-III, assessing the effectiveness of the generated documents through several downstream tasks: a series of \gls{icd}-9 multi-label classifications of varying complexity and a synthetic Named Entity Recognition (\gls{ner}) task. The results demonstrate that synthetic documents preserve privacy and improve performance when real annotated data are sparse.
+To answer these questions, we present a reward-based generation pipeline where only concept keywords and scalar scores cross the privacy boundary between hospital infrastructure and the public generation environment.
+This work was published at the CL4Health workshop~\citep{meoni2025synthetic}; this chapter extends the original publication with an evaluation on the AlpaCare benchmark and comparisons with recent approaches such as KnowledgeSG.
 
 \minitoc
 
