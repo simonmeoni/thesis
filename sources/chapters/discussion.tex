@@ -132,11 +132,10 @@ A central theme across this work is the commitment to privacy preservation along
 The generation pipeline incorporates privacy-by-design principles: only \gls{umls} concept keywords cross the boundary from private to public environments, and the reward mechanism relies solely on numerical scores rather than textual data.
 However, the privacy analysis in Chapter~\ref{chap:privacy} reveals that architectural safeguards alone do not eliminate re-identification risks.
 
-The empirical evaluation demonstrates that reward-based training, while improving document quality, inadvertently amplifies re-identification vulnerabilities by teaching the model to reproduce patient-specific patterns.
-This finding—that preference optimization based on similarity to real documents reinforces identifying characteristics—represents an important insight for the community developing similarity-based reward mechanisms.
+As discussed earlier, the empirical evaluation revealed that reward-based training inadvertently amplifies re-identification vulnerabilities—a privacy amplification effect with important implications for similarity-based reward mechanisms.
 
-The post-processing keyword perturbation mitigation achieves dramatic reductions in linkage attack success rates, yet discrimination attacks remain highly effective even after mitigation.
-This persistent vulnerability underscores a fundamental lesson: there exists no perfect solution that guarantees both complete privacy and full data utility.
+The post-processing keyword perturbation mitigation achieves dramatic reductions in linkage attack success rates, yet residual vulnerabilities persist.
+This underscores a fundamental lesson: there exists no perfect solution that guarantees both complete privacy and full data utility.
 This work demonstrates theoretically that significant room for improvement remains in privacy-preserving synthetic data generation.
 However, our results also show that under certain constraints—such as deployment in semi-closed systems where synthetic datasets are shared only within controlled research environments rather than published openly—the approach can provide acceptable privacy-utility tradeoffs adapted to the data provider's security requirements.
 
@@ -184,15 +183,13 @@ The privacy preservation strategies explored in this thesis occupy a distinct po
 Recent work on DP-Rewrite~\cite{igamberdiev2022dprewrite}, DP-BART~\cite{igamberdiev2023dpbart}, and "Just Rewrite It Again"~\cite{igamberdiev2024rewriteagain} provides mathematically rigorous privacy guarantees through noise injection mechanisms calibrated to achieve specific epsilon values.
 
 Our keyword perturbation approach operates differently: rather than applying generic text rewriting with DP guarantees, we explicitly target the domain-specific medical keywords (\gls{umls} concepts) that enabled generation.
-This targeted intervention achieves dramatically superior empirical privacy gains (57-59 percentage point reductions in linkage attacks versus 2-5 pp for generic rephrasing) while minimizing utility loss.
+This targeted intervention achieves an order of magnitude greater privacy gains than generic rephrasing while minimizing utility loss.
 
 The key insight—that privacy leakage in medical documents stems primarily from combinations of medical concepts rather than general linguistic patterns—motivates this domain-specific approach.
 However, we acknowledge a significant limitation: keyword perturbation provides empirical privacy improvements without formal mathematical guarantees.
 An adversary aware of our mitigation strategy could potentially develop adaptive attacks, and the approach lacks the provable worst-case bounds that DP methods provide.
 
-We view these approaches as complementary rather than competing.
-A promising direction for future work involves combining formal DP guarantees (applied either during generation or to the numerical scores from the private scorer) with our empirical keyword perturbation strategy.
-This layered defense would provide both theoretical privacy bounds and strong empirical protection against realistic attack scenarios.
+We view these approaches as complementary rather than competing, and discuss their combination as a promising research direction below.
 
 \paragraph{Rigorous privacy evaluation in synthetic medical data.}
 
@@ -200,7 +197,7 @@ A distinctive contribution of this work lies in the comprehensive privacy evalua
 While numerous recent studies generate synthetic medical data~\cite{kweon_publicly_2023,xie_differentially_2024,li_synthetic_2024}, few conduct rigorous empirical assessment of re-identification risks through realistic attack scenarios.
 
 Our evaluation framework combines two complementary attack types (linkage 1-vs-N and discrimination 1-vs-2) with dual similarity metrics (lexical \gls{tfidf} and semantic embeddings), providing multifaceted assessment of privacy vulnerabilities.
-This systematic approach revealed the unexpected finding that reward-based training amplifies re-identification risks—a discovery that would not have emerged from architectural analysis alone and represents an important insight for the community developing similarity-based reward mechanisms.
+This systematic approach revealed the privacy amplification effect of reward-based training—a discovery that would not have emerged from architectural analysis alone.
 
 Furthermore, our privacy-utility tradeoff analysis demonstrates dataset-dependent dynamics: keyword perturbation imposes minimal utility costs on conversational tasks (AlpaCare) but more substantial costs on terminology-sensitive classification (\gls{mimic}-III \gls{icd} coding).
 This nuanced characterization helps practitioners make informed deployment decisions based on their specific use cases and acceptable risk levels.
@@ -225,7 +222,7 @@ Classification tasks requiring precise medical terminology present a more challe
 \gls{mimic}-III \gls{icd}-9 coding experiments show that keyword perturbation reduces F1 scores by 15-20 points on complex tasks (Top-50, Top-100), representing substantial utility loss.
 
 For these applications, deployment decisions must weigh privacy requirements against performance needs.
-One potential approach involves volume compensation: our results suggest that generating 10-20x more synthetic data with keyword perturbation might recover performance lost to term substitution, though this hypothesis requires empirical validation.
+One potential approach involves volume compensation, generating substantially more synthetic data to offset utility losses from privacy mitigations, though this hypothesis requires empirical validation.
 
 Alternatively, institutions might apply differential privacy mechanisms during generation rather than post-processing, potentially achieving better privacy-utility tradeoffs through integrated approaches.
 
@@ -237,7 +234,7 @@ For \textbf{semi-closed systems}—where synthetic datasets are shared within co
 Linkage attack success rates of 5-30\% represent substantial improvement over baseline (25-90\%), and the controlled access environment provides additional safeguards against malicious adversaries.
 
 For \textbf{open publication}—where datasets are released publicly without access controls—more aggressive privacy protections are warranted.
-Combining keyword perturbation with formal differential privacy guarantees, applying multiple rounds of rewriting, or restricting publication to highly aggregated or sanitized subsets may be necessary to achieve acceptable risk levels.
+Applying multiple rounds of rewriting or restricting publication to highly aggregated or sanitized subsets may be necessary to achieve acceptable risk levels.
 
 Data providers must define their own risk tolerance based on the sensitivity of source data, potential adversary capabilities, regulatory requirements, and intended use cases.
 This work provides tools and empirical measurements to inform those decisions, but cannot prescribe universal thresholds.
