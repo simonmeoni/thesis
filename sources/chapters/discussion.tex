@@ -194,7 +194,7 @@ We view these approaches as complementary rather than competing, and discuss the
 \paragraph{Rigorous privacy evaluation in synthetic medical data.}
 
 A distinctive contribution of this work lies in the comprehensive privacy evaluation methodology applied to synthetic clinical documents.
-While numerous recent studies generate synthetic medical data~\cite{kweon_publicly_2023,xie_differentially_2024,li_synthetic_2024}, few conduct rigorous empirical assessment of re-identification risks through realistic attack scenarios.
+While numerous recent studies generate synthetic medical data~\cite{kweon2024asclepius,xieDifferentiallyPrivateSynthetic2024,li_synthetic_2024}, few conduct rigorous empirical assessment of re-identification risks through realistic attack scenarios.
 
 Our evaluation framework combines two complementary attack types (linkage 1-vs-N and discrimination 1-vs-2) with dual similarity metrics (lexical \gls{tfidf} and semantic embeddings), providing multifaceted assessment of privacy vulnerabilities.
 This systematic approach revealed the privacy amplification effect of reward-based training—a discovery that would not have emerged from architectural analysis alone.
@@ -252,7 +252,7 @@ Second, hybrid weak supervision (dictionary + \gls{llm} annotations) produces dr
 \paragraph{Hybrid weak supervision: complementary annotation sources.}
 
 The hybrid supervision approach combining dictionary-based and \gls{llm}-based annotations (Chapter~\ref{chap:distillation}) extends prior work on weak supervision in clinical \gls{nlp}.
-While dictionary-based methods and \gls{llm}-based annotation~\cite{agrawal_large_2022} have been explored independently, few studies systematically investigate their combination in multilingual clinical contexts.
+While dictionary-based methods and \gls{llm}-based annotation~\cite{Agrawal2022LargeExtractors} have been explored independently, few studies systematically investigate their combination in multilingual clinical contexts.
 
 The optimal mixing ratio ($r_{mix} \in [0.4, 0.6]$) for most languages indicates that neither source alone captures the full spectrum of clinical entities.
 Dictionary-based annotations provide precise coverage of standardized medical terminology present in \gls{umls}, ensuring high precision on well-documented concepts.
