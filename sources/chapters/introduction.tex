@@ -1,7 +1,6 @@
 \chapter{Introduction}
 \label{chap:intro}
 \adjustmtc
-
 \minitoc
 
 \section{Context: Natural Language Processing for Medical Documents}
@@ -73,14 +72,13 @@ The first research question addresses the fundamental challenge of generation qu
 The second research question concerns the utility of synthetic data for practical clinical \gls{nlp} applications. Even if synthetic documents appear realistic, they must demonstrate functional equivalence to real clinical text when used for training \gls{nlp} models.
 Conversely, documents that lack surface-level realism may nevertheless prove effective for training if they capture the underlying linguistic patterns and label distributions that models need to learn. This question investigates whether models trained on synthetic data---either exclusively or in combination with limited real data---can achieve performance comparable to models trained on larger real datasets. It also explores the conditions under which synthetic data augmentation provides the greatest benefit: for rare conditions, minority classes, or specific document types where real training examples are scarce.
 
-\textbf{RQ3: What are the privacy implications of synthetic clinical text generation, and how can generation approaches be designed to minimize re-identification risks while preserving data utility?}
-
-The third research question addresses the privacy guarantees that motivate interest in synthetic data. If synthetic documents inadvertently memorize and reproduce identifiable information from training corpora, they may fail to deliver the privacy benefits that justify their use. This question examines the extent to which current generation approaches risk leaking sensitive information, explores techniques for quantifying and mitigating such risks, and investigates the trade-offs between privacy protection and the preservation of clinically relevant details that make synthetic data useful for \gls{nlp} development.
-
-\textbf{RQ4: Can large language models serve as effective annotators for clinical text, and how does \gls{llm}-based annotation compare to traditional expert annotation for training downstream \gls{nlp} models?}
+\textbf{RQ3: Can large language models serve as effective annotators for clinical text, and how does \gls{llm}-based annotation compare to traditional expert annotation for training downstream \gls{nlp} models?}
 
 The fourth research question extends the investigation of \glspl{llm} beyond text generation to the complementary challenge of data annotation. Supervised clinical \gls{nlp} systems require labeled training data, yet expert annotation of clinical text is expensive, time-consuming, and difficult to scale across languages and institutions. Recent advances in \gls{llm} capabilities suggest they might serve as automated annotators, potentially democratizing access to labeled clinical data. This question investigates the quality of \gls{llm}-generated annotations compared to human experts, explores strategies for improving annotation accuracy through prompting or domain adaptation, and examines whether models trained on \gls{llm}-annotated data can achieve performance comparable to those trained on expert-annotated corpora.
 
+\textbf{RQ4: What are the privacy implications of synthetic clinical text generation, and how can generation approaches be designed to minimize re-identification risks while preserving data utility?}
+
+The third research question addresses the privacy guarantees that motivate interest in synthetic data. If synthetic documents inadvertently memorize and reproduce identifiable information from training corpora, they may fail to deliver the privacy benefits that justify their use. This question examines the extent to which current generation approaches risk leaking sensitive information, explores techniques for quantifying and mitigating such risks, and investigates the trade-offs between privacy protection and the preservation of clinically relevant details that make synthetic data useful for \gls{nlp} development.
 \section{Contributions}
 
 This thesis makes several contributions to clinical \gls{nlp}, spanning synthetic data generation, privacy-preserving evaluation, and knowledge distillation for multilingual clinical entity extraction. These contributions are grounded in peer-reviewed publications and address the research questions outlined above.
@@ -100,9 +98,10 @@ This thesis is organized into seven chapters, progressing from foundational conc
 
 \textbf{Chapter~\ref{chap:synthetic},~\ref{chap:french-application}} addresses RQ1 and RQ2 by introducing a synthetic document generation pipeline for medical tasks. The chapter presents a reward-based generation mechanism that combines keyword injection with multi-step generation, scoring, and alignment to produce clinically coherent synthetic documents. Experiments evaluate the generated data on downstream tasks including multi-label classification and named entity recognition, demonstrating the conditions under which synthetic data augmentation improves model performance.
 
-\textbf{Chapter~\ref{chap:privacy}} addresses RQ3 through a comprehensive privacy analysis of synthetic clinical documents. The chapter formalizes threat models for re-identification attacks, implements linkage and discrimination attack scenarios using both lexical and semantic similarity metrics, and quantifies privacy vulnerabilities in baseline generation. It then proposes and evaluates mitigation strategies including rephrasing and keyword perturbation, systematically analyzing the trade-offs between privacy protection and downstream task utility.
+\textbf{Chapter~\ref{chap:distillation}} addresses RQ3 through an investigation of knowledge distillation with large language models for multilingual clinical entity extraction. The chapter explores \gls{llm}-based annotation as weak supervision, examining prompting strategies for generating silver-standard annotations. Experiments evaluate both monolingual and multilingual settings, with detailed analysis of French clinical entity extraction demonstrating the potential of \gls{llm}-generated annotations to reduce dependence on expert-labeled data.
 
-\textbf{Chapter~\ref{chap:distillation}} addresses RQ4 through an investigation of knowledge distillation with large language models for multilingual clinical entity extraction. The chapter explores \gls{llm}-based annotation as weak supervision, examining prompting strategies for generating silver-standard annotations. Experiments evaluate both monolingual and multilingual settings, with detailed analysis of French clinical entity extraction demonstrating the potential of \gls{llm}-generated annotations to reduce dependence on expert-labeled data.
+\textbf{Chapter~\ref{chap:privacy}} addresses RQ4 through a comprehensive privacy analysis of synthetic clinical documents. The chapter formalizes threat models for re-identification attacks, implements linkage and discrimination attack scenarios using both lexical and semantic similarity metrics, and quantifies privacy vulnerabilities in baseline generation. It then proposes and evaluates mitigation strategies including rephrasing and keyword perturbation, systematically analyzing the trade-offs between privacy protection and downstream task utility.
+
 
 \textbf{Chapter~\ref{chap:discussion}} synthesizes the contributions across all chapters, providing critical analysis of the proposed approaches including their strengths and limitations. It positions the work with respect to the current state of the art, discusses implications for the medical domain, and outlines research perspectives for both short-term extensions and long-term directions.
 
