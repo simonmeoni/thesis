@@ -3,7 +3,7 @@
 \resizebox{0.6\textwidth}{!}{%
 \begin{tabular}{@{}lll@{}}
 \toprule
-Annotations & \multicolumn{1}{l}{Dictionary Extraction} & InstructGPT-3 \\ \midrule
+Annotations & \multicolumn{1}{l}{\dict} & \instruct \\ \midrule
  \multicolumn{1}{l}{F1-score} & 0.57 $\pm$ 0.02                                                & \textbf{0.74} $\pm$ 0.01                             \\ \midrule
  \multicolumn{1}{l}{\bclin} &
   \begin{tabular}[c]{@{}l@{}}F: 0.72 $\pm$ 0.03\\ P: \textbf{0.65} $\pm$ 0.07\\ R: 0.82 $\pm$ 0.04\end{tabular} &
@@ -13,6 +13,6 @@ Annotations & \multicolumn{1}{l}{Dictionary Extraction} & InstructGPT-3 \\ \midr
   \begin{tabular}[c]{@{}l@{}}F: \textbf{0.53} $\pm$ 0.01\\ P: \textbf{0.42} $\pm$ 0.03\\ R: \textbf{0.71} $\pm$ 0.03\end{tabular} \\ \bottomrule
 \end{tabular}%
 }
-\caption{F1 score, Recall and Precision using E3C \layerTwo\space validate as the train set with both different annotations (dictionary extraction with manual correction and InstructGPT prediction),  the performance is computed on \layerOne.}
+\caption{F1-score, Recall and Precision using E3C \Sval as the train set with both annotation methods (\dict and \instruct). Performance is computed on \Sgold.}
 \label{tab:healthnlp_layer2validate}
 \end{table}

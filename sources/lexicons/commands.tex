@@ -59,39 +59,46 @@
 \newcommand{\mixp}{\{4,6\}\%}
 
 % === Knowledge Distillation Chapter ===
-% Nouvelles macros (principales)
-\newcommand{\dictmodel}{\textit{Dict-supervised}\xspace}
-\newcommand{\llmmodel}{\textit{LLM-supervised}\xspace}
-\newcommand{\hybridmodel}{\textit{Hybrid-supervised}\xspace}
-\newcommand{\silvermixedmodel}{\textit{Silver-Mixed}\xspace}
-\newcommand{\gold}{\textbf{gold}\xspace}
-\newcommand{\silver}{\textbf{silver}\xspace}
-\newcommand{\silverval}{\textbf{silver}\textsuperscript{val}\xspace}
-\newcommand{\mono}{monolingual\xspace}
-\newcommand{\multi}{multilingual\xspace}
-\newcommand{\rmix}{$r$\xspace}
+% Primary commands (original notation)
+\newcommand{\instruct}{\mbox{InstructGPT-3}\xspace}
+\newcommand{\distilInstruct}{\mbox{Instruct-Distilation}\xspace}
+\newcommand{\distilmodels}{$M_{gpt}$\xspace}
+\newcommand{\dict}{dictionary extraction\xspace}
+\newcommand{\weakModel}{$M_{dict}$\xspace}
 
 % Labels IOB
 \newcommand{\iclin}{$I_{clin}$\xspace}
 \newcommand{\bclin}{$B_{clin}$\xspace}
 
-% Modèle LLM et méthodes
-\newcommand{\instruct}{\mbox{InstructGPT-3}\xspace}
-\newcommand{\dict}{dictionary extraction\xspace}
-
-% Alias pour rétrocompatibilité avec les tableaux
-\newcommand{\distilmodels}{\llmmodel}
-\newcommand{\weakModel}{\dictmodel}
-\newcommand{\distilInstruct}{\llmmodel}
-\newcommand{\layerOne}{\gold}
-\newcommand{\layerTwo}{\silver}
-\newcommand{\layerValidate}{\silverval}
+% Data layers
+\newcommand{\layerOne}{\textbf{gold standard}\xspace}
+\newcommand{\layerTwo}{\mbox{\textbf{silver}}\xspace}
+\newcommand{\layerValidate}{\textbf{silver with fixed annotations}\xspace}
 \newcommand{\layerThree}{\textbf{layer~3}\xspace}
-\newcommand{\SettingD}{\mono \silver\xspace}
-\newcommand{\SettingB}{\mono \silverval\xspace}
-\newcommand{\SettingC}{\mono \hybridmodel\xspace}
-\newcommand{\SettingE}{\multi \silver\xspace}
-\newcommand{\SettingA}{\SettingD~($\rmix\in \{0, 1\}$)\xspace}
+\newcommand{\Sgold}{$\mathcal{G}$\xspace}
+\newcommand{\Ssilver}{$\mathcal{S}$\xspace}
+\newcommand{\Sval}{$\mathcal{S}_{val}$\xspace}
+\newcommand{\Sstar}{$\mathcal{S}^{*}$\xspace}
+\newcommand{\Smulti}{$\mathcal{S}_{M}$\xspace}
+
+% Legacy setting aliases (map to new notation)
+\newcommand{\SettingD}{\Ssilver}
+\newcommand{\SettingB}{\Sval}
+\newcommand{\SettingC}{\Sstar}
+\newcommand{\SettingE}{\Smulti}
+\newcommand{\SettingA}{\mbox{\Ssilver $\text{with}$~$r\in \{0, 1\}$}\xspace}
+
+% Hybrid model command
+\newcommand{\hybridmodel}{$M_{\rmix}$\xspace}
+\newcommand{\silvermixedmodel}{\textit{corrected-supervised models}\xspace}
+
+% Mixing ratio (use in math mode: $\rmix$, $\rmix=0.5$)
+\newcommand{\rmix}{r}
+
+% Convenience aliases
+\newcommand{\mono}{monolingual\xspace}
+\newcommand{\multi}{multilingual\xspace}
+
 
 % Additional colors for synthetic generation chapter
 \definecolor{seedStep}{HTML}{BBE3BF}

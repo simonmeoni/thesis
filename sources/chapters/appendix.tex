@@ -75,13 +75,13 @@ This appendix provides detailed experimental results for the weak supervision an
 \subsection{Monolingual Silver Annotations (r = 0 or 1)}
 \label{appendix:setting_a}
 
-Table \ref{tab:appendix_setting_a} presents F1-scores for \SettingA across all evaluated languages and models, comparing \llmmodel ($r=1$) and \dictmodel ($r=0$) approaches.
+Table \ref{tab:appendix_setting_a} presents F1-scores for \Ssilver with $\rmix \in \{0, 1\}$ across all evaluated languages and models, comparing \distilmodels ($\rmix=1$) and \weakModel ($\rmix=0$) approaches.
 
 \begin{landscape}
 \begin{table}[p]
     \centering
     \input{figures/multi_weak_supervision/big_table_A}
-    \caption{F1-scores for \SettingA by language and model. Comparison between \llmmodel ($r=1$) and \dictmodel ($r=0$).}
+    \caption{F1-scores for \Ssilver with $\rmix \in \{0, 1\}$ by language and model. Comparison between \distilmodels ($\rmix=1$) and \weakModel ($\rmix=0$).}
     \label{tab:appendix_setting_a}
 \end{table}
 \end{landscape}
@@ -91,7 +91,7 @@ Table \ref{tab:appendix_setting_a} presents F1-scores for \SettingA across all e
 \subsection{Monolingual Silver Validation}
 \label{appendix:setting_b}
 
-Table \ref{tab:appendix_setting_b} shows results for \SettingB, where models are trained on the \silverval set with manual corrections.
+Table \ref{tab:appendix_setting_b} shows results for \Sval, where models are trained on the manually corrected subset.
 
 \begin{table}[h]
     \centering
@@ -99,16 +99,16 @@ Table \ref{tab:appendix_setting_b} shows results for \SettingB, where models are
     \resizebox{1\textwidth}{!}{
         \input{figures/multi_weak_supervision/big_table_B}
     }
-    \caption{F1-scores for \SettingB by language and model.}
+    \caption{F1-scores for \Sval by language and model.}
     \label{tab:appendix_setting_b}
 \end{table}
 
 \clearpage
 
-\subsection{Monolingual Hybrid-Supervised}
+\subsection{Monolingual Mixed-Supervised}
 \label{appendix:setting_c}
 
-Table \ref{tab:appendix_setting_c} presents results for \SettingC, using \hybridmodel approach that combines \silver annotations with manually corrected \silverval data.
+Table \ref{tab:appendix_setting_c} presents results for \Sstar, using \hybridmodel approach that combines \Ssilver annotations with manually corrected \Sval data.
 
 \begin{table}[h]
     \centering
@@ -116,7 +116,7 @@ Table \ref{tab:appendix_setting_c} presents results for \SettingC, using \hybrid
     \resizebox{1\textwidth}{!}{
         \input{figures/multi_weak_supervision/big_table_C}
     }
-    \caption{F1-scores for \SettingC by language and model, comparing \llmmodel ($r=1$) and \dictmodel ($r=0$).}
+    \caption{F1-scores for \Sstar by language and model, comparing \distilmodels ($\rmix=1$) and \weakModel ($\rmix=0$).}
     \label{tab:appendix_setting_c}
 \end{table}
 
@@ -125,7 +125,7 @@ Table \ref{tab:appendix_setting_c} presents results for \SettingC, using \hybrid
 \subsection{Monolingual Silver: Detailed Results}
 \label{appendix:setting_d}
 
-Table \ref{tab:appendix_setting_d} provides comprehensive results for \SettingD (\mono \silver), including F1-score, Precision, and Recall for different mixing ratios $\rmix \in \{0, r_{max}, 1\}$.
+Table \ref{tab:appendix_setting_d} provides comprehensive results for \Ssilver (\mono), including F1-score, Precision, and Recall for different mixing ratios $\rmix \in \{0, r_{max}, 1\}$.
 
 \begin{landscape}
 \begin{table}[p]
@@ -134,7 +134,7 @@ Table \ref{tab:appendix_setting_d} provides comprehensive results for \SettingD 
     \resizebox{1.5\textwidth}{!}{
     \input{figures/multi_weak_supervision/big_table_D}
     }
-    \caption{Detailed results for \SettingD by language and model. Shows performance at $r=1$ (\llmmodel only), $r=0$ (\dictmodel only), and optimal ratio $r_{max}$ (\hybridmodel).}
+    \caption{Detailed results for \Ssilver by language and model. Shows performance at $\rmix=1$ (\distilmodels only), $\rmix=0$ (\weakModel only), and optimal ratio $\rmix_{max}$ (\hybridmodel).}
     \label{tab:appendix_setting_d}
 \end{table}
 \end{landscape}
@@ -144,7 +144,7 @@ Table \ref{tab:appendix_setting_d} provides comprehensive results for \SettingD 
 \subsection{Multilingual Silver: Detailed Results}
 \label{appendix:setting_e}
 
-Table \ref{tab:appendix_setting_e} provides comprehensive results for \SettingE (\multi \silver) using multilingual training with \verb|xlm-roberta-base|.
+Table \ref{tab:appendix_setting_e} provides comprehensive results for \Smulti using multilingual training with \verb|xlm-roberta-base|.
 
 \begin{landscape}
 \begin{table}[p]
@@ -154,7 +154,7 @@ Table \ref{tab:appendix_setting_e} provides comprehensive results for \SettingE 
     \resizebox{1.5\textwidth}{!}{
     \input{figures/multi_weak_supervision/big_table_E}
     }
-    \caption{Detailed results for \SettingE (multilingual training). Shows performance at $r=1$ (\llmmodel only), $r=0$ (\dictmodel only), and optimal ratio $r_{max}$ (\hybridmodel).}
+    \caption{Detailed results for \Smulti (multilingual training). Shows performance at $\rmix=1$ (\distilmodels only), $\rmix=0$ (\weakModel only), and optimal ratio $\rmix_{max}$ (\hybridmodel).}
     \label{tab:appendix_setting_e}
 \end{table}
 \end{landscape}

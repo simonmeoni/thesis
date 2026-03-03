@@ -21,7 +21,7 @@ Chapter~\ref{chap:privacy} conducts a rigorous privacy analysis of the generated
 We propose and evaluate post-processing mitigation strategies, demonstrating that targeted keyword perturbation significantly reduces linkage attack success rates while maintaining acceptable data utility for certain downstream tasks.
 
 Chapters~\ref{chap:distillation} and~\ref{chap:french-application} complete the pipeline by addressing the annotation bottleneck.
-The hybrid approach combining dictionary-based and \gls{llm}-based annotations leverages the complementary strengths of each source, achieving superior performance compared to either method alone.
+The mixed approach combining dictionary-based and \gls{llm}-based annotations leverages the complementary strengths of each source, achieving superior performance compared to either method alone.
 More broadly, rule-based approaches remain valuable components of clinical \gls{nlp} pipelines, particularly when high precision is required: hand-crafted rules can enforce domain constraints and filter false positives that statistical models might produce.
 The French clinical application (Chapter~\ref{chap:french-application}) validates this approach on real-world data from \gls{aphp}, including semi-synthetic documents created by physicians for educational and research purposes, demonstrating that our methodology transfers effectively across languages and clinical contexts.
 
@@ -244,13 +244,13 @@ Medical professionals possess limited availability for annotation tasks due to c
 
 Synthetic generation combined with weak supervision addresses this cost barrier through two mechanisms.
 First, reward-based generation reduces the number of seed documents requiring manual pseudo-anonymization.
-Second, hybrid weak supervision (dictionary + \gls{llm} annotations) produces draft annotations that experts can validate rather than creating from scratch, reducing annotation time by an estimated factor of 3-5 based on our qualitative observations during the \gls{aphp} collaboration.
+Second, mixed weak supervision (dictionary + \gls{llm} annotations) produces draft annotations that experts can validate rather than creating from scratch, reducing annotation time by an estimated factor of 3-5 based on our qualitative observations during the \gls{aphp} collaboration.
 
-\subsection{Hybrid Dictionary-\gls{llm} Approach}
+\subsection{Mixed Dictionary-\gls{llm} Approach}
 
-\paragraph{Hybrid weak supervision: complementary annotation sources.}
+\paragraph{Mixed weak supervision: complementary annotation sources.}
 
-The hybrid supervision approach combining dictionary-based and \gls{llm}-based annotations (Chapter~\ref{chap:distillation}) extends prior work on weak supervision in clinical \gls{nlp}.
+The mixed supervision approach combining dictionary-based and \gls{llm}-based annotations (Chapter~\ref{chap:distillation}) extends prior work on weak supervision in clinical \gls{nlp}.
 While dictionary-based methods and \gls{llm}-based annotation~\cite{Agrawal2022LargeExtractors} have been explored independently, few studies systematically investigate their combination in multilingual clinical contexts.
 
 The optimal mixing ratio ($r_{mix} \in [0.4, 0.6]$) for most languages indicates that neither source alone captures the full spectrum of clinical entities.
@@ -258,7 +258,7 @@ Dictionary-based annotations provide precise coverage of standardized medical te
 \gls{llm}-based annotations offer flexibility and recall, capturing context-dependent expressions, multi-word entities, and rare medical terms not present in lexicons.
 The analysis of complementary error patterns—dictionaries under-extract multi-word entities while \glspl{llm} over-extract longer spans—explains why their combination reduces bias and improves generalization.
 
-The Basque case study provides particularly strong evidence for this framework's value: when dictionary resources are severely limited (only 63 annotated tokens), \gls{llm}-only annotation ($r_{mix} = 1$) becomes optimal, demonstrating that the hybrid approach gracefully degrades to the most appropriate strategy based on available resources.
+The Basque case study provides particularly strong evidence for this framework's value: when dictionary resources are severely limited (only 63 annotated tokens), \gls{llm}-only annotation ($r_{mix} = 1$) becomes optimal, demonstrating that the mixed approach gracefully degrades to the most appropriate strategy based on available resources.
 This adaptability makes the method applicable across both well-resourced languages (English, French) and low-resource settings, though language-specific tuning remains important—English shows minimal gains due to rich \gls{umls} coverage, while Basque benefits most from \gls{llm}-only annotation.
 
 \subsection{Knowledge Distillation}
@@ -274,7 +274,7 @@ This observation has practical implications for deployment in healthcare setting
 \paragraph{Positioning as draft annotation rather than replacement.}
 
 An important distinction in our positioning: we frame weak supervision as a tool for draft or pre-annotation rather than a complete replacement for human annotation.
-Expert validation remains crucial for high-stakes clinical applications, but the ability to pre-populate annotations through hybrid weak supervision dramatically accelerates the annotation process.
+Expert validation remains crucial for high-stakes clinical applications, but the ability to pre-populate annotations through mixed weak supervision dramatically accelerates the annotation process.
 
 This positioning differs from work claiming full automation of medical annotation.
 Our honest acknowledgment of limitations—small E3C test sets, \gls{umls}-oriented annotation guidelines that may introduce biases, language-specific performance variations—reflects a commitment to realistic assessment of capabilities rather than overstating claims of generalization.
@@ -390,6 +390,6 @@ Such predictions would enable more informed deployment decisions without requiri
 
 \textbf{How do privacy guarantees compose across pipeline stages?}
 When synthetic data undergoes multiple transformations (keyword extraction with privacy guarantees, generation with DP mechanisms, post-processing with keyword perturbation), how do privacy guarantees propagate?
-Composition theorems from differential privacy provide formal answers for DP mechanisms, but our hybrid approach combining formal and empirical methods lacks established composition rules.
+Composition theorems from differential privacy provide formal answers for DP mechanisms, but our mixed approach combining formal and empirical methods lacks established composition rules.
 
 These questions extend beyond the scope of a single thesis but represent important directions for the clinical \gls{nlp} and privacy-preserving machine learning communities.

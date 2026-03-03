@@ -82,7 +82,7 @@ The analysis reveals that \gls{llm}-generated annotations exhibit complementary 
 Dictionary methods provide precise but narrow coverage, excelling at single-word clinical terms but struggling with multi-word entities.
 \gls{llm} annotations demonstrate broader recall by recognizing complex multi-word expressions, though at the cost of occasional over-extraction.
 
-Building on this insight, we propose a hybrid supervision strategy that combines annotations from both sources during training.
+Building on this insight, we propose a mixed supervision strategy that combines annotations from both sources during training.
 By mixing dictionary and \gls{llm} annotations at varying ratios, student models benefit from the precision of lexicon-based methods and the coverage of \gls{llm}-based extraction.
 Across most languages, optimal performance is achieved at intermediate mixing ratios, validating the complementarity of these annotation paradigms.
 
@@ -133,8 +133,8 @@ Yes, large language models can serve as effective annotators for clinical text, 
 Our experiments across five languages demonstrate that \gls{llm}-based weak supervision produces annotations of sufficient quality to train robust entity extraction models, reducing the need for expensive manual labeling.
 
 However, \gls{llm}-based annotation exhibits distinct error patterns compared to traditional approaches: \glspl{llm} tend toward over-extraction with broader recall but lower precision, while dictionary methods provide precise but narrow coverage.
-This complementarity suggests that hybrid annotation strategies—mixing \gls{llm}-generated labels with dictionary-based or manual annotations—yield superior performance by balancing coverage and precision.
-Such hybrid approaches can be further enhanced through ensemble methods that combine annotations from multiple \glspl{llm} or integrate model predictions with varying confidence thresholds.
+This complementarity suggests that mixed annotation strategies—mixing \gls{llm}-generated labels with dictionary-based or manual annotations—yield superior performance by balancing coverage and precision.
+Such mixed approaches can be further enhanced through ensemble methods that combine annotations from multiple \glspl{llm} or integrate model predictions with varying confidence thresholds.
 
 Moreover, \gls{llm}-based annotation proves particularly valuable when combined with human expertise: \glspl{llm} can provide pre-annotations that accelerate manual review, reducing annotation time while preserving the quality benefits of expert validation.
 For low-resource languages where curated medical lexicons are scarce, \gls{llm}-based annotation offers a viable path forward, democratizing access to clinical \gls{nlp} capabilities across linguistic contexts that would otherwise lack the resources for large-scale model development.

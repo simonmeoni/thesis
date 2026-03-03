@@ -4,16 +4,16 @@
 \resizebox{0.6\textwidth}{!}{
 \begin{tabular}{@{}lllll@{}}
 \toprule
-Annotations & \multicolumn{1}{l}{Dictionary Extraction} & InstructGPT-3\\ \midrule
-F1-score  & 0.73 $\pm$ 0.01                                                 & \textbf{0.75} $\pm$ $5e^{-3}$                        \\ \midrule
+Annotations & \multicolumn{1}{l}{\dict} & \instruct\\ \midrule
+F1-score  & 0.73 $\pm$ 0.01                                                 & \textbf{0.75} $\pm$ 0.005                        \\ \midrule
 \bclin &
-  \begin{tabular}[c]{@{}@{}l@{}}F: \textbf{0.78} $\pm$ $7e^{-3}$\\ P: 0.84 $\pm$ $4e^{-3}$\\ R: \textbf{0.72} $\pm$ 0.01\end{tabular} &
-  \begin{tabular}[c]{@{}l@{}}F: 0.77 $\pm$ $5e^{-3}$\\ P: \textbf{0.85} $\pm$ 0.01\\ R: 0.71 $\pm$ 0.01\end{tabular} \\ \midrule
+  \begin{tabular}[c]{@{}@{}l@{}}F: \textbf{0.78} $\pm$ 0.007\\ P: 0.84 $\pm$ 0.004\\ R: \textbf{0.72} $\pm$ 0.01\end{tabular} &
+  \begin{tabular}[c]{@{}l@{}}F: 0.77 $\pm$ 0.005\\ P: \textbf{0.85} $\pm$ 0.01\\ R: 0.71 $\pm$ 0.01\end{tabular} \\ \midrule
 \iclin &
   \begin{tabular}[c]{@{}l@{}}F: 0.46 $\pm$ 0.03\\ P: \textbf{0.66} $\pm$ 0.04\\ R: 0.35 $\pm$ 0.04\end{tabular} &
   \begin{tabular}[c]{@{}l@{}}F: \textbf{0.50} $\pm$ 0.01\\ P: 0.64 $\pm$ 0.02\\ R: \textbf{0.42} $\pm$ 0.02\end{tabular} \\ \bottomrule
 \end{tabular}%
 }
-\caption{F1-score, Recall and Precision using E3C \layerTwo\space merged with \layerValidate\space (the layer where 10\% of the \layerTwo\space has been fixed manually) as the train set with both different annotations (dictionary extraction with manual correction and InstructGPT prediction), the performance is computed on \layerOne.}
+\caption{F1-score, Recall and Precision using E3C \Ssilver merged with \Sval as the train set with both annotation methods (\dict and \instruct). Performance is computed on \Sgold.}
 \label{tab:healthnlp_layer2blended}
 \end{table}
