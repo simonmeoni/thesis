@@ -25,6 +25,11 @@ Grep: pattern="citationKey" path="bibliography.bib"
 - Verify: title, authors, year, venue match what you claimed
 
 **If citation exists online:**
+- Verify the **venue** (conference/journal vs arXiv preprint) via WebSearch
+- Use `@inproceedings` for conference papers, `@article` for journals/arXiv preprints
+- Always include the `url` field linking to the paper
+- For arXiv-only papers, use `journal = {arXiv preprint arXiv:XXXX.XXXXX}`
+- For conference papers, find the exact proceedings name, pages if available
 - Propose BibTeX entry to add
 - Justify why this citation supports the claim
 
@@ -33,14 +38,16 @@ Citation needed: [citationKey]
 Claim: "[what you wrote]"
 
 Found: [Paper title] by [Authors], [Year]
+Venue: [Conference/Journal or arXiv preprint]
 URL: [link]
 
 Proposed BibTeX:
-@article{citationKey,
+@inproceedings{citationKey,
     title = {...},
     author = {...},
+    booktitle = {...},
     year = {...},
-    ...
+    url = {...},
 }
 
 Justification: This paper supports the claim because [reason].
@@ -80,3 +87,7 @@ Fixed hallucinations:
 - Never invent citations
 - If unsure, search first
 - Fix mistakes immediately
+- Always verify the **publication venue** (search for "paper_title conference" or check arxiv/ACL Anthology/OpenReview)
+- Always include a `url` field in bib entries
+- Use the correct entry type: `@inproceedings` for conferences, `@article` for journals/arXiv
+- For long author lists, include first ~10 authors then `and others`
