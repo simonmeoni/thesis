@@ -5,7 +5,7 @@ The previous chapters (\autoref{chap:synthetic} and \autoref{chap:privacy}) vali
 A natural question follows: does this approach generalize to other languages and healthcare systems?
 
 This chapter presents an industrial application of our methodology to French clinical documents, conducted in collaboration with Assistance Publique -- Hôpitaux de Paris (\gls{aphp}).
-This work was led by Riccardo Tripodi as part of his master's thesis at Politecnico di Milano, applying our generation pipeline to real-world hospital documents closer to routine clinical practice than the research-oriented \gls{mimic}-III corpus.
+This work was led by Riccardo Tripodi as part of his master's thesis at Politecnico di Milano, adapting our generation pipeline to the French clinical context.
 The results are encouraging and pave the way for larger-scale deployment within the \gls{aphp} infrastructure.
 
 \minitoc
@@ -35,6 +35,9 @@ This setting presents several distinctive characteristics:
     \item \textbf{Coding system}: French hospitals use \gls{icd}-10 codes rather than the \gls{icd}-9 codes present in \gls{mimic}-III, representing a different classification granularity.
 
     \item \textbf{Regulatory context}: European healthcare data is governed by \gls{gdpr}, imposing stringent requirements on data processing and transfer that make privacy-preserving approaches particularly valuable.
+
+    \item \textbf{Fully synthetic seed corpus}: Unlike our \gls{mimic}-III pipeline, which required a small set of real pseudo-anonymized documents to bootstrap the generator (\autoref{chap:synthetic}), the French pipeline eliminates this dependency entirely.
+    The seed corpus is generated synthetically from curated mappings between \gls{icd}-10 codes and medical keywords, using a large medical language model, without any real clinical document involved.
 \end{itemize}
 
 This cross-lingual validation thus serves multiple purposes: testing whether our methodology transfers across languages and clinical contexts, providing a practical solution for data-scarce healthcare systems, and opening pathways toward shareable synthetic medical corpora.
@@ -42,59 +45,77 @@ This cross-lingual validation thus serves multiple purposes: testing whether our
 \section{Experimental Setup}
 
 \paragraph{Dataset.}
-The French corpus consists of medical reports collected from \gls{aphp}'s clinical information system.
-Unlike \gls{mimic}-III's focus on intensive care discharge summaries, these documents span multiple clinical departments and document types, providing a more heterogeneous corpus representative of routine hospital documentation.
-% TODO: Add mention of semi-synthetic documents from Partage corpus (internal AP-HP) - documents created manually by physicians for educational/research purposes
-Following the same preprocessing pipeline as our English experiments, we extract clinical concepts using a French-adapted version of QuickUMLS and use these keyword sequences to guide synthetic document generation.
-The training set comprises \texttt{[PLACEHOLDER: X]} documents, with \texttt{[PLACEHOLDER: Y]} held out for evaluation.
-% TODO: Confirm dataset sizes with Riccardo Tripodi
+The reference corpus used for scoring during \gls{dpo} refinement consists of fictive clinical reports written by practicing physicians across multiple hospital departments and medical specialties.
+These documents are clinically realistic but contain no actual patient information, ensuring full reproducibility while eliminating any risk of privacy leakage.
+Evaluation is performed on a strictly held-out test set of real clinical reports annotated by experts, fully disjoint from all data used in the pipeline.
 
-\paragraph{Generator Model.}
-We employ Qwen2.5-4B~\citep{qwen2.5} as the base generator model, selected for its strong multilingual capabilities and competitive performance on French text generation tasks.
-Compared to Mistral-7B used in our \gls{mimic}-III experiments, Qwen2.5-4B offers a favorable trade-off between model size and generation quality for non-English languages.
-The model is fine-tuned using the same two-stage approach: initial supervised fine-tuning on a seed set of \texttt{[PLACEHOLDER: Z]} pseudo-anonymized documents, followed by three iterations of \gls{dpo} alignment.
+\paragraph{Seed corpus generation.}
+Prompts are constructed from a curated database linking \gls{icd}-10 codes to medically grounded French keywords describing symptoms, anatomy, treatments, and procedures.
+Codes are sampled according to empirical hospital frequency distributions, and a constrained subset of associated keywords is selected for each prompt.
+MedGemma-27B-IT~\citep{sellergren2025medgemma}, a large multilingual medical language model, generates \num{20000} synthetic clinical reports following a fixed eight-section narrative structure: \emph{Motif d'hospitalisation}, \emph{Antécédents}, \emph{Mode de vie}, \emph{Histoire de la maladie}, \emph{Examen clinique}, \emph{Examens complémentaires}, \emph{Évolution pendant l'hospitalisation}, and \emph{Conclusion}.
+This seed corpus is entirely independent of real patient records, in contrast to the pseudo-anonymized seed documents used in our \gls{mimic}-III experiments (\autoref{chap:synthetic}).
 
-\paragraph{Scoring Models.}
-For semantic similarity scoring, we use BioLORD-2023-M~\citep{remy2024biolord}, a multilingual SentenceTransformer model specifically designed for biomedical text.
-Unlike general-purpose embedding models, BioLORD integrates clinical knowledge graph information, making it particularly suitable for assessing semantic fidelity in medical documents across languages.
-Beyond semantic similarity, the scoring mechanism incorporates an educational quality score computed via \gls{llm}-as-judge using Qwen2.5-7B-Instruct~\citep{qwen2.5}, evaluating clarity, medical relevance, and absence of hallucinations.
-The complete scoring mechanism is detailed in Section~\ref{sec:french-scoring}.
+\paragraph{Generator model.}
+We employ Qwen3-4B-Instruct~\citep{yang2025qwen3} as the base generator model, selected for its strong multilingual capabilities and competitive performance on French text generation tasks.
+Compared to Mistral-7B used in our \gls{mimic}-III experiments, Qwen3-4B offers a favorable trade-off between model size and generation quality for non-English languages.
+The model is fine-tuned using \gls{lora}~\citep{hu2022lora} with rank $r=32$ and scaling factor $\alpha=64$, applied to all attention projection layers.
+Training follows the same two-stage approach: initial supervised fine-tuning on the \num{20000} synthetic seed documents, followed by three iterations of \gls{dpo} alignment.
 
-\paragraph{Downstream Task.}
+\paragraph{Privacy-bounded refinement.}
+During \gls{dpo} iterations, the generator produces candidate reports that are scored against the fictive reference documents inside the hospital infrastructure.
+For each keyword prompt, $N=4$ candidates are generated using a mixed temperature strategy: one sample at $\tau = 0.2$ to favor coherent outputs, and three samples with temperatures drawn from $\mathcal{U}(0.6, 0.9)$ to encourage diversity.
+Keywords are extracted from reference reports using QuickUMLS~\citep{soldainiQuickUMLSFastUnsupervised2016}.
+The complete scoring mechanism is detailed in \autoref{sec:french-scoring}.
+
+\paragraph{Downstream task.}
 We evaluate synthetic document quality through \gls{icd}-10~\citep{who_icd10} multilabel classification, mirroring our \gls{icd}-9 experiments on \gls{mimic}-III.
-Models are trained on synthetic datasets of varying sizes (10K, 20K, 50K documents) and evaluated on held-out real documents across three label configurations: top-20, top-50, and top-100 most frequent codes.
+A ModernBERT-large classifier~\citep{warner2025smarter} is trained exclusively on synthetic datasets of varying sizes (\num{10000}, \num{20000}, \num{50000} documents) and evaluated on the held-out real test set.
+Classification targets are defined by the top-$k$ most frequent \gls{icd}-10 codes with $k \in \{20, 50, 100\}$.
+At the \num{10000} scale, this yields approximately \num{350} samples per code for top-20 but only \num{150} for top-100.
+The average number of codes per document increases with $k$: $1.52 \pm 0.82$ for top-20, rising to $2.10 \pm 1.14$ for top-100.
+Generated reports average approximately $800 \pm 240$ words across refinement stages.
 
-\section{Enhanced Scoring Mechanism}
+\section{Scoring Mechanism}
 \label{sec:french-scoring}
 
-While our \gls{mimic}-III experiments relied primarily on SemScore for document quality assessment, the French application employs a more sophisticated composite scoring mechanism.
-This enhancement addresses limitations observed in single-metric evaluation and provides a more comprehensive assessment of synthetic document quality.
+While our \gls{mimic}-III experiments relied primarily on SemScore for document quality assessment, the French application employs a composite scoring mechanism combining two complementary components.
 
-\paragraph{Semantic Similarity.}
-The first component measures semantic similarity between synthetic and real documents using BioLORD-2023-M embeddings.
-We compute similarity through two complementary approaches: global document embeddings capturing overall semantic content, and sliding window analysis with 128-token windows to assess local coherence.
-This dual approach ensures that both document-level meaning and fine-grained clinical details are preserved.
+\paragraph{Semantic similarity.}
+The first component measures cosine similarity between synthetic and reference documents using BioLORD-2023-M~\citep{remy2024biolord} embeddings.
+Unlike general-purpose embedding models, BioLORD integrates clinical knowledge graph information, making it particularly suitable for assessing semantic fidelity in medical documents across languages.
 
-\paragraph{Educational Quality Score.}
-The second component uses Qwen2.5-7B-Instruct as an \gls{llm}-as-judge to evaluate document quality along three dimensions:
-\begin{itemize}
-    \item \textbf{Clarity}: grammatical correctness, absence of code-switching between languages, proper punctuation and formatting.
-    \item \textbf{Medical relevance}: clinical plausibility of described conditions, realistic treatment descriptions, appropriate use of medical terminology.
-    \item \textbf{Absence of hallucinations}: detection of characteristic \gls{llm} fabrication patterns, ensuring generated content remains grounded in clinical reality.
-\end{itemize}
-The judge assigns a score between 0 and 1, with strong penalization for implausible medical information.
+\paragraph{\gls{llm}-as-judge.}
+The second component uses Qwen3-30B-A3B-Instruct~\citep{yang2025qwen3} as an \gls{llm}-as-judge to evaluate medical correctness and content alignment of the generated candidate with respect to the reference report.
 
-\paragraph{Keyword Coverage.}
-The third component measures the proportion of seed keywords successfully incorporated into the generated text.
-This metric ensures that synthetic documents maintain the clinical concepts specified in the generation prompt, preserving the medical content of the original documents.
-
-\paragraph{Composite Score.}
-The final quality score combines these three components through simple averaging:
+\paragraph{Composite score.}
+The final quality score combines these two components through simple averaging:
 \begin{equation}
-    S_{composite} = \frac{1}{3}\left(S_{similarity} + S_{educational} + S_{keywords}\right)
+    S_{composite} = \frac{1}{2}\left(S_{similarity} + S_{judge}\right)
 \end{equation}
-This composite score guides candidate selection during \gls{dpo} alignment, with higher-scoring documents serving as preferred examples.
-The multi-faceted evaluation ensures that selected documents excel across different quality dimensions rather than optimizing for a single metric.
+This composite score guides candidate selection during \gls{dpo} alignment, with higher-scoring documents serving as preferred examples and lower-scoring ones as rejected examples.
+Compared to the SemScore-only approach used on \gls{mimic}-III, this two-faceted evaluation provides a stronger training signal by capturing both semantic fidelity and clinical plausibility.
+
+\section{Example of Generated Report}
+
+\autoref{fig:french-example} presents an excerpt of a synthetic French clinical report generated at the end of the pipeline (after DPO3).
+The document follows the eight-section narrative structure and demonstrates clinically coherent content with appropriate medical terminology.
+
+\begin{figure}[htb]
+\centering
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50,boxrule=0.5pt,arc=2pt,left=8pt,right=8pt,top=6pt,bottom=6pt,fontupper=\small]
+\textbf{Motif d'hospitalisation:}
+Mme Dupont, 68 ans, est admise en hospitalisation de jour le 15/03/2024 pour traitement d'une angiodermite nécrotique extensive surinfectée. Cette lésion cutanée chronique, initialement diagnostiquée il y a plusieurs années, s'est aggravée de manière significative, nécessitant une prise en charge intensive et une surveillance rapprochée.\\[0.5em]
+
+\textbf{Histoire de la maladie:}
+L'angiodermite nécrotique initiale de Mme Dupont a connu des épisodes récurrents et des aggravations progressives au fil des ans. Depuis environ 6 mois, une lésion cutanée extensive, initialement localisée au niveau des membres inférieurs, s'est étendue progressivement et s'est caractérisée par une nécrose cutanée et une infection bactérienne sévère. La lésion est devenue très douloureuse, avec des signes d'inflammation marquée (érythème, chaleur, \oe{}dème) et une ulcération profonde. La patiente a consulté son dermatologue qui a initié un traitement antibiotique (Ceftriaxone) et une antibiothérapie topique, mais l'aggravation persiste.\\[0.5em]
+
+\textit{[\ldots]}\\[0.5em]
+
+\textbf{Mots-clés:} Angiodermite nécrotique extensive surinfectée, personne vivant seule à son domicile.
+\end{tcolorbox}
+\caption{Excerpt of a synthetic French clinical report generated after three \gls{dpo} iterations. The document follows the standardized eight-section structure and demonstrates clinically coherent content.}
+\label{fig:french-example}
+\end{figure}
 
 \section{Results}
 \label{sec:french-results}
@@ -109,19 +130,19 @@ We report macro F1 scores on the held-out test set, with relative gains computed
 \textbf{Dataset} & \textbf{Top-k} & \textbf{Step0} & \textbf{DPO1} & \textbf{DPO2} & \textbf{DPO3} & \textbf{Gain} \\
 \midrule
 \multirow{3}{*}{10K}
-    & 20  & 0.389 & \textbf{0.422} & 0.418 & 0.418 & +7.4\% \\
-    & 50  & 0.250 & 0.287 & 0.307 & \textbf{0.317} & +26.9\% \\
-    & 100 & 0.175 & 0.209 & 0.228 & \textbf{0.238} & +36.5\% \\
+    & 20  & 0.389 & \textbf{0.422} & 0.422 & 0.418 & +7.4\% \\
+    & 50  & 0.250 & 0.294 & 0.302 & \textbf{0.317} & +26.9\% \\
+    & 100 & 0.175 & 0.197 & 0.202 & \textbf{0.238} & +36.5\% \\
 \midrule
 \multirow{3}{*}{20K}
-    & 20  & 0.413 & 0.417 & \textbf{0.422} & 0.420 & +2.1\% \\
-    & 50  & 0.299 & 0.324 & 0.339 & \textbf{0.347} & +16.2\% \\
-    & 100 & 0.195 & 0.243 & 0.270 & \textbf{0.285} & +45.8\% \\
+    & 20  & 0.438 & \textbf{0.457} & 0.448 & 0.447 & +2.1\% \\
+    & 50  & 0.299 & 0.326 & 0.334 & \textbf{0.347} & +16.2\% \\
+    & 100 & 0.195 & 0.230 & 0.210 & \textbf{0.285} & +45.8\% \\
 \midrule
 \multirow{3}{*}{50K}
-    & 20  & 0.430 & 0.435 & \textbf{0.440} & 0.438 & +2.3\% \\
-    & 50  & 0.326 & 0.351 & 0.370 & \textbf{0.383} & +17.6\% \\
-    & 100 & 0.230 & 0.276 & 0.301 & \textbf{0.316} & +37.2\% \\
+    & 20  & 0.445 & \textbf{0.461} & 0.461 & 0.455 & +2.3\% \\
+    & 50  & 0.326 & 0.351 & \textbf{0.385} & 0.383 & +17.6\% \\
+    & 100 & 0.230 & 0.268 & 0.300 & \textbf{0.316} & +37.2\% \\
 \bottomrule
 \end{tabular}
 \caption{Classification F1 scores on French \gls{icd}-10 multilabel task across dataset sizes and \gls{dpo} iterations.
@@ -131,7 +152,7 @@ Relative gains computed against Step0 baseline.}
 
 The results reveal consistent patterns that mirror our \gls{mimic}-III findings while demonstrating even stronger improvements from \gls{dpo} alignment.
 Relative gains range from +2\% for top-20 to +46\% for top-100, substantially higher than the +3\% to +6\% gains observed on English data.
-This difference likely stems from the enhanced composite scoring mechanism, which provides richer training signal for preference optimization compared to SemScore alone.
+This difference likely stems from the composite scoring mechanism combining semantic similarity and \gls{llm}-as-judge, which provides a richer training signal for preference optimization compared to SemScore alone.
 
 The relationship between task complexity and \gls{dpo} benefit follows the same pattern as \gls{mimic}-III.
 For top-20 classification, a single \gls{dpo} iteration often suffices, with subsequent iterations providing marginal or no additional improvement.
@@ -151,10 +172,10 @@ The diminishing returns pattern for simpler tasks (top-20) appears in both exper
 Iterative \gls{dpo} through DPO2 and DPO3 proves beneficial for complex tasks (top-100) in both languages, and dataset scaling consistently improves absolute performance.
 
 The quantitative differences are notable: French experiments show substantially larger relative improvements from \gls{dpo} alignment (+36\% to +46\% for top-100) compared to English (+3\% to +6\%).
-We attribute this primarily to the enhanced composite scoring mechanism employed in the French pipeline, which combines semantic similarity, educational quality, and keyword coverage.
-This multi-faceted evaluation likely provides stronger training signal for preference optimization compared to the SemScore-only approach used on \gls{mimic}-III.
+We attribute this primarily to the composite scoring mechanism employed in the French pipeline, which combines semantic similarity and \gls{llm}-as-judge evaluation.
+This two-component scoring likely provides a stronger training signal for preference optimization compared to the SemScore-only approach used on \gls{mimic}-III.
 
-Additional factors may contribute to these differences: the Qwen2.5-4B model may respond more favorably to \gls{dpo} than Mistral-7B, and \gls{icd}-10 classification may present different challenges than \gls{icd}-9.
+Additional factors may contribute to these differences: the Qwen3-4B model may respond more favorably to \gls{dpo} than Mistral-7B, and \gls{icd}-10 classification may present different challenges than \gls{icd}-9.
 However, the consistent qualitative patterns across languages provide strong evidence that the core methodology---keyword-guided generation with iterative preference optimization---transfers effectively regardless of these implementation details.
 
 \section{Discussion \& Conclusion}
