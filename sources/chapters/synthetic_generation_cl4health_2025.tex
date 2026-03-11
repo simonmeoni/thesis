@@ -129,11 +129,13 @@ In each kept group, the candidate with the highest score (resp. lowest one) is s
 \subsection{Alignment Step}
 Using dataset \ddpo, we align and update \mg with \textit{DPO} (Direct Preference Optimization) \citep{rafailov2023dpo}.
 
-\section{Applying Synthetic Dataset for Real Tasks}
-To validate the quality of the generated documents, we develop downstream tasks. In real life, the test set for such downstream tasks should be made up of real documents and manually annotated.  The evaluations must be run in a private area.
-
 \section{Experiments}
 \label{sec:experiment}
+
+Beyond generation quality, a central goal is to evaluate whether facsimile documents can serve as effective training data for downstream clinical \gls{nlp} tasks.
+This evaluation serves a dual purpose: first, it measures the utility of synthetic documents for tasks close to real hospital use cases, such as \gls{icd} coding and entity extraction; second, it validates the scenario in which small, efficient models are trained on synthetic data and deployed within hospital infrastructure, where computational resources and data governance constraints make large models impractical.
+Moreover, since facsimile documents are non-confidential, they can be freely annotated by \glspl{llm} without privacy concerns, an approach we explore in depth in \autoref{chap:distillation}.
+In practice, downstream evaluations require test sets composed of real, manually annotated documents, and must be conducted in a secure environment.
 
 \subsection{Base Models}
 We use \space\verb|Mistral-7B-Instruct-v0.1|\space\citep{jiangMistral7B2023} as our base generator model, a trade-off between performance and computational cost. As an evaluator model, we use \space\verb|all-distilroberta-v1|.
@@ -255,7 +257,7 @@ As an approximation, we hypothesize that the synthetic data point from \dgstar, 
 \subsection{Named Entity Recognition (\gls{ner}) Task}
 \paragraph{Annotating the Overall Dataset:}
 
-Because \mimic does not include gold \gls{ner} annotations, we use GPT-4 to automatically annotate all (synthetic and real) train and test datasets (\citet{noauthor_gpt-4_nodate}), focusing on three entity types: \textbf{problem}, \textbf{treatment} and \textbf{test}. We employ a few-shot learning approach inspired by \citet{hu2024improving}, using the prompt in Figure~\ref{experiment:prompt}. To assess whether or not the annotated entities are essentially the \gls{umls} keywords, we evaluated the overlap between keywords and annotations and found a low $22.36\%$ overlap.
+Because \mimic does not include gold \gls{ner} annotations, we use GPT-4 to automatically annotate all (synthetic and real) train and test datasets (\citet{noauthor_gpt-4_nodate}), focusing on three entity types: \textbf{problem}, \textbf{treatment} and \textbf{test}. We employ a few-shot learning approach inspired by \citet{hu2024improving}, using the prompt in Figure~\ref{experiment:prompt}. This use of \gls{llm}-based annotation on synthetic documents is possible precisely because facsimile documents are non-confidential; we study this approach in greater depth in \autoref{chap:distillation}. To assess whether or not the annotated entities are essentially the \gls{umls} keywords, we evaluated the overlap between keywords and annotations and found a low $22.36\%$ overlap.
 
 Table~\ref{tab:datasets-proportion} illustrates the distributions of labels for the \gls{icd}-MC tasks and entities for \gls{ner}.
 
@@ -289,7 +291,10 @@ We apply the same methodology for the \gls{ner} task but with only \dgold and \d
 \footnotetext{\textit{O} (Outside) comes from the \gls{iob} (Inside-Outside-Beginning) schema used in Named Entity Recognition task. It denotes tokens that are not part of any named entity.}
 
 \section{Results}
-Table~\ref{tab:semscores} presents a comparative analysis of \score measurements by evaluators across the different datasets generated at various steps. We observe a consistent improvement in scores with successive steps. The $\GenMdl{6\%}$ model outperforms the $\GenMdl{4\%}$ model, highlighting the effectiveness of alignment in refining the quality of generated documents through iterative processes. The scores indicate a trend across various models, suggesting that models trained with more real data produce higher-quality documents.
+Table~\ref{tab:semscores} presents a comparative analysis of \score measurements by evaluators across the different datasets generated at various steps.
+Two trends emerge clearly.
+First, scores increase consistently with each \gls{dpo} iteration: for instance, $\GenMdl{6\%}$ improves from $67.26$ at step~0 to $74.37$ at step~2 when evaluated by $\ScoreMdl{6\%}$, confirming that iterative alignment effectively refines the quality of generated documents.
+Second, the $\GenMdl{6\%}$ model outperforms $\GenMdl{4\%}$ at every step, indicating that a larger seed ratio produces higher-quality synthetic documents.
 
 \begin{table}[ht]
 \centering
@@ -333,9 +338,11 @@ $\GenMdl{6\%}$ &1&\textcolor{gray}{72.54}&70.78 \\
 \label{tab:main-results}
 \end{table*}
 
-Table~\ref{tab:main-results} compares F1 scores on the downstream tasks across different models and configurations, providing insights about their performance when varying task complexities and training data conditions. Notably, \mgover,trained with \dgover, outperforms the models trained with synthetic data ($M_{0,1,2}^{\mixp}$) across all tasks. Second generation models($D_{2}^{4\%}$ and $D_{2}^{6\%}$) demonstrate performance comparable to the model trained on \dgover. In particular, for the \class{400} task, the F1 scores for $D_{2}^{4\%}$ and $D_{2}^{6\%}$ match closely those for \dgover, with only minor variations. Notably, the standard deviations for the synthetic data models are lower than those of the gold data model, indicating more consistent performance. Furthermore, models trained on a combination of several generations($D_{0,1,2}^{6\%}$) outperform most cases, except on the \class{20} task. This suggests increasing data diversity and quantity through dataset mixing enhances model performance in certain scenarios.
+Table~\ref{tab:main-results} compares F1 scores on the downstream tasks across different models and configurations, providing insights about their performance when varying task complexities and training data conditions. Notably, \mgover, trained with \dgover, outperforms the models trained with synthetic data ($M_{0,1,2}^{\mixp}$) across all tasks. Second generation models ($D_{2}^{4\%}$ and $D_{2}^{6\%}$) demonstrate performance comparable to the model trained on \dgover. Notably, the standard deviations for the synthetic data models are lower than those of the gold data model, indicating more consistent performance. Furthermore, models trained on a combination of several generations ($D_{0,1,2}^{6\%}$) outperform most cases, except on the \class{20} task. This suggests increasing data diversity and quantity through dataset mixing enhances model performance in certain scenarios.
 
-Consistently across \class{k} tasks, $M_{0}^{\mixp}$ models yield the lowest F1 scores. This indicates that initial generation models lack sufficient sophistication or diversity in training data to effectively capture necessary predictive features, particularly for $M_{0}^{4\%}$. As task complexity increases, F1 scores generally decrease for both real-based and synthetic-base models, highlighting the models' challenges in adapting to more complex interactions.
+Interestingly, while the \score evaluation (Table~\ref{tab:semscores}) consistently favored $\GenMdl{6\%}$ over $\GenMdl{4\%}$, this advantage does not always translate to downstream performance. On more complex tasks (\class{100} and \class{400}), $D_{2}^{4\%}$ slightly outperforms $D_{2}^{6\%}$ ($34.3$ vs $31.9$ for \class{100}, $27.0$ vs $26.5$ for \class{400}), while $D_{2}^{6\%}$ remains ahead on simpler tasks. One possible explanation is that the larger seed ratio in $\GenMdl{6\%}$ biases generation toward more frequent patterns, which benefits coarse-grained classification but may reduce the diversity needed for fine-grained tasks with rarer labels.
+
+Consistently across \class{k} tasks, task models trained on $D_{0}^{\mixp}$ yield the lowest F1 scores. This indicates that documents generated before any alignment step lack sufficient quality or diversity to effectively capture necessary predictive features. As task complexity increases, F1 scores generally decrease for both real-based and synthetic-based models, highlighting the challenge of adapting to more complex interactions.
 
 \begin{figure}[htb]
     \centering
@@ -362,7 +369,7 @@ Though, $M_{0,1,2}^{4\%}$ consistently outperforms $M_{0,1,2}^{6\%}$, indicating
 \begin{figure*}[htb]
     \centering
     \resizebox{.9\textwidth}{!}{\input{figures/synthetic_generation_cl4health_2025/ablation.pgf}}
-    \caption{The figure showcases the experimental settings for training encoder models with varying quantities of synthetic data. The \textcolor{pinkLine}{\textbf{pink line}} (resp. \textcolor{blueLine}{\textbf{blue line}}) denotes models trained on randomly sampled datasets (resp. nth-best based on \score datasets). The black dot represents the model trained with \dgold, while the black square represents the model trained with \dgover.}
+    \caption{The figure showcases the experimental settings for training encoder models with varying quantities of synthetic data. The \textcolor{pinkLine}{\textbf{pink line}} (resp. \textcolor{blueLine}{\textbf{blue line}}) denotes models trained on randomly sampled datasets (resp. nth-best based on \score datasets). The black dot represents the model trained with \dgold, the black square represents the model trained with \dgover, and the black star represents the model trained with \dgold for the \gls{ner} task.}
     \label{fig:samplings}
 \end{figure*}
 
@@ -375,7 +382,7 @@ We trained several task models using different amounts of (filtered) synthetic d
 
 In Figure~\ref{fig:samplings}, the graphs demonstrate a consistent increase in F1 scores when expanding the synthetic document set from 2,000 to 10,000 documents for both sampling methods. For \class{100}, percentile sampling shows a more pronounced improvement than random sampling, particularly at lower document counts. As the document set grows, the performance gap between the two sampling methods narrows, but percentile sampling maintains a slight edge throughout. This trend suggests that the quality of synthetic documents, measured by SEMSCORE, significantly impacts performance for this task, especially when working with smaller datasets. The observation underscores the importance of quantity and quality in synthetic data generation, with quality playing a crucial role in scenarios where data quantity is limited.
 
-On the other hand, there is a sharp decrease in the performance of the \gls{ner} task when $M_{2}^{6\%}$ is trained with the same number of documents as \mgold using percentile sampling. We conjecture it is partly due to the synthetic subset containing fewer annotated tokens than the gold dataset (for the same number of documents), with 510199 tokens versus 643802 tokens. To neutralize the impact of this difference, we trained a model with the same amount of annotated tokens as \dgold, as illustrated by a black star in Figure \ref{fig:samplings}. We observe less difference between \mgold and $M_{2}^{6\%}$ (with values of $57.0$ and $56.6$).
+On the other hand, there is a sharp decrease in the performance of the \gls{ner} task when $M_{2}^{6\%}$ is trained with the same number of documents as \mgold using percentile sampling. We conjecture it is partly due to the synthetic subset containing fewer annotated tokens than the gold dataset (for the same number of documents), with \num{510199} tokens versus \num{643802} tokens. To neutralize the impact of this difference, we trained a model with the same amount of annotated tokens as \dgold, as illustrated by a black star in Figure \ref{fig:samplings}. We observe less difference between \mgold and $M_{2}^{6\%}$ (with values of $57.0$ and $56.6$).
 
 \begin{figure}[!htb]
     \centering
@@ -390,23 +397,27 @@ Specifically, we observe that the \textbf{problem} entity type is slightly overr
 
 Furthermore, the distributional difference between \dgold and \dte indicates that the training-test split itself contains inherent variability, making it challenging to fully attribute performance differences solely to synthetic data quality. Adding or removing words during the generation process can further affect the proportion of annotated tokens, as the generative model may produce documents of varying lengths and information density. This observation underscores the importance of not only matching semantic content but also ensuring that entity distributions remain balanced to achieve optimal downstream task performance. We have not yet conducted the \gls{ner} task experiment with the documents generated by $M_{0,1,2}^{4\%}$ as we do not anticipate significant results for these tasks given the limited seed data available.
 
+\clearpage
 \section{Extended Evaluation on AlpaCare Benchmark}
 \label{sec:alpacare-eval}
 
 Since our method shares several conceptual similarities with KnowledgeSG \cite{wangKnowledgeSGPrivacyPreservingSynthetic2024}, we sought to establish a comparison with this approach. KnowledgeSG proposes a client-server framework where the client possesses private knowledge (for example, a clinical model trained on sensitive data) while a knowledge distillation process occurs via a remote professional model. Like our pipeline, this method adopts an iterative approach and integrates alignment mechanisms and sample selection: it generates multiple candidates then progressively filters them via a reference professional model to select the best samples, thus countering the performance degradation induced by gradient noise when using differential privacy.
 
-This methodological convergence naturally led us to adopt the AlpaCare benchmark \cite{zhang2023alpacare}, a doctor-patient conversational dataset in chatbot format, used both as a reference professional model in KnowledgeSG and as an evaluation benchmark in our context. This choice presents a dual advantage: on one hand, it enables direct comparison with KnowledgeSG on common evaluation ground, and on the other hand, it addresses a different type of task from our usual evaluations, thus broadening the validation spectrum of our approach. The evaluation follows a preference evaluation protocol where a judge compares pairwise the responses generated by our model with those from established reference models (text-davinci-003 \cite{OpenAI2022TextDavinci003}, GPT-3.5-turbo \cite{OpenAI2022GPT35Turbo}, GPT-4 \cite{noauthor_gpt-4_nodate}, and Claude-2 \cite{Anthropic2023Claude2}). To ensure result robustness, each sample is evaluated twice with swapped positions to avoid positional bias.
+This methodological convergence naturally led us to adopt the AlpaCare benchmark \cite{zhang2023alpacare}, a doctor-patient conversational dataset in chatbot format, used both as a reference professional model in KnowledgeSG and as an evaluation benchmark in our context.
+The downstream task here is medical question answering: given a patient question, the model must generate a clinically relevant and accurate response.
+This choice presents a dual advantage: on one hand, it enables direct comparison with KnowledgeSG on common evaluation ground, and on the other hand, it addresses a different type of task from our usual evaluations (document-level classification and entity extraction), thus broadening the validation spectrum of our approach to document quality assessment.
+The evaluation follows a preference evaluation protocol where a judge compares pairwise the responses generated by our model with those from established reference models (text-davinci-003 \cite{OpenAI2022TextDavinci003}, GPT-3.5-turbo \cite{OpenAI2022GPT35Turbo}, GPT-4 \cite{noauthor_gpt-4_nodate}, and Claude-2 \cite{Anthropic2023Claude2}). To ensure result robustness, each sample is evaluated twice with swapped positions to avoid positional bias.
 
 For our approach to adapt to this benchmark, we modified our method as follows: our SynthKG pipeline specifically generates synthetic patient questions from extracted medical keywords, while corresponding responses are produced by AlpaCare, which serves as the reference professional model. The process is structured as follows: we first generate clinical keywords, from which we synthesize patient questions, then AlpaCare generates the associated expert responses. This combination produces a question-answer pair dataset that is then used to fine-tune a model capable of answering questions from the AlpaCare dataset during evaluation.
 
 \section{Advanced Quality Evaluation Methods}
 \label{sec:quality-eval}
 
-Given the results obtained with our initial pipeline, we identified potential improvement margins in the quality of synthetic document selection. While SemScore provided a foundation for semantic similarity assessment, we hypothesized that more sophisticated evaluation mechanisms could better capture the nuanced requirements of high-quality clinical synthetic documents. This section explores multi-faceted quality evaluation approaches that go beyond simple semantic similarity.
+Given the results obtained with our initial pipeline, we identified potential improvement margins in the quality of synthetic document selection. While SemScore provided a foundation for semantic similarity assessment, we hypothesized that more sophisticated evaluation mechanisms could better capture the nuanced requirements of high-quality clinical synthetic documents. This section explores multi-faceted quality evaluation approaches that go beyond simple semantic similarity; the privacy implications of these evaluation choices are further examined in \autoref{chap:privacy}.
 
 \subsection{Medical Domain Filtering}
 
-The first quality enhancement we implemented was a medical domain filtering process adapted from KnowledgeSG \cite{wangKnowledgeSGPrivacyPreservingSynthetic2024}. This filter addresses a fundamental quality requirement: ensuring that generated documents remain medically relevant and do not drift into non-clinical domains during the generation process. The filtering mechanism operates by identifying whether a generated document or example constitutes a candidate whose subject matter falls within the medical domain.
+The first quality enhancement we implemented was a medical domain filtering process adapted from KnowledgeSG \cite{wangKnowledgeSGPrivacyPreservingSynthetic2024}. This filter addresses a fundamental quality requirement: ensuring that the generated synthetic documents remain medically relevant and do not drift into non-clinical domains during the generation process. The filtering mechanism operates by identifying whether a generated document or example constitutes a candidate whose subject matter falls within the medical domain.
 
 This filtering step serves multiple purposes. First, it discards off-topic or non-medical generations that may arise from the stochastic nature of large language models, particularly when keyword guidance is sparse or ambiguous. Second, it ensures that synthetic documents maintain clinical relevance, a critical requirement for downstream medical \gls{nlp} tasks. Third, it provides a coarse-grained quality gate before more expensive evaluation mechanisms are applied, reducing computational costs by filtering out obviously unsuitable candidates early in the pipeline.
 
@@ -417,6 +428,7 @@ The medical domain classifier was trained to distinguish clinical text from gene
 Following medical domain filtering, we explored advanced \gls{llm}-as-judge evaluation techniques \cite{archit2024criticalevaluation,lee2024selfjudge}. This approach represents a paradigm shift from traditional automatic metrics by leveraging the contextual understanding and reasoning capabilities of large language models to evaluate document quality.
 
 The \gls{llm}-as-judge framework operates by providing a large language model with a carefully designed prompt that instructs it to evaluate synthetic documents along multiple quality dimensions. Unlike SemScore, which measures semantic similarity through embedding distance, or traditional metrics like \gls{bleu} or \gls{rouge}, which rely on surface-level token overlap, \gls{llm}-as-judge can assess higher-level qualities such as clinical coherence, factual plausibility, narrative flow, and adherence to medical documentation standards.
+A key distinction is that \gls{llm}-as-judge evaluates synthetic documents in isolation, without requiring access to the original real documents. This makes it particularly suited to our privacy-preserving context, where direct comparison with real patient records is not always feasible. However, this also means that the evaluation captures intrinsic document quality rather than fidelity to a specific real counterpart.
 
 We designed evaluation prompts that asked judge models to score documents on a 1-5 scale based on clinical relevance, coherence, and appropriateness. The prompts explicitly instructed the model to consider whether the document could plausibly represent a real clinical note, whether the medical information presented was internally consistent, and whether the temporal sequence of events made clinical sense. For this evaluation, we selected a sample of one thousand documents that obtained a score of five according to KnowledgeSG's evaluation system as a reference point.
 
@@ -468,7 +480,7 @@ Non-Private & 0.389 & 0.303 & 0.151 & 0.179 & 0.255 \\
 
 \section{Discussion}
 
-Besides validating our privacy-safe generation process, our results have also provided crucial insights into the impact of both the quality and quantity of synthetic training data on the performance of encoder models. \textbf{It is evident that refining the generator through \gls{dpo}, using clinical concepts as inputs, enhances the synthetic dataset's quality, especially when the first alignment step has been performed}.
+Besides validating our privacy-safe generation process, our results, obtained on both \gls{mimic}-III and the AlpaCare benchmark, have provided crucial insights into the impact of both the quality and quantity of synthetic training data on the performance of encoder models. \textbf{It is evident that refining the generator through \gls{dpo}, using clinical concepts as inputs, enhances the synthetic dataset's quality, especially when the first alignment step has been performed}.
 
 Results indicate that training models on synthetic data not only preserves but outperforms models trained on gold datasets, as illustrated in Table~\ref{tab:main-results}.
 This highlights the potential of using privacy-preserving synthetic documents to maintain high data utility while protecting sensitive information.
