@@ -2,8 +2,10 @@
 \label{chap:distillation}
 
 The previous chapters addressed the generation of synthetic clinical documents that preserve privacy while retaining medical knowledge.
-However, raw documents alone are insufficient for training supervised models: they require annotations.
-This chapter explores how \glspl{llm} can reduce or replace human annotation effort for clinical entity extraction.
+The downstream evaluations conducted so far have focused primarily on classification tasks, specifically \gls{icd} coding, where labels could be transferred directly from the original documents to their synthetic facsimiles.
+However, raw documents alone are insufficient for training supervised models on finer-grained tasks such as entity extraction: they require annotations.
+Since facsimile documents are synthetic and non-confidential, they can be freely submitted to \glspl{llm} for annotation without privacy concerns, opening the possibility of training smaller, deployable models on \gls{llm}-annotated synthetic data.
+This chapter explores this direction and investigates how \glspl{llm} can reduce or replace human annotation effort for clinical entity extraction.
 
 Conducted early in this thesis following the release of InstructGPT~\citep{ouyang2022training}, this work was inspired by \citet{Agrawal2022LargeExtractors} who demonstrated that \glspl{llm} are effective few-shot clinical information extractors.
 We extend their findings to multilingual settings and investigate whether \gls{llm}-generated annotations on non-confidential data can train smaller encoder models for clinical entity extraction, deployable within institutional infrastructure.
@@ -209,6 +211,7 @@ We evaluate these strategies across different data configurations:
 \subsection{Annotation Analysis} 
 
 We observe that \instruct extracts more entities than \dict on \Ssilver (Table~\ref{tab:counts}). This trend is reduced in English and Spanish, but we observed a higher quantity of \iclin tokens annotated by \instruct for all languages. On \Sval, the quantity of tokens annotated by both methods is relatively equivalent, likely due to human validation.
+We examine the downstream consequences of these annotation differences in \autoref{sec:french_case_study}, where a detailed error analysis reveals how each method's annotation patterns propagate through distillation.
 
 \begin{table}
     \centering
@@ -402,7 +405,7 @@ One limitation is the small test set size, which may impact generalizability. We
 The E3C guidelines were designed for entity-linking via \gls{umls}, leading to annotation choices that may not reflect natural entity boundaries. Clinical entities may be split into separate disorder concepts or reduced to fit \gls{umls} entries \citep{Magnini2020TheCases}, introducing biases that affect span prediction.
 
 \section{Conclusion}
-Our results demonstrate that \distilmodels distillation outperforms \weakModel supervision for clinical entity extraction in most languages. The \hybridmodel approach, combining both annotation sources, further improves performance by leveraging their complementary strengths: \dict provides precise but narrow coverage, while \instruct offers broader but noisier annotations.
+Our results demonstrate that \distilmodels distillation outperforms \weakModel supervision for clinical entity extraction in most languages. The \hybridmodel approach, combining both annotation sources, further improves performance by leveraging their complementary strengths: \dict provides precise but narrower coverage, while \instruct offers broader but noisier annotations.
 
 This weak-supervision approach with \glspl{llm} reduces annotation costs while enabling deployment of small to medium-sized models that can be hosted locally, preserving data confidentiality and reducing energy costs. For low-resource languages like Basque, \glspl{llm} offer a competitive alternative when linguistic resources for \dict are limited.
 
