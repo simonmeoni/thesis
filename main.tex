@@ -112,6 +112,9 @@
 \listoftables
 \listofalgorithms
 
+\glsaddall
+\printglossary[type=\acronymtype]
+
 \mainmatter
 \include{sources/chapters/introduction}
 \include{sources/chapters/related_works}
@@ -131,9 +134,6 @@
 
 \begingroup
 \let\clearpage\relax
-\glsaddall
-\printglossary[type=\acronymtype]
-\newpage
 \printglossary
 \endgroup
 
