@@ -20,12 +20,12 @@ Unlike pure generation approaches that generate documents from scratch, our seed
 Chapter~\ref{chap:privacy} conducts a rigorous privacy analysis of the generated synthetic documents, revealing that while the keyword-based generation pipeline ensures no direct identification occurs, residual re-identification risks persist through the combination and sequence of medical concepts.
 We propose and evaluate post-processing mitigation strategies, demonstrating that targeted keyword perturbation significantly reduces linkage attack success rates while maintaining acceptable data utility for certain downstream tasks.
 
-Chapters~\ref{chap:distillation} and~\ref{chap:french-application} complete the pipeline by addressing the annotation bottleneck.
+Chapters~\ref{chap:distillation} complete the pipeline by addressing the annotation bottleneck.
 The mixed approach combining dictionary-based and \gls{llm}-based annotations leverages the complementary strengths of each source, achieving superior performance compared to either method alone.
 More broadly, rule-based approaches remain valuable components of clinical \gls{nlp} pipelines, particularly when high precision is required: hand-crafted rules can enforce domain constraints and filter false positives that statistical models might produce.
 The French clinical application (Chapter~\ref{chap:french-application}) validates this approach on real-world data from \gls{aphp}, including semi-synthetic documents created by physicians for educational and research purposes, demonstrating that our methodology transfers effectively across languages and clinical contexts.
 
-Together, these contributions establish an end-to-end process: synthetic document generation (Chapter~\ref{chap:synthetic}) produces privacy-conscious clinical text, privacy mitigation (Chapter~\ref{chap:privacy}) enables safe dissemination for certain attacks, and weak supervision (Chapters~\ref{chap:distillation} and~\ref{chap:french-application}) provides automated annotation.
+Together, these contributions establish an end-to-end process: synthetic document generation (Chapter~\ref{chap:synthetic}) produces privacy-conscious clinical text, privacy mitigation (Chapter~\ref{chap:privacy}) enables safe dissemination for certain attacks, and weak supervision (Chapters~\ref{chap:distillation}) provides automated annotation.
 The result is a framework prototype for creating annotated clinical datasets with minimal human intervention.
 
 \subsection{Validation Across Languages and Clinical Contexts}
@@ -43,17 +43,19 @@ The consistent patterns observed across \gls{mimic}-III (English, \gls{icd}-9) a
 
 \paragraph{Facsimile generation versus pure generation.}
 
-Our approach differs fundamentally from pure generation methods such as KnowledgeSG in its reliance on seed documents.
+Our approach differs fundamentally from pure generation methods such as KnowledgeSG~\cite{wangKnowledgeSGPrivacyPreservingSynthetic2024} in its reliance on seed documents.
 KnowledgeSG generates clinical documents entirely from scratch using ontological knowledge bases, achieving high scalability without requiring access to real patient data.
 This design choice prioritizes scalability and eliminates the need for pseudo-anonymization.
 While we also experimented with DP-\gls{sft} as an extension to our pipeline, discussions with the KnowledgeSG authors suggest that DP-\gls{sft} alone does not achieve comparable performance to their ontology-guided generation approach.
 
 In contrast, our facsimile approach deliberately trades scalability for structural fidelity.
 By anchoring generation in real clinical narratives through keyword extraction, we preserve subtle patterns of medical reasoning, temporal ordering of clinical events, and narrative structures that characterize actual hospital documentation.
+Importantly, the seed documents themselves need not be real patient records: as demonstrated in the French clinical application (Chapter~\ref{chap:french-application}), the entire seed corpus can be generated synthetically from curated mappings between medical codes and keywords, eliminating any dependency on real clinical data while retaining the structural guidance that characterizes the facsimile approach.
 This distinction addresses different use cases: KnowledgeSG excels when no real clinical data is available, while our method targets healthcare institutions with limited real data who require synthetic documents that closely mirror their local clinical environment.
 
 The reward mechanism with logits-only communication represents a novel contribution to privacy-by-design generation.
 While both approaches avoid direct text transmission across privacy boundaries, our scorer-based architecture provides continuous quality feedback through numerical scores, enabling iterative refinement without exposing sensitive information.
+Moreover, the reward framework offers flexibility in how generation quality is assessed: similarity scores that measure fidelity to the seed document can be combined with independent quality scores that evaluate clinical coherence, factual consistency, or task-specific relevance, allowing practitioners to adjust the balance between structural faithfulness and output quality depending on their use case.
 This architectural choice distinguishes our work from generation methods that rely solely on prompt engineering or one-shot generation without quality-based feedback loops.
 
 \paragraph{Dependence on seed documents and scalability constraints.}

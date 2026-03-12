@@ -62,6 +62,7 @@ Discrimination attacks achieve concerningly high success rates on baseline synth
 
 To address this, we propose and evaluate two post-processing mitigation strategies.
 Standard rephrasing applies generic paraphrasing to disrupt surface-level patterns, but achieves only modest privacy gains.
+Beyond re-identification within a single institution, inter-institutional transfer poses additional privacy concerns: a generation model fine-tuned on private data from one hospital cannot be straightforwardly deployed at another institution, as the model may have memorized institution-specific patterns, terminologies, or patient characteristics that could leak through generated outputs.
 Keyword perturbation, by contrast, explicitly targets the root cause: it identifies \gls{umls} concepts within synthetic documents and replaces them with semantically equivalent synonyms from the medical ontology.
 This domain-specific intervention disrupts the distinctive keyword fingerprints that enable re-identification while preserving clinical coherence.
 
@@ -114,12 +115,15 @@ However, task complexity moderates these benefits: simpler tasks such as multila
 The conditions under which synthetic data provide greatest benefit align with the low-resource settings that motivate their use: when real annotated data are scarce, when minority classes are underrepresented, or when annotation costs prohibit manual labeling at scale.
 In these scenarios, synthetic documents enable model training that would otherwise be infeasible.
 Importantly, alignment mechanisms during generation—such as the reward-based refinement we propose—are essential to ensure that synthetic outputs remain faithful to the statistical properties of real clinical text, providing a theoretically grounded path toward safe and effective synthetic data augmentation.
+It is worth recalling that the \gls{dpo} alignment stage operates exclusively on synthetic document pairs and does not introduce any personal identifying data into the training process: the scorer provides numerical rewards based on distributional similarity, without exposing real patient information to the generator.
 
 \textbf{RQ3: What are the privacy implications of synthetic clinical text generation, and how can generation approaches be designed to minimize re-identification risks while preserving data utility?}
 
 Synthetic clinical text generation reduces but does not eliminate privacy risks.
 While architectural safeguards such as extracting only \gls{umls} keywords prevent direct leakage of \gls{pii}, synthetic documents can retain patient-specific fingerprints through the selection and combination of medical concepts.
-Our privacy analysis demonstrates that these keyword combinations enable re-identification attacks: discrimination attacks achieve high success rates on baseline synthetic data, confirming that re-identification risks persist even when individual tokens are non-identifying.
+Our privacy analysis (Chapter~\ref{chap:privacy}) demonstrates that these keyword combinations enable re-identification attacks: discrimination attacks achieve high success rates on baseline synthetic data, confirming that re-identification risks persist even when individual tokens are non-identifying.
+Notably, the \gls{dpo} alignment stage, which operates solely on keywords and numerical scores without ever exposing full patient texts, nevertheless amplifies re-identification vulnerability compared to models trained with \gls{sft} alone.
+This occurs because preference optimization teaches the generator to maximize similarity to real documents, thereby reinforcing patient-specific keyword co-occurrence patterns even though the model never directly observes the source texts.
 
 However, privacy risks can be effectively mitigated through targeted post-processing.
 Keyword perturbation—replacing \gls{umls} concepts with semantically equivalent synonyms—disrupts the distinctive patterns that enable re-identification while preserving clinical coherence and data utility.
@@ -130,7 +134,7 @@ Generation approaches can be designed to minimize re-identification risks throug
 \textbf{RQ4: Can large language models serve as effective annotators for clinical text, and how does \gls{llm}-based annotation compare to traditional expert annotation for training downstream \gls{nlp} models?}
 
 Yes, large language models can serve as effective annotators for clinical text, achieving competitive performance compared to traditional dictionary-based and expert annotation methods.
-Our experiments across five languages demonstrate that \gls{llm}-based weak supervision produces annotations of sufficient quality to train robust entity extraction models, reducing the need for expensive manual labeling.
+Our experiments across five languages (Chapter~\ref{chap:distillation}) demonstrate that \gls{llm}-based weak supervision produces annotations of sufficient quality to train robust entity extraction models, reducing the need for expensive manual labeling.
 
 However, \gls{llm}-based annotation exhibits distinct error patterns compared to traditional approaches: \glspl{llm} tend toward over-extraction with broader recall but lower precision, while dictionary methods provide precise but narrow coverage.
 This complementarity suggests that mixed annotation strategies—mixing \gls{llm}-generated labels with dictionary-based or manual annotations—yield superior performance by balancing coverage and precision.
@@ -163,6 +167,9 @@ Data sovereignty—the ability of healthcare institutions to maintain control ov
 The approaches demonstrated here enable hospitals to generate shareable synthetic datasets and train locally-deployable models without exposing patient information or relying on external cloud services.
 
 This capability, in turn, supports the democratization of clinical \gls{nlp} research.
+Furthermore, the facsimile pipeline need not remain tied to keyword sequences extracted from real patients: pseudo keyword sequences could be drawn from a small language model trained on medical ontology co-occurrences, producing plausible clinical profiles without any link to actual individuals.
+Such an approach would decouple synthetic generation from real data entirely while preserving the structural guidance that makes facsimile documents effective.
+Additionally, re-identification risk decreases as the generated corpus grows larger, since each additional synthetic document dilutes the uniqueness of any individual keyword fingerprint; this relationship could in principle be theoretically quantified, offering institutions a way to calibrate corpus size against acceptable privacy thresholds.
 Publicly available synthetic datasets, properly validated and accompanied by transparent documentation of their generation process and residual privacy risks, can serve as benchmarks accessible to researchers worldwide, reducing barriers to entry and accelerating methodological innovation.
 Moreover, the ability to share trained models alongside synthetic training data enables reproducibility and facilitates adoption by institutions that lack the resources or expertise to develop \gls{nlp} systems from scratch.
 
