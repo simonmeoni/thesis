@@ -3,7 +3,7 @@
 \resizebox{0.60\textwidth}{!}{%
 \begin{tabular}{@{}lll@{}}
 \toprule
-Annotations & \multicolumn{1}{l}{\dict} & \instruct \\ \midrule
+Models & \multicolumn{1}{l}{\weakModel} & \distilmodels \\ \midrule
 \multicolumn{1}{l}{F1-score}  & 0.69 $\pm$ 0.04 & \textbf{0.74} $\pm$ 0.006 \\ \midrule
 \multicolumn{1}{l}{\bclin} &
   \begin{tabular}[c]{@{}l@{}}F: \textbf{0.76} $\pm$ 0.02\\ P: \textbf{0.83} $\pm$ 0.002\\ R: 0.70 $\pm$ 0.04\end{tabular} &
@@ -13,6 +13,6 @@ Annotations & \multicolumn{1}{l}{\dict} & \instruct \\ \midrule
   \begin{tabular}[c]{@{}l@{}}F: \textbf{0.53} $\pm$ 0.01\\ P: 0.41 $\pm$ 0.01\\ R: \textbf{0.74} $\pm$ 0.01\end{tabular} \\ \bottomrule %
 \end{tabular}%
 }
-\caption{F1-score, Recall and Precision using \Ssilver with $\rmix \in \{0, 1\}$ and both annotation methods (\dict and \instruct). The F1-score line shows macro-F1-scores aggregated from O, \bclin, \iclin.}
+\caption{F1-score, Recall and Precision using \Ssilver with $\rmix \in \{0, 1\}$ and both models (\weakModel and \distilmodels). The F1-score line shows macro-F1-scores aggregated from O, \bclin, \iclin.}
 \label{tab:healthnlp_layer2}
 \end{table}

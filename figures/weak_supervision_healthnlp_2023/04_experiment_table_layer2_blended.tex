@@ -4,7 +4,7 @@
 \resizebox{0.6\textwidth}{!}{
 \begin{tabular}{@{}lllll@{}}
 \toprule
-Annotations & \multicolumn{1}{l}{\dict} & \instruct\\ \midrule
+Models & \multicolumn{1}{l}{\weakModel} & \distilmodels\\ \midrule
 F1-score  & 0.73 $\pm$ 0.01                                                 & \textbf{0.75} $\pm$ 0.005                        \\ \midrule
 \bclin &
   \begin{tabular}[c]{@{}@{}l@{}}F: \textbf{0.78} $\pm$ 0.007\\ P: 0.84 $\pm$ 0.004\\ R: \textbf{0.72} $\pm$ 0.01\end{tabular} &
@@ -14,6 +14,6 @@ F1-score  & 0.73 $\pm$ 0.01                                                 & \t
   \begin{tabular}[c]{@{}l@{}}F: \textbf{0.50} $\pm$ 0.01\\ P: 0.64 $\pm$ 0.02\\ R: \textbf{0.42} $\pm$ 0.02\end{tabular} \\ \bottomrule
 \end{tabular}%
 }
-\caption{F1-score, Recall and Precision using E3C \Ssilver merged with \Sval as the train set with both annotation methods (\dict and \instruct). Performance is computed on \Sgold.}
+\caption{F1-score, Recall and Precision using E3C \Ssilver merged with \Sval as the train set with both models (\weakModel and \distilmodels). Performance is computed on \Sgold.}
 \label{tab:healthnlp_layer2blended}
 \end{table}
