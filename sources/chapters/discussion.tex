@@ -4,10 +4,14 @@
 \section{Synthesis of Contributions}
 
 This thesis addresses a fundamental challenge in clinical natural language processing: the scarcity of annotated medical data due to confidentiality constraints, high annotation costs, and limited expert availability.
+
+Beyond data access, annotation itself represents a critical bottleneck.
 Unlike general-domain \gls{nlp}, where crowdsourcing platforms such as Amazon Mechanical Turk enable rapid annotation at scale, clinical data confidentiality prohibits exposing patient documents to untrained external annotators.
 The same confidentiality constraints forbid the use of remote large language models for annotation, as transmitting clinical text to external \gls{api} violates data protection regulations.
 Furthermore, the limited computational infrastructure of most healthcare institutions makes local deployment of large language models impractical, leaving institutions with few viable annotation options.
+
 We propose methods to automate both the generation of synthetic clinical documents and their annotation, enabling the creation of high-quality training datasets without massive human intervention.
+These annotations are used to train small language models that can be deployed on secure hospital infrastructures, possibly with further fine-tuning on a small subset of real documents.
 
 \subsection{A Complete Pipeline for Synthetic Medical Data}
 
@@ -20,17 +24,18 @@ Unlike pure generation approaches that generate documents from scratch, our seed
 Chapter~\ref{chap:privacy} conducts a rigorous privacy analysis of the generated synthetic documents, revealing that while the keyword-based generation pipeline ensures no direct identification occurs, residual re-identification risks persist through the combination and sequence of medical concepts.
 We propose and evaluate post-processing mitigation strategies, demonstrating that targeted keyword perturbation significantly reduces linkage attack success rates while maintaining acceptable data utility for certain downstream tasks.
 
+The French clinical application (Chapter~\ref{chap:french-application}) validates this approach on real-world data from \gls{aphp}, including semi-synthetic documents created by physicians for educational and research purposes, demonstrating that our methodology transfers effectively across languages and clinical contexts.
+
 Chapters~\ref{chap:distillation} complete the pipeline by addressing the annotation bottleneck.
 The mixed approach combining dictionary-based and \gls{llm}-based annotations leverages the complementary strengths of each source, achieving superior performance compared to either method alone.
 More broadly, rule-based approaches remain valuable components of clinical \gls{nlp} pipelines, particularly when high precision is required: hand-crafted rules can enforce domain constraints and filter false positives that statistical models might produce.
-The French clinical application (Chapter~\ref{chap:french-application}) validates this approach on real-world data from \gls{aphp}, including semi-synthetic documents created by physicians for educational and research purposes, demonstrating that our methodology transfers effectively across languages and clinical contexts.
 
-Together, these contributions establish an end-to-end process: synthetic document generation (Chapter~\ref{chap:synthetic}) produces privacy-conscious clinical text, privacy mitigation (Chapter~\ref{chap:privacy}) enables safe dissemination for certain attacks, and weak supervision (Chapters~\ref{chap:distillation}) provides automated annotation.
+Together, these contributions establish an end-to-end process: synthetic document generation (Chapter~\ref{chap:synthetic}) produces privacy-conscious clinical text refined through rewards derived from real documents, privacy mitigation (Chapter~\ref{chap:privacy}) enables safe dissemination for certain attacks, and weak supervision (Chapters~\ref{chap:distillation}) provides automated annotation.
 The result is a framework prototype for creating annotated clinical datasets with minimal human intervention.
 
 \subsection{Validation Across Languages and Clinical Contexts}
 
-The effectiveness of our approach is validated not only on public datasets (\gls{mimic}-III) but also on real-world clinical data and across multiple languages.
+The effectiveness of our approach is validated not only on public datasets (\gls{mimic}-III) but also on real-world clinical data and across multiple languages (English and French for generation; English, Spanish, French, Italian, and Basque for annotation).
 The weak supervision experiments in Chapter~\ref{chap:distillation} demonstrate strong performance on multilingual clinical entity extraction using the E3C dataset, covering English, Spanish, French, Italian, and Basque.
 The French clinical application (Chapter~\ref{chap:french-application}) provides further validation on \gls{aphp} medical reports, demonstrating that the reward-based generation approach transfers effectively to French clinical documentation and \gls{icd}-10 classification tasks.
 
@@ -43,7 +48,7 @@ The consistent patterns observed across \gls{mimic}-III (English, \gls{icd}-9) a
 
 \paragraph{Facsimile generation versus pure generation.}
 
-Our approach differs fundamentally from pure generation methods such as KnowledgeSG~\cite{wangKnowledgeSGPrivacyPreservingSynthetic2024} in its reliance on seed documents.
+Our approach differs fundamentally from pure generation methods such as KnowledgeSG~\cite{wangKnowledgeSGPrivacyPreservingSynthetic2024} in its reliance on structured keyword sequences to guide generation.
 KnowledgeSG generates clinical documents entirely from scratch using ontological knowledge bases, achieving high scalability without requiring access to real patient data.
 This design choice prioritizes scalability and eliminates the need for pseudo-anonymization.
 While we also experimented with DP-\gls{sft} as an extension to our pipeline, discussions with the KnowledgeSG authors suggest that DP-\gls{sft} alone does not achieve comparable performance to their ontology-guided generation approach.
@@ -52,6 +57,9 @@ In contrast, our facsimile approach deliberately trades scalability for structur
 By anchoring generation in real clinical narratives through keyword extraction, we preserve subtle patterns of medical reasoning, temporal ordering of clinical events, and narrative structures that characterize actual hospital documentation.
 Importantly, the seed documents themselves need not be real patient records: as demonstrated in the French clinical application (Chapter~\ref{chap:french-application}), the entire seed corpus can be generated synthetically from curated mappings between medical codes and keywords, eliminating any dependency on real clinical data while retaining the structural guidance that characterizes the facsimile approach.
 This distinction addresses different use cases: KnowledgeSG excels when no real clinical data is available, while our method targets healthcare institutions with limited real data who require synthetic documents that closely mirror their local clinical environment.
+Moreover, the pipeline naturally decomposes into two phases: training the generator model on real keyword sequences extracted from real documents, where rewards through contrastive scoring ensure fidelity to authentic clinical patterns, and inference where the trained generator can be applied to pseudo-sequences or keyword sequences drawn from other clinical datasets, decoupling the training requirement from the deployment context.
+A further practical advantage is that small models trained on annotated facsimile documents can be shared across institutions without privacy concerns, since they contain no real patient data.
+This is particularly relevant in healthcare settings where regulations forbid deploying a model trained on private data from one hospital within another institution.
 
 The reward mechanism with logits-only communication represents a novel contribution to privacy-by-design generation.
 While both approaches avoid direct text transmission across privacy boundaries, our scorer-based architecture provides continuous quality feedback through numerical scores, enabling iterative refinement without exposing sensitive information.
@@ -65,16 +73,18 @@ Each synthetic document derives from keywords extracted from a specific real doc
 
 However, this constraint is less restrictive than it initially seems.
 First, most hospitals possess large electronic health record collections, providing ample seed material for generation.
-Second, nothing prevents using the trained generator with pseudo-sequences constructed to resemble real keyword patterns—the model would likely produce acceptable documents even without exact correspondence to real patients.
+Second, nothing prevents using the trained generator with pseudo-sequences constructed to resemble real keyword patterns—for instance, a small language model trained on real keyword distributions could produce plausible sequences without corresponding to any actual patient.
 Third, keyword sequences could be drawn from other clinical datasets while retaining proximity to the target domain, enabling cross-institutional generation.
 
 The primary limitation applies to scenarios requiring synthetic corpora without access to any clinical documents whatsoever—a use case better addressed by pure generation approaches.
 
 \paragraph{Rapid scalability to new clinical domains.}
 
-When expanding to new medical specialties (cardiology to oncology), new document types (discharge summaries to operative notes), or new clinical tasks (diagnosis coding to treatment recommendation), synthetic generation enables faster deployment than traditional annotation pipelines.
+When expanding to new medical specialties (cardiology to oncology), new document types (discharge summaries to operative notes), or new clinical tasks (diagnosis coding to treatment recommendation), synthetic generation enables faster deployment than traditional manual annotation pipelines for tasks such as gls{ner} or document classification.
 
 The facsimile approach proves particularly valuable here: given even a small number of real documents from the new domain, keyword extraction and generation can produce training corpora within days rather than months.
+The reward mechanism optimizes not only for clinical quality but also for stylistic proximity to real documents, ensuring that synthetic outputs match the writing conventions of the target institution.
+If only content quality were required, feedback from a general medical \gls{llm} could suffice; however, the contrastive scorer captures institution-specific stylistic patterns that generic models cannot provide.
 The French clinical application (Chapter~\ref{chap:french-application}) demonstrates this scalability across languages and coding systems, transitioning from English \gls{icd}-9 to French \gls{icd}-10 classification with consistent methodology.
 
 \paragraph{Boundaries where traditional annotation remains preferable.}
@@ -90,9 +100,10 @@ The method targets scenarios characterized by data scarcity, annotation costs, o
 The reward mechanism introduced in Chapter~\ref{chap:synthetic} demonstrates several key strengths that justify its computational cost.
 First, it provides a strong learning signal while maintaining privacy boundaries: the scorer returns only numerical scores rather than textual data, ensuring that no sensitive information crosses from the private to public environment.
 This architecture allows the model to improve through preference optimization without direct access to patient documents.
+Importantly, no personally identifiable information is introduced during \gls{dpo} training, since the entire process operates on synthetic documents and numerical scores.
 
 The empirical results validate this approach across multiple datasets and tasks.
-On \gls{mimic}-III, models trained on synthetic documents generated with reward-based refinement outperform those trained on real data when annotations are scarce, with particularly strong gains on complex tasks requiring coverage of rare labels (Top-100, Top-400 \gls{icd}-9 codes).
+On \gls{mimic}-III (Chapter~\ref{chap:synthetic}), models trained on synthetic documents generated with reward-based refinement outperform those trained on real data when annotations are scarce, with particularly strong gains on complex tasks requiring coverage of rare labels (Top-100, Top-400 \gls{icd}-9 codes).
 The French clinical application (Chapter~\ref{chap:french-application}) confirms these patterns with consistent improvements on \gls{icd}-10 classification after \gls{dpo} alignment.
 
 The reward mechanism enables a bootstrap-and-refine cycle: seed documents provide an anchor in real clinical patterns, while iterative preference optimization progressively improves quality without requiring additional manual annotation.
@@ -102,6 +113,8 @@ This combination of fine-tuning on limited seed data followed by self-improvemen
 
 The privacy analysis in Chapter~\ref{chap:privacy} revealed an unexpected and concerning finding: reward-based training, despite using only numerical scores rather than textual data, significantly amplifies re-identification vulnerabilities.
 On AlpaCare, linkage attack success rates increase from 25\% (DP-\gls{sft} baseline) to 78\% (\gls{dpo}-1), a threefold increase directly attributable to preference optimization.
+It should be noted that these re-identification attacks assume a strong adversary with full access to the original dataset and the ability to compute pairwise similarities across all documents, which may not reflect realistic threat scenarios in practice.
+Nevertheless, evaluating against such strong attacks provides conservative upper bounds on privacy risks.
 
 The mechanism underlying this amplification is subtle: by training the model to maximize similarity scores to real documents, \gls{dpo} inadvertently teaches it to reproduce patient-specific patterns.
 The model learns that certain combinations of medical concepts, narrative structures, and clinical reasoning patterns yield higher scores—precisely the characteristics that enable re-identification.
@@ -118,6 +131,7 @@ The generation pipeline was designed with privacy-by-design principles (keywords
 This timing explains why privacy analysis appears as a separate chapter rather than being woven throughout the methodology.
 It also means that certain design choices—particularly the reward mechanism based on similarity scores—were not optimized with privacy preservation as an explicit objective.
 Had privacy evaluation been conducted earlier, alternative reward formulations (e.g., differential privacy on scores, diversity-based rewards rather than similarity-based) might have been explored from the outset.
+Despite this limitation, the core practical argument remains: synthetic documents, even with residual re-identification risks, can be safely submitted to remote \glspl{llm} for annotation or other processing tasks that would be impossible with real patient data under current regulations.
 
 \paragraph{Computational costs and carbon footprint.}
 \label{sec:carbon}
@@ -139,9 +153,11 @@ The post-processing keyword perturbation mitigation achieves dramatic reductions
 This underscores a fundamental lesson: there exists no perfect solution that guarantees both complete privacy and full data utility.
 This work demonstrates theoretically that significant room for improvement remains in privacy-preserving synthetic data generation.
 However, our results also show that under certain constraints—such as deployment in semi-closed systems where synthetic datasets are shared only within controlled research environments rather than published openly—the approach can provide acceptable privacy-utility tradeoffs adapted to the data provider's security requirements.
+Moreover, annotation and validation of synthetic documents does not require a secure infrastructure, since the data being processed contains no real patient information, enabling the use of standard computational resources and external services.
 
 What we can guarantee is the absence of direct identification: the keywords contain no personally identifiable information such as names, dates, or locations.
 What we cannot guarantee is zero re-identification risk, though this risk can be substantially reduced through post-processing.
+Additionally, re-identification risk decreases as the source dataset grows: the larger the pool of real documents from which keywords are extracted, the more patients share similar keyword combinations, making it harder to attribute any single synthetic document to a specific individual.
 
 This raises a practical question: if facsimile documents still carry re-identification risks, can they be submitted to distant \glspl{llm} for annotation or other processing?
 The answer depends on the data provider's requirements and applicable regulations.
@@ -272,6 +288,7 @@ For Basque, French, and Italian, distilled models achieve 6-12 F1 point improvem
 This finding challenges the common assumption that distilled models necessarily underperform their teachers.
 When training data is limited and \gls{llm} annotations contain noise, smaller models trained through supervised fine-tuning can learn to ignore spurious patterns and focus on consistent signals.
 This observation has practical implications for deployment in healthcare settings where small, controllable models are preferable to large \gls{api}-dependent systems.
+Recent concurrent work by \citet{khan2026efficient} confirms this pattern in a health communication context, demonstrating that a RoBERTa model distilled from Llama~3.1~70B matches the teacher performance while being 350 times faster at inference.
 
 \paragraph{Positioning as draft annotation rather than replacement.}
 
@@ -341,6 +358,7 @@ Ensembling their annotations—either through voting mechanisms, confidence-weig
 This direction appears in the future work section of Chapter~\ref{chap:distillation} but remains unexplored empirically.
 The computational costs of querying multiple commercial \gls{api} represent a practical constraint, though open-source \glspl{llm} (Llama-3, Qwen, Mixtral) could provide cost-effective alternatives for ensemble construction.
 
+Beyond ensembling, \glspl{llm} could also serve as judges to identify potential annotation errors, enabling active learning strategies where human experts focus their limited time on the most uncertain or erroneous annotations rather than reviewing entire datasets.
 
 \subsection{Long-term Directions}
 
@@ -351,7 +369,9 @@ Beyond immediate extensions, several longer-term research directions emerge from
 The current approach separates generation (Chapter~\ref{chap:synthetic}) from annotation (Chapters~\ref{chap:distillation} and~\ref{chap:french-application}) into distinct phases.
 A natural evolution would integrate these steps: a unified model that generates synthetic clinical documents already annotated with entity labels, relation markers, or classification codes.
 
-This integrated approach could leverage recent advances in structured generation and constrained decoding to produce documents with embedded annotations.
+A concrete first step would be to include expected annotations directly in the keyword sequence used for generation: alongside \gls{umls} concepts, the input could specify entity boundaries, relation types, or classification codes that the generated document should exhibit.
+This would allow the generation model to produce pre-annotated synthetic documents in a single pass.
+More ambitiously, recent advances in structured generation and constrained decoding could produce documents with embedded annotations.
 The reward mechanism could incorporate annotation quality alongside document quality, jointly optimizing for both realistic clinical narrative and accurate entity boundaries.
 
 However, this integration introduces new challenges: how to define reward signals that balance fluent text generation with precise annotation, how to handle annotation uncertainty when generating multiple candidates, and how to prevent the model from simply copying annotation patterns from seed documents rather than learning generalizable entity recognition.

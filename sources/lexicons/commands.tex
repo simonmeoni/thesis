@@ -6,7 +6,7 @@
 \usepackage{fontawesome5}
 \usepackage{tikz}
 \usepackage{pgfplotstable}
-\usetikzlibrary{positioning}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
 % Define custom colors for synthetic_generation_cl4health_2025 chapter
 \definecolor{pinkLine}{RGB}{255,20,147}
 \definecolor{blueLine}{RGB}{30,144,255}
@@ -105,6 +105,9 @@
 \definecolor{genStep}{HTML}{A0CED9}
 \definecolor{scoringStep}{HTML}{F7ABDA}
 \definecolor{alignStep}{HTML}{FFC09F}
+% Colors for privacy and annotation steps (conclusion workflow diagram)
+\definecolor{privacyStep}{HTML}{D4A5E5}
+\definecolor{annotStep}{HTML}{F9E79F}
 % Define custom commands used in the document
 \def\Mdl#1#2{M_{\mathrm{#1}}^{#2}}
 \def\RefMdl#1{\Mdl{ref}{#1}}

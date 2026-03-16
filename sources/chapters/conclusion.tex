@@ -26,6 +26,91 @@ Synthetic data must achieve medical coherence and terminological accuracy, not m
 Furthermore, the complexity of real patient records—their length, temporal structure, and increasingly multimodal nature—poses additional challenges that synthetic generation must address to deliver full data utility for both model training and institutional deployment.
 
 This work explores these challenges through a facsimile-based approach to synthetic document generation, combined with privacy-utility trade-off analysis and honest acknowledgment of residual risks.
+\autoref{fig:thesis-workflow} provides an overview of the complete workflow developed across this thesis, illustrating how the three main contributions connect into a coherent pipeline for generating privacy-preserving synthetic clinical data and training deployable \gls{nlp} models.
+
+\begin{figure}[htp!]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    node distance=0.6cm and 0.5cm,
+    >={Stealth[length=4pt]},
+    every node/.style={font=\small, align=center},
+    wfstep/.style={rounded corners=5pt, draw=gray!60, thick, minimum height=1.2cm, minimum width=2.6cm, text width=2.4cm},
+    sublabel/.style={font=\tiny, text width=2.4cm, align=center, inner sep=0pt},
+    grouplabel/.style={font=\small\bfseries, anchor=south},
+    arrow/.style={->, thick, gray!60},
+    groupbox/.style={rounded corners=6pt, draw=gray!40, thick, inner sep=8pt},
+    iobox/.style={rounded corners=5pt, draw=gray!40, dashed, thick, minimum height=1.2cm, text width=1.8cm, font=\small\itshape},
+]
+
+% === Row 1: Synthetic Generation (Chapters 2-3) ===
+\node[wfstep, fill=seedStep] (seed) {Keyword\\Extraction};
+\node[sublabel, below=6pt of seed] (seedsub) {QuickUMLS concepts};
+\node[wfstep, fill=genStep, right=of seed] (gen) {LLM\\Generation};
+\node[sublabel, below=6pt of gen] (gensub) {Keyword-guided\\synthesis};
+\node[wfstep, fill=scoringStep, right=of gen] (score) {Contrastive\\Scoring};
+\node[sublabel, below=6pt of score] (scoresub) {Real vs.\ synthetic\\discrimination};
+\node[wfstep, fill=alignStep, right=of score] (align) {DPO\\Alignment};
+\node[sublabel, below=6pt of align] (alignsub) {Preference-based\\refinement};
+
+\begin{scope}[on background layer]
+    \node[groupbox, fill=seedStep!8, fit=(seed)(gen)(score)(align)(seedsub)(gensub)(scoresub)(alignsub), label={[grouplabel, yshift=2pt]above:Synthetic Generation (Ch.~2--3)}] (g1) {};
+\end{scope}
+
+% === Input ===
+\node[iobox, left=0.5cm of seed] (input) {Real clinical\\documents};
+\draw[arrow] (input) -- (seed);
+
+% === Arrows within generation ===
+\draw[arrow] (seed) -- (gen);
+\draw[arrow] (gen) -- (score);
+\draw[arrow] (score) -- (align);
+
+% DPO feedback loop (below to avoid title overlap)
+\draw[arrow, dashed, gray!50] (score.south) -- ++(0,-0.7) -| (gen.south);
+
+% === Connecting arrow to row 2 ===
+\node[right=0.5cm of align, font=\footnotesize, inner sep=0pt] (synlabel) {};
+\coordinate[below=2.2cm of seed] (row2anchor);
+
+% === Row 2: Privacy (Ch. 5) + Annotation (Ch. 4) ===
+\node[wfstep, fill=privacyStep, below=3.4cm of seed] (priv) {Re-identification\\Attacks};
+\node[sublabel, below=6pt of priv] (privsub) {Linkage \&\\discrimination risks};
+\node[wfstep, fill=privacyStep!60, right=of priv] (mitig) {Keyword\\Perturbation};
+\node[sublabel, below=6pt of mitig] (mitigsub) {Reduce patient\\fingerprints};
+
+\begin{scope}[on background layer]
+    \node[groupbox, fill=privacyStep!8, fit=(priv)(mitig)(privsub)(mitigsub), label={[grouplabel, yshift=2pt]above:Privacy Analysis (Ch.~5)}] (g2) {};
+\end{scope}
+
+\node[wfstep, fill=annotStep, right=1cm of mitig] (annot) {LLM\\Annotation};
+\node[sublabel, below=6pt of annot] (annotsub) {Silver labels via\\knowledge distillation};
+\node[wfstep, fill=annotStep!60, right=of annot] (mix) {Mixed\\Supervision};
+\node[sublabel, below=6pt of mix] (mixsub) {Dictionary + LLM\\label blending};
+\node[wfstep, fill=annotStep!35, right=of mix] (local) {Local NER\\Models};
+\node[sublabel, below=6pt of local] (localsub) {Hospital-deployable\\models};
+
+\begin{scope}[on background layer]
+    \node[groupbox, fill=annotStep!8, fit=(annot)(mix)(local)(annotsub)(mixsub)(localsub), label={[grouplabel, yshift=2pt]above:Weak Annotation (Ch.~4)}] (g3) {};
+\end{scope}
+
+% === Arrows row 2 ===
+\draw[arrow] (priv) -- (mitig);
+\draw[arrow] (annot) -- (mix);
+\draw[arrow] (mix) -- (local);
+
+% === Connection between rows ===
+\draw[arrow, rounded corners=4pt] (seed.south) -- ++(0,-1.3) -- (priv.north);
+\draw[arrow] (mitig) -- (annot);
+
+% === Output ===
+\node[iobox, right=0.5cm of local] (output) {Deployable\\NER models};
+\draw[arrow] (local) -- (output);
+
+\end{tikzpicture}}%
+\caption{End-to-end workflow of the thesis contributions. Real clinical documents are processed through UMLS keyword extraction and LLM-based generation with iterative DPO alignment (Chapters~2--3), producing synthetic documents. These undergo privacy evaluation through re-identification attacks and keyword perturbation mitigation (Chapter~5). The resulting safe synthetic corpora serve as input for LLM-based weak annotation with mixed supervision strategies to train locally deployable NER models (Chapter~4).}
+\label{fig:thesis-workflow}
+\end{figure}
 
 \section{Summary of Contributions}
 
