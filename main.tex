@@ -47,6 +47,16 @@
 
 \usepackage{bookmark}
 
+% Back-references from bibliography to citing pages
+\usepackage[hyperpageref]{backref}
+\renewcommand*{\backref}[1]{}
+\renewcommand*{\backrefalt}[4]{%
+  \ifcase #1 %
+  \or (Cité à la page~#2.)%
+  \else (Cité aux pages~#2.)%
+  \fi
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fonts
