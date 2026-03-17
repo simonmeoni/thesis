@@ -4,6 +4,19 @@
 %
 \noindent
 %
-Scientific documents often use \LaTeX{} for typesetting. While numerous
-packages and templates exist, it makes sense to create a new one. Just
-because.
+Clinical natural language processing relies on large volumes of annotated text, yet access to real patient records remains severely restricted by privacy regulations such as GDPR and HIPAA.
+This thesis investigates synthetic data generation as a privacy-preserving alternative for training clinical NLP systems.
+
+We propose a facsimile generation approach in which synthetic clinical documents are produced by a large language model guided solely by medical concept keywords extracted from real records via UMLS, ensuring that no patient text crosses the privacy boundary.
+The generator is iteratively refined through Direct Preference Optimisation (DPO) using a private contrastive scorer that compares synthetic and real documents, returning only numerical scores to the generation side.
+Evaluated on MIMIC-III discharge summaries, synthetic data achieves ICD-9 classification performance comparable to or exceeding that of real data, particularly on complex label spaces where oversampling compensates for the quality gap.
+We further demonstrate the generalisability of the approach to French clinical reports from AP-HP, where DPO alignment yields substantial gains in ICD-10 coding performance, confirming the language-agnostic nature of the methodology.
+
+In parallel, we explore LLM-based weak annotation as a complementary strategy for low-resource clinical NER.
+Through knowledge distillation from a large language model into smaller encoder models on the multilingual E3C corpus, we show that hybrid supervision combining LLM-generated and dictionary-based annotations achieves the best performance across five European languages, with particular benefits for low-resource settings.
+
+Finally, we conduct a thorough privacy analysis revealing that DPO alignment, while improving generation quality, amplifies re-identification risk.
+We propose keyword perturbation as a mitigation strategy that substantially reduces linkage attack success at negligible utility cost for conversational tasks.
+However, discrimination attacks remain partially effective even after mitigation, underscoring that no zero-risk solution exists.
+
+This work demonstrates that keyword-guided synthetic generation with iterative alignment offers a viable path toward privacy-preserving clinical NLP, while honestly acknowledging the residual risks and the fundamental tension between data utility and patient privacy.
