@@ -49,9 +49,16 @@ The consistent patterns observed across \gls{mimic}-III (English, \gls{icd}-9) a
 \paragraph{Facsimile generation versus pure generation.}
 
 Our approach differs fundamentally from pure generation methods such as KnowledgeSG~\cite{wangKnowledgeSGPrivacyPreservingSynthetic2024} in its reliance on structured keyword sequences to guide generation.
-KnowledgeSG generates clinical documents entirely from scratch using ontological knowledge bases, achieving high scalability without requiring access to real patient data.
+KnowledgeSG generates clinical documents entirely from scratch using ontological knowledge bases (\autoref{fig:knowledgesg-workflow}), achieving high scalability without requiring access to real patient data.
 This design choice prioritizes scalability and eliminates the need for pseudo-anonymization.
 While we also experimented with DP-\gls{sft} as an extension to our pipeline, discussions with the KnowledgeSG authors suggest that DP-\gls{sft} alone does not achieve comparable performance to their ontology-guided generation approach.
+
+\begin{figure}[htp!]
+\centering
+\includegraphics[width=1\textwidth]{figures/discussion/knowledgesg_workflow.png}
+\caption{Overview of the KnowledgeSG system architecture~\citep{wangKnowledgeSGPrivacyPreservingSynthetic2024}. A local base model ($\mathbb{W}_{Loc}$) learns knowledge from private data on the client side through DP fine-tuning, then acquires knowledge distillation from a professional model ($\mathbb{W}_{Pro}$) on the server side, producing a final target model ($\mathbb{W}_{Target}$) fine-tuned on high-quality synthetic data.}
+\label{fig:knowledgesg-workflow}
+\end{figure}
 
 In contrast, our facsimile approach deliberately trades scalability for structural fidelity.
 By anchoring generation in real clinical narratives through keyword extraction, we preserve subtle patterns of medical reasoning, temporal ordering of clinical events, and narrative structures that characterize actual hospital documentation.
