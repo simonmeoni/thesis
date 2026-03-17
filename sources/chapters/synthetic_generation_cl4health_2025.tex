@@ -401,7 +401,14 @@ Furthermore, the distributional difference between \dgold and \dte indicates tha
 \section{Extended Evaluation on AlpaCare Benchmark}
 \label{sec:alpacare-eval}
 
-Since our method shares several conceptual similarities with KnowledgeSG \cite{wangKnowledgeSGPrivacyPreservingSynthetic2024}, we sought to establish a comparison with this approach. KnowledgeSG proposes a client-server framework where the client possesses private knowledge (for example, a clinical model trained on sensitive data) while a knowledge distillation process occurs via a remote professional model. Like our pipeline, this method adopts an iterative approach and integrates alignment mechanisms and sample selection: it generates multiple candidates then progressively filters them via a reference professional model to select the best samples, thus countering the performance degradation induced by gradient noise when using differential privacy.
+Since our method shares several conceptual similarities with KnowledgeSG \cite{wangKnowledgeSGPrivacyPreservingSynthetic2024}, we sought to establish a comparison with this approach. KnowledgeSG (autoref{fig:knowledgesg-workflow}) proposes a client-server framework where the client possesses private knowledge (for example, a clinical model trained on sensitive data) while a knowledge distillation process occurs via a remote professional model. Like our pipeline, this method adopts an iterative approach and integrates alignment mechanisms and sample selection: it generates multiple candidates then progressively filters them via a reference professional model to select the best samples, thus countering the performance degradation induced by gradient noise when using differential privacy.
+
+\begin{figure}[htp!]
+\centering
+\includegraphics[width=1\textwidth]{figures/synthetic_generation_cl4health_2025/knowledgesg_workflow.png}
+\caption{Overview of the KnowledgeSG system architecture~\citep{wangKnowledgeSGPrivacyPreservingSynthetic2024}. A local base model ($\mathbb{W}_{Loc}$) learns knowledge from private data on the client side through DP fine-tuning, then acquires knowledge distillation from a professional model ($\mathbb{W}_{Pro}$) on the server side, producing a final target model ($\mathbb{W}_{Target}$) fine-tuned on high-quality synthetic data.}
+\label{fig:knowledgesg-workflow}
+\end{figure}
 
 This methodological convergence naturally led us to adopt the AlpaCare benchmark \cite{zhang2023alpacare}, a doctor-patient conversational dataset in chatbot format, used both as a reference professional model in KnowledgeSG and as an evaluation benchmark in our context.
 The downstream task here is medical question answering: given a patient question, the model must generate a clinically relevant and accurate response.
