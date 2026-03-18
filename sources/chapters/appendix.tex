@@ -77,14 +77,15 @@ This appendix provides detailed experimental results for the weak supervision an
 
 Table \ref{tab:appendix_setting_a} presents F1-scores for \Ssilver with $\rmix \in \{0, 1\}$ across all evaluated languages and models, comparing \distilmodels ($\rmix=1$) and \weakModel ($\rmix=0$) approaches.
 
-\begin{landscape}
-\begin{table}[p]
+\begin{table}[h]
     \centering
+    \small
+    \resizebox{1\textwidth}{!}{
     \input{figures/multi_weak_supervision/big_table_A}
+    }
     \caption{F1-scores for \Ssilver with $\rmix \in \{0, 1\}$ by language and model. Comparison between \distilmodels ($\rmix=1$) and \weakModel ($\rmix=0$).}
     \label{tab:appendix_setting_a}
 \end{table}
-\end{landscape}
 
 \clearpage
 
@@ -108,7 +109,7 @@ Table \ref{tab:appendix_setting_b} shows results for \Sval, where models are tra
 \subsection{Monolingual Mixed-Supervised}
 \label{appendix:setting_c}
 
-Table \ref{tab:appendix_setting_c} presents results for \Sstar, using \hybridmodel approach that combines \Ssilver annotations with manually corrected \Sval data.
+Table \ref{tab:appendix_setting_c} presents results for \Sstar (i.e., the combined \Ssilver + \Sval training set), using \hybridmodel approach that combines \Ssilver annotations with manually corrected \Sval data.
 
 \begin{table}[h]
     \centering
@@ -127,17 +128,15 @@ Table \ref{tab:appendix_setting_c} presents results for \Sstar, using \hybridmod
 
 Table \ref{tab:appendix_setting_d} provides comprehensive results for \Ssilver (\mono), including F1-score, Precision, and Recall for different mixing ratios $\rmix \in \{0, r_{max}, 1\}$.
 
-\begin{landscape}
-\begin{table}[p]
+\begin{table}[h]
     \centering
     \small
-    \resizebox{1.5\textwidth}{!}{
+    \resizebox{1\textwidth}{!}{
     \input{figures/multi_weak_supervision/big_table_D}
     }
     \caption{Detailed results for \Ssilver by language and model. Shows performance at $\rmix=1$ (\distilmodels only), $\rmix=0$ (\weakModel only), and optimal ratio $\rmix_{max}$ (\hybridmodel).}
     \label{tab:appendix_setting_d}
 \end{table}
-\end{landscape}
 
 \clearpage
 
@@ -146,18 +145,15 @@ Table \ref{tab:appendix_setting_d} provides comprehensive results for \Ssilver (
 
 Table \ref{tab:appendix_setting_e} provides comprehensive results for \Smulti using multilingual training with \verb|xlm-roberta-base|.
 
-\begin{landscape}
-\begin{table}[p]
+\begin{table}[h]
     \centering
     \small
-
-    \resizebox{1.5\textwidth}{!}{
+    \resizebox{1\textwidth}{!}{
     \input{figures/multi_weak_supervision/big_table_E}
     }
     \caption{Detailed results for \Smulti (multilingual training). Shows performance at $\rmix=1$ (\distilmodels only), $\rmix=0$ (\weakModel only), and optimal ratio $\rmix_{max}$ (\hybridmodel).}
     \label{tab:appendix_setting_e}
 \end{table}
-\end{landscape}
 
 \clearpage
 
