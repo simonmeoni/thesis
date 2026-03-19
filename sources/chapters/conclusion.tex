@@ -67,7 +67,7 @@ This work explores these challenges through a facsimile-based approach to synthe
 \draw[arrow] (score) -- (align);
 
 % DPO feedback loop (below to avoid title overlap)
-\draw[arrow, dashed, gray!50] (score.south) -- ++(0,-0.7) -| (gen.south);
+\draw[arrow, dashed, gray!50] (align.south) -- ++(0,-0.7) -| (gen.south);
 
 % === Connecting arrow to row 2 ===
 \node[right=0.5cm of align, font=\footnotesize, inner sep=0pt] (synlabel) {};
@@ -100,7 +100,7 @@ This work explores these challenges through a facsimile-based approach to synthe
 \draw[arrow] (mix) -- (local);
 
 % === Connection between rows ===
-\draw[arrow, rounded corners=4pt] (seed.south) -- ++(0,-1.3) -- (priv.north);
+\draw[arrow, rounded corners=4pt] (align.south) -- ++(0,-1.3) -| (priv.north);
 \draw[arrow] (mitig) -- (annot);
 
 % === Output ===
