@@ -11,6 +11,7 @@ This raises two fundamental questions that guide our investigation: \textit{Are 
 To answer these questions, we present a reward-based generation pipeline where only concept keywords and scalar scores cross the privacy boundary between hospital infrastructure and the public generation environment.
 This work was published at the CL4Health workshop~\citep{meoni2025synthetic}; this chapter extends the original publication with an evaluation on the AlpaCare benchmark and comparisons with recent approaches such as KnowledgeSG.
 
+\clearpage
 \minitoc
 
 \section{Introduction}
@@ -466,28 +467,29 @@ Our exchanges with the authors of KnowledgeSG also revealed that certain figures
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lccccc}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
 \toprule
-\textbf{Method} & \textbf{Text-davinci-003} & \textbf{GPT-3.5-turbo} & \textbf{GPT-4} & \textbf{Claude-2} & \textbf{Average} \\
+\textbf{Method} & \textbf{Text-davinci-003} & \textbf{GPT-3.5-turbo} & \textbf{GPT-4} & \textbf{Claude-2} & \textbf{Average} & \textbf{Avg. w/o davinci} \\
 \midrule
-\multicolumn{6}{l}{medical filters from KnowledgeSG + \gls{llm}-as-judge + Semscore} \\
+\multicolumn{7}{l}{medical filters from KnowledgeSG + \gls{llm}-as-judge + Semscore} \\
 \midrule
-DP-\gls{sft} + \gls{dpo} & 0.660 & 0.515 & 0.470 & 0.470 & \textbf{0.528} \\
-DP-\gls{sft} + \gls{kto} & 0.659 & 0.512 & 0.492 & 0.490 & \textbf{0.540} \\
+DP-\gls{sft} + \gls{dpo} & 0.660 & 0.515 & 0.470 & 0.470 & \textbf{0.528} & \textbf{0.485} \\
+DP-\gls{sft} + \gls{kto} & 0.659 & 0.512 & 0.492 & 0.490 & \textbf{0.540} & \underline{\textbf{0.498}} \\
 \midrule
-\multicolumn{6}{l}{Semscore} \\
+\multicolumn{7}{l}{Semscore} \\
 \midrule
-DP-\gls{sft} + \gls{dpo} & 0.592 & 0.504 & 0.478 & 0.468 & \textbf{0.513} \\
-DP-\gls{sft} + \gls{kto} & 0.630 & 0.510 & 0.476 & 0.469 & \textbf{0.521} \\
+DP-\gls{sft} + \gls{dpo} & 0.592 & 0.504 & 0.478 & 0.468 & \textbf{0.513} & \textbf{0.483} \\
+DP-\gls{sft} + \gls{kto} & 0.630 & 0.510 & 0.476 & 0.469 & \textbf{0.521} & \textbf{0.485} \\
 \midrule
-\multicolumn{6}{l}{\textit{Baselines and traditional DP methods}} \\
+\multicolumn{7}{l}{\textit{Baselines and traditional DP methods}} \\
 \midrule
-AlpaCare & 0.666 & 0.506 & 0.474 & 0.497 & 0.536 \\
-KnowledgeSG & \underline{\textbf{0.776}} & 0.530 & 0.457 & 0.488 & \underline{\textbf{0.562}} \\
-DP-Instruct-\gls{icl} & 0.382 & 0.295 & 0.187 & 0.199 & 0.266 \\
-Non-Private & 0.389 & 0.303 & 0.151 & 0.179 & 0.255 \\
+AlpaCare & 0.666 & 0.506 & 0.474 & 0.497 & 0.536 & 0.492 \\
+KnowledgeSG & \underline{\textbf{0.776}} & 0.530 & 0.457 & 0.488 & \underline{\textbf{0.562}} & 0.492 \\
+DP-Instruct-\gls{icl} & 0.382 & 0.295 & 0.187 & 0.199 & 0.266 & 0.227 \\
+Non-Private & 0.389 & 0.303 & 0.151 & 0.179 & 0.255 & 0.211 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}%
 \caption{Detailed results on the AlpaCare benchmark by evaluator model (win rates). Our methods' averages are in bold. Best performances are underlined.}
 \label{tab:alpacare_detailed_results}
 \end{table}
