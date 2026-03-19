@@ -424,7 +424,7 @@ The evaluation follows a preference evaluation protocol where a judge compares p
 
 For our approach to adapt to this benchmark, we modified our method as follows: our SynthKG pipeline specifically generates synthetic patient questions from extracted medical keywords, while corresponding responses are produced by AlpaCare, which serves as the reference professional model. The process is structured as follows: we first extract clinical keywords, from which we synthesize patient questions, then AlpaCare generates the associated expert responses. This combination produces a question-answer pair dataset that is then used to fine-tune a model capable of answering questions from the AlpaCare dataset during evaluation.
 
-\section{Advanced Quality Evaluation Methods}
+\section{Candidate Selection Strategies}
 \label{sec:quality-eval}
 
 Given the results obtained with our initial pipeline, we identified potential improvement margins in the quality of synthetic document selection. While SemScore provided a foundation for semantic similarity assessment, we hypothesized that more sophisticated evaluation mechanisms could better capture the nuanced requirements of high-quality clinical synthetic documents. This section explores multi-faceted quality evaluation approaches that go beyond simple semantic similarity (See also \autoref{chap:french-application}).
@@ -437,7 +437,7 @@ This filtering step serves multiple purposes. First, it discards off-topic or no
 
 The medical domain classifier was trained to distinguish clinical text from general domain text, focusing on lexical markers, medical terminology density, and structural patterns characteristic of clinical documentation. While simple in concept, this filter proved effective at eliminating generations that deviated significantly from the expected clinical context.
 
-\subsection{\gls{llm}-as-Judge Evaluation}
+\subsection{\gls{llm}-as-Judge Scoring}
 
 Following medical domain filtering, we explored advanced \gls{llm}-as-judge evaluation techniques \cite{archit2024criticalevaluation,lee2024selfjudge}. This approach represents a paradigm shift from traditional automatic metrics by leveraging the contextual understanding and reasoning capabilities of large language models to evaluate document quality.
 
@@ -448,13 +448,13 @@ We designed evaluation prompts that asked judge models to score documents on a 1
 
 The advantage of \gls{llm}-as-judge lies in its ability to capture nuanced quality aspects that are difficult to formalize in traditional metrics. However, this approach introduces new challenges: judge models may exhibit biases, their evaluations may not perfectly align with human expert judgment, and the computational cost of \gls{llm} evaluation is substantially higher than traditional metrics. Furthermore, the reliability and calibration of \gls{llm} judges remains an active research question, particularly when evaluating specialized medical content.
 
-\subsection{Composite Evaluation Strategy}
+\subsection{Multi-Criteria Selection Pipeline}
 
 Our composite evaluation strategy combined medical filtering and \gls{llm}-as-judge in a two-stage pipeline. First, medical domain filtering eliminated clearly unsuitable candidates, reducing the evaluation pool. Second, \gls{llm}-as-judge provided fine-grained quality scoring on the filtered candidates. This hierarchical approach aimed to balance computational efficiency with evaluation sophistication.
 
 We also explored weighted combination strategies where multiple quality signals—SemScore, medical domain probability, and \gls{llm}-judge scores—were aggregated to produce a final quality estimate. The intuition was that different metrics capture complementary aspects of quality: SemScore measures semantic fidelity to real documents, medical filtering ensures domain relevance, and \gls{llm}-as-judge assesses higher-level coherence and plausibility.
 
-\subsection{Results and Analysis}
+\section{Results and Analysis}
 
 The detailed results presented in Table~\ref{tab:alpacare_detailed_results} reveal several important observations regarding our pipeline's performance. Analyzing first the results without medical filtering (using only SemScore), our SynthKG variants achieve respectable performance: the \gls{dpo}-1 variant reaches 0.520 on average, while the \gls{sft} variant obtains 0.510. These scores position us competitively, significantly surpassing DP-Instruct-\gls{icl} (0.266), which according to the literature represents the best of traditional differential privacy methods.
 
