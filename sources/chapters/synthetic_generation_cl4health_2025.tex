@@ -424,6 +424,29 @@ The evaluation follows a preference evaluation protocol where a judge compares p
 
 For our approach to adapt to this benchmark, we modified our method as follows: our SynthKG pipeline specifically generates synthetic patient questions from extracted medical keywords, while corresponding responses are produced by AlpaCare, which serves as the reference professional model. The process is structured as follows: we first extract clinical keywords, from which we synthesize patient questions, then AlpaCare generates the associated expert responses. This combination produces a question-answer pair dataset that is then used to fine-tune a model capable of answering questions from the AlpaCare dataset during evaluation.
 
+To enable a fair comparison, we aligned the experimental conditions of our pipeline with those of KnowledgeSG.
+Both methods use the same private dataset of \num{500} samples from the AlpaCare benchmark dataset and identical differential privacy parameters ($\varepsilon = 8$).
+The main difference lies in the candidate generation and selection strategy: KnowledgeSG generates \num{1000} candidates (twice the private dataset size) and filters them down to approximately \num{500} using a cosine similarity threshold, whereas our pipeline generates \num{5000} candidates and selects the \num{1500} best based on \score ranking or multi-criteria evaluation.
+Both pipelines use a single iteration.
+Table~\ref{tab:pipeline-comparison} summarizes these configurations.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & \textbf{KnowledgeSG} & \textbf{SynthKG (Ours)} \\
+\midrule
+Private dataset & \num{500} samples & \num{500} samples \\
+DP fine-tuning ($\varepsilon$) & 8 & 8 \\
+Generated candidates & \num{1000} & \num{5000} \\
+Selected candidates & $\sim$\num{500} & \num{1500} \\
+Iterations & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of pipeline configurations for the AlpaCare benchmark evaluation.}
+\label{tab:pipeline-comparison}
+\end{table}
+
 \section{Candidate Selection Strategies}
 \label{sec:quality-eval}
 
