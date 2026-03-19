@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "deny": [
+      "Write",
+      "Edit",
+      "MultiEdit"
+    ]
+  },
+  "model": "opus"
+}
