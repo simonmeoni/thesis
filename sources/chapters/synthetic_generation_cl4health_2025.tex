@@ -426,7 +426,7 @@ For our approach to adapt to this benchmark, we modified our method as follows: 
 
 To enable a fair comparison, we aligned the experimental conditions of our pipeline with those of KnowledgeSG.
 Both methods use the same private dataset of \num{500} samples from the AlpaCare benchmark dataset and identical differential privacy parameters ($\varepsilon = 8$).
-The main difference lies in the candidate generation and selection strategy: KnowledgeSG generates \num{1000} candidates (twice the private dataset size) and filters them down to approximately \num{500} using a cosine similarity threshold, whereas our pipeline generates \num{5000} candidates and selects the \num{1500} best based on \score ranking or multi-criteria evaluation.
+The main difference lies in the candidate generation and selection strategy: KnowledgeSG generates \num{1000} candidates (twice the private dataset size) and filters them down to approximately \num{500} using a cosine similarity threshold, whereas our pipeline generates \num{5000} candidates and selects the \num{1500} best based on \score ranking or multi-criteria evaluation (\autoref{subsec:multi-criteria}).
 Both pipelines use a single iteration.
 Table~\ref{tab:pipeline-comparison} summarizes these configurations.
 
@@ -472,6 +472,7 @@ We designed evaluation prompts that asked judge models to score documents on a 1
 The advantage of \gls{llm}-as-judge lies in its ability to capture nuanced quality aspects that are difficult to formalize in traditional metrics. However, this approach introduces new challenges: judge models may exhibit biases, their evaluations may not perfectly align with human expert judgment, and the computational cost of \gls{llm} evaluation is substantially higher than traditional metrics. Furthermore, the reliability and calibration of \gls{llm} judges remains an active research question, particularly when evaluating specialized medical content.
 
 \subsection{Multi-Criteria Selection Pipeline}
+\label{subsec:multi-criteria}
 
 Our composite evaluation strategy combined medical filtering and \gls{llm}-as-judge in a two-stage pipeline. First, medical domain filtering eliminated clearly unsuitable candidates, reducing the evaluation pool. Second, \gls{llm}-as-judge provided fine-grained quality scoring on the filtered candidates. This hierarchical approach aimed to balance computational efficiency with evaluation sophistication.
 
