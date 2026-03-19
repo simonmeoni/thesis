@@ -391,7 +391,7 @@ On the other hand, there is a sharp decrease in the performance of the \gls{ner}
     \label{fig:ner-labels}
 \end{figure}
 
-To better understand the performance differences in the \gls{ner} task, we analyze the entity distribution across datasets in Figure~\ref{fig:ner-labels}. The figure reveals notable distributional shifts between the training and test sets, as well as between real and synthetic data. The synthetic dataset $D_{2}^{6\%}$ exhibits a distribution pattern that shares similarities with both \dgold and \dte, though notable differences exist across entity types.
+To better understand the performance differences in the \gls{ner} task, we analyze the entity distribution across datasets in Figure~\ref{fig:ner-labels}. The synthetic dataset $D_{2}^{6\%}$ exhibits a distribution pattern that shares similarities with both \dgold and \dte, though notable differences exist across entity types.
 While the overall distributions appear relatively close, the \textbf{problem} entity type shows a more pronounced shift, which may partially contribute to the performance gap observed when evaluating on the test set.
 This distributional mismatch highlights a key challenge in synthetic data generation: while our method successfully preserves the overall structure and clinical knowledge, subtle biases in entity type proportions can emerge during the generation process.
 
@@ -426,7 +426,7 @@ For our approach to adapt to this benchmark, we modified our method as follows: 
 \section{Advanced Quality Evaluation Methods}
 \label{sec:quality-eval}
 
-Given the results obtained with our initial pipeline, we identified potential improvement margins in the quality of synthetic document selection. While SemScore provided a foundation for semantic similarity assessment, we hypothesized that more sophisticated evaluation mechanisms could better capture the nuanced requirements of high-quality clinical synthetic documents. This section explores multi-faceted quality evaluation approaches that go beyond simple semantic similarity; the privacy implications of these evaluation choices are further examined in \autoref{chap:privacy}.
+Given the results obtained with our initial pipeline, we identified potential improvement margins in the quality of synthetic document selection. While SemScore provided a foundation for semantic similarity assessment, we hypothesized that more sophisticated evaluation mechanisms could better capture the nuanced requirements of high-quality clinical synthetic documents. This section explores multi-faceted quality evaluation approaches that go beyond simple semantic similarity (See also \autoref{chap:french-application}).
 
 \subsection{Medical Domain Filtering}
 
@@ -470,7 +470,7 @@ Our exchanges with the authors of KnowledgeSG also revealed that certain figures
 \toprule
 \textbf{Method} & \textbf{Text-davinci-003} & \textbf{GPT-3.5-turbo} & \textbf{GPT-4} & \textbf{Claude-2} & \textbf{Average} \\
 \midrule
-\multicolumn{6}{l}{\textit{medical filters from KnowledgeSG + \gls{llm}-as-judge + Semscore} \\
+\multicolumn{6}{l}{medical filters from KnowledgeSG + \gls{llm}-as-judge + Semscore} \\
 \midrule
 DP-\gls{sft} + \gls{dpo} & 0.660 & 0.515 & 0.470 & 0.470 & \textbf{0.528} \\
 DP-\gls{sft} + \gls{kto} & 0.659 & 0.512 & 0.492 & 0.490 & \textbf{0.540} \\

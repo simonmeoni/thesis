@@ -128,16 +128,17 @@ Table \ref{tab:appendix_setting_c} presents results for \Sstar (i.e., the combin
 
 Table \ref{tab:appendix_setting_d} provides comprehensive results for \Ssilver (\mono), including F1-score, Precision, and Recall for different mixing ratios $\rmix \in \{0, r_{max}, 1\}$.
 
-\begin{table}[h]
+\begin{landscape}
+\begin{table}[p]
     \centering
     \small
-    \resizebox{1\textwidth}{!}{
+    \resizebox{1.5\textwidth}{!}{
     \input{figures/multi_weak_supervision/big_table_D}
     }
     \caption{Detailed results for \Ssilver by language and model. Shows performance at $\rmix=1$ (\distilmodels only), $\rmix=0$ (\weakModel only), and optimal ratio $\rmix_{max}$ (\hybridmodel).}
     \label{tab:appendix_setting_d}
 \end{table}
-
+\end{landscape}
 \clearpage
 
 \subsection{Multilingual Silver: Detailed Results}
@@ -145,15 +146,17 @@ Table \ref{tab:appendix_setting_d} provides comprehensive results for \Ssilver (
 
 Table \ref{tab:appendix_setting_e} provides comprehensive results for \Smulti using multilingual training with \verb|xlm-roberta-base|.
 
-\begin{table}[h]
+\begin{landscape}
+\begin{table}[p]
     \centering
     \small
-    \resizebox{1\textwidth}{!}{
+    \resizebox{1.5\textwidth}{!}{
     \input{figures/multi_weak_supervision/big_table_E}
     }
     \caption{Detailed results for \Smulti (multilingual training). Shows performance at $\rmix=1$ (\distilmodels only), $\rmix=0$ (\weakModel only), and optimal ratio $\rmix_{max}$ (\hybridmodel).}
     \label{tab:appendix_setting_e}
 \end{table}
+\end{landscape}
 
 \clearpage
 

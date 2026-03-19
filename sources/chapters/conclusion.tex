@@ -87,7 +87,7 @@ This work explores these challenges through a facsimile-based approach to synthe
 \node[sublabel, below=6pt of annot] (annotsub) {Silver labels via\\knowledge distillation};
 \node[wfstep, fill=annotStep!60, right=of annot] (mix) {Mixed\\Supervision};
 \node[sublabel, below=6pt of mix] (mixsub) {Dictionary + LLM\\label blending};
-\node[wfstep, fill=annotStep!35, right=of mix] (local) {Local NER\\Models};
+\node[wfstep, fill=annotStep!35, right=of mix] (local) {Local\\Models};
 \node[sublabel, below=6pt of local] (localsub) {Hospital-deployable\\models};
 
 \begin{scope}[on background layer]
@@ -104,11 +104,11 @@ This work explores these challenges through a facsimile-based approach to synthe
 \draw[arrow] (mitig) -- (annot);
 
 % === Output ===
-\node[iobox, right=0.5cm of local] (output) {Deployable\\NER models};
+\node[iobox, right=0.5cm of local] (output) {Deployable\\ models};
 \draw[arrow] (local) -- (output);
 
 \end{tikzpicture}}%
-\caption{End-to-end workflow of the thesis contributions. Real clinical documents are processed through UMLS keyword extraction and LLM-based generation with iterative DPO alignment (Chapters~2--3), producing synthetic documents. These undergo privacy evaluation through re-identification attacks and keyword perturbation mitigation (Chapter~5). The resulting safe synthetic corpora serve as input for LLM-based weak annotation with mixed supervision strategies to train locally deployable NER models (Chapter~4).}
+\caption{End-to-end workflow of the thesis contributions. Real clinical documents are processed through UMLS keyword extraction and LLM-based generation with iterative DPO alignment (Chapters~2--3), producing synthetic documents. These undergo privacy evaluation through re-identification attacks and keyword perturbation mitigation (Chapter~5). The resulting safe synthetic corpora serve as input for LLM-based weak annotation with mixed supervision strategies to train deployable local models (Chapter~4).}
 \label{fig:thesis-workflow}
 \end{figure}
 
