@@ -1,19 +1,39 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Section facsimile
 % Inclus depuis main.tex via \input{chapters/facsimile}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Source : sources/chapters/synthetic_generation_cl4health_2025.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Principe de la génération fac-similé}
-% Définition, intuition, frontière de confidentialité,
-% extraction UMLS comme seul signal traversant la frontière
+
+Le point de départ de cette thèse est un constat simple : les approches de génération synthétique cliniques oscillent entre deux écueils.
+Les méthodes qui s'appuient directement sur les textes patients, même partiellement masqués, exposent une information identifiante résiduelle, tandis que celles qui génèrent intégralement depuis une ontologie peinent à reproduire la structure documentaire et la cohérence clinique des notes réelles.
+L'approche proposée introduit une notion de \emph{frontière de confidentialité} explicite : seuls des concepts médicaux sous forme de mots-clés et des scores numériques scalaires sont autorisés à franchir cette frontière entre l'infrastructure hospitalière et l'environnement de génération public.
+Le texte patient, lui, ne quitte jamais l'enceinte sécurisée.
+Les documents synthétiques ainsi produits sont qualifiés de \emph{fac-similés} : ils préservent la structure et le style des notes réelles sans jamais en exposer le contenu.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/synthetic_generation_cl4health_2025/workflow.pdf}
+    \caption{Vue d'ensemble du pipeline fac-similé. À gauche de la frontière de confidentialité (zone hospitalière), les notes cliniques réelles sont traitées par un extracteur de concepts UMLS qui en dérive des séquences de mots-clés, et un scoreur sémantique privé qui compare documents réels et synthétiques pour produire des scores numériques. Seuls ces mots-clés et ces scores franchissent la frontière. À droite (environnement public), un générateur grand modèle de langue produit plusieurs candidats synthétiques par séquence de mots-clés, puis est raffiné itérativement par DPO à partir des scores renvoyés. Le texte patient ne quitte jamais la zone sécurisée.}
+    \label{fig:resume-workflow}
+\end{figure}
+
+La figure~\ref{fig:resume-workflow} illustre l'architecture d'ensemble : l'extraction de concepts et le scoring opèrent du côté privé, tandis que la génération et l'alignement opèrent du côté public, à partir des seuls signaux (mots-clés, scores) autorisés à traverser la frontière.
 
 \subsection{Protocole expérimental sur MIMIC-III}
-% Extraction keywords, prompting, choix du générateur,
-% construction d'AlpaCare
 
-\subsection{Résultats : classification CIM-9}
-% Performances comparables ou supérieures aux données réelles,
-% effet de l'oversampling sur espaces de labels complexes
+Le pipeline comporte trois étapes.
+Premièrement, un extracteur de concepts reposant sur QuickUMLS parcourt les notes cliniques de MIMIC-III et en extrait les codes diagnostiques, procédures, médicaments et symptômes sous forme de mots-clés UMLS.
+Ces séquences de mots-clés sont les seules données qui traversent la frontière de confidentialité.
+Deuxièmement, un générateur Mistral-7B-Instruct-v0.1 est ajusté de manière supervisée sur un corpus d'amorçage pseudo-anonymisé, de taille volontairement réduite (\SI{4}{\percent} ou \SI{6}{\percent} du corpus source, noté $r_{\text{sft}}$), afin de minimiser l'exposition aux données réelles.
+Troisièmement, le générateur entraîné produit $N=4$ documents candidats par séquence de mots-clés, constituant un corpus synthétique parallèle à MIMIC-III.
+
+L'évaluation repose sur deux tâches en aval représentatives du TAL clinique : une classification multi-étiquettes CIM-9 à quatre niveaux de granularité croissante (\texttt{class-20}, \texttt{class-50}, \texttt{class-100}, \texttt{class-400}), et une reconnaissance d'entités nommées cliniques.
+La métrique retenue est le Micro-F1, qui reflète la performance globale en présence de distributions en loi de puissance caractéristiques du codage CIM.
+
+\subsection{Résultats : utilité aval}
+
+Les modèles entraînés exclusivement sur le corpus synthétique issu de l'ajustement supervisé initial (noté $D_0$) atteignent déjà des performances proches des données réelles sur \texttt{class-20} (\num{49.8} vs. \num{49.3}), et les dépassent nettement sur les tâches plus granulaires : \num{32.2} vs. \num{23.0} sur \texttt{class-100} et \num{24.2} vs. \num{4.9} sur \texttt{class-400}.
+Ce résultat confirme que les mots-clés UMLS, bien qu'extraits sans accès au texte, transportent une information clinique suffisante pour piloter la génération d'exemples exploitables en entraînement.
+L'écart-type des modèles synthétiques est par ailleurs plus faible que celui des modèles réels, traduisant une plus grande stabilité d'entraînement que nous attribuons à la répétition contrôlée des patrons cliniques dans le corpus généré.
