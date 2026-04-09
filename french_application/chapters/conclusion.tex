@@ -1,0 +1,85 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Section conclusion
+% Inclus depuis main.tex via \input{chapters/conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Réponses aux questions de recherche}
+
+Les travaux présentés apportent des réponses nuancées aux quatre questions posées en
+introduction. Concernant la génération (Q1), les grands modèles de langue peuvent
+effectivement produire des documents cliniques linguistiquement réalistes et médicalement
+cohérents, à condition d'injecter la connaissance du domaine via une ontologie
+(extraction de concepts UMLS) et de raffiner itérativement les sorties à partir d'un
+signal de récompense issu d'un scoreur contrastif. L'approche fac-similé, en préservant
+une correspondance avec des narratifs authentiques, capture la structure documentaire et
+le raisonnement clinique que la génération \textit{ex nihilo} peine à reproduire.
+
+Sur l'utilité aval (Q2), les documents synthétiques se révèlent efficaces comme complément
+plutôt que substitut des données réelles. Les gains sont maximaux dans les régimes à faibles
+ressources : classes minoritaires, pathologies rares, contextes institutionnels où l'annotation
+manuelle est prohibitive. La complexité de la tâche module l'ampleur du bénéfice : les
+tâches de classification fine (CIM-9 top-100, CIM-10 top-100) bénéficient davantage de
+l'alignement itératif que les tâches plus simples. Sur le français, le scoreur composite
+(BioLORD + LLM-juge) produit des gains relatifs allant jusqu'à \SI{37}{\percent} sur les
+labels rares, confirmant l'importance du signal de récompense.
+
+Concernant l'annotation faible (Q3), les grands modèles de langue constituent des
+annotateurs compétents, particulièrement précieux pour les langues faiblement dotées
+comme le basque. Leurs erreurs sont complémentaires de celles des approches
+dictionnaires : recall large mais sur-extraction d'un côté, précision étroite de l'autre. La
+stratégie de supervision hybride, qui mélange ces deux sources d'annotations à un ratio
+optimisé par langue, surpasse chacune prise isolément. La distillation vers des modèles
+encodeurs locaux préserve la souveraineté des données et s'avère souvent supérieure à
+l'inférence directe du grand modèle, grâce au filtrage implicite des erreurs LLM.
+
+Enfin, sur la vie privée (Q4), la thèse apporte un constat lucide : la génération synthétique
+\textit{réduit} mais n'\textit{élimine} pas les risques de réidentification. Les attaques de
+discrimination atteignent \SIrange{89}{96}{\percent} de succès sur les documents de base,
+et les attaques par liaison \SIrange{45}{52}{\percent}, bien au-dessus du hasard. La cause
+identifiée est la combinaison distinctive de mots-clés UMLS qui encode une empreinte
+patient. De manière contre-intuitive, l'alignement DPO amplifie ce risque par rapport au
+SFT seul. La perturbation ciblée des mots-clés (remplacement par synonymes d'ontologie)
+réduit le risque de liaison de \SI{37}{\percent} absolus pour seulement \SI{3}{\percent} de
+perte d'utilité aval, offrant un compromis déployable en pratique.
+
+\subsection{Limites et arbitrage utilité/confidentialité}
+
+Aucune solution parfaite n'émerge : résiduellement, des risques demeurent. Plusieurs limites
+méritent d'être soulignées. D'une part, les annotations dites \emph{silver} issues du pipeline
+d'annotation faible imposent un plafond empirique de performance. D'autre part, la validation
+de l'approche a porté sur des notes cliniques généralistes et cinq langues européennes :
+les spécialités (radiologie, oncologie, anatomopathologie) et les langues faiblement dotées
+hors Europe restent à explorer. Enfin, l'approche fournit des garanties empiriques par
+évaluation d'attaques, non des garanties formelles à la manière de la confidentialité
+différentielle. L'articulation entre garanties formelles et préservation de l'utilité constitue
+une question ouverte.
+
+\subsection{Perspectives}
+
+Plusieurs directions prolongent naturellement ces travaux. Sur le plan technique, l'extension
+du fac-similé à des dossiers patients multimodaux longitudinaux, combinant texte, données
+structurées (constantes, analyses biologiques) et séries temporelles, permettrait de répondre
+à des cas d'usage au-delà du seul TAL : aide à la décision, formation médicale, simulation de
+parcours de soins. Le découplage complet vis-à-vis des documents d'amorçage, par exemple
+en tirant des séquences de pseudo-mots-clés d'un petit modèle entraîné sur les co-occurrences
+de l'ontologie médicale, est déjà amorcé dans le volet français et mérite d'être consolidé.
+
+Sur le plan méthodologique, la combinaison de la confidentialité différentielle et du
+raffinement par préférence, ainsi que la quantification théorique de la relation entre taille
+du corpus synthétique et risque de réidentification, offriraient aux institutions un cadre de
+calibration explicite. Enfin, les approches développées ne sont pas spécifiques au domaine
+médical : partout où des textes sensibles doivent être exploités sans exposer d'information
+personnelle (droit, finance, assurance), le même arbitrage utilité/confidentialité se pose et
+les mêmes stratégies fac-similé et de supervision faible peuvent s'appliquer.
+
+La vision générale est celle d'une \textit{innovation responsable} : faire progresser les
+capacités du TAL clinique en respectant la vie privée des patients, en autonomisant les
+institutions de santé et en démocratisant l'accès à des outils qui améliorent la qualité des
+soins et l'efficacité de la recherche. Atteindre cet objectif suppose un travail technique
+continu mais, tout autant, la construction de normes, de standards et de cadres de
+gouvernance permettant le déploiement sûr et équitable des données synthétiques et des
+méthodes fondées sur les grands modèles de langue. Cette thèse contribue à cet horizon
+en proposant des méthodes, en quantifiant leurs limites et en assumant l'absence de
+solution à risque nul.
