@@ -10,7 +10,8 @@ Usage : alimenter la rédaction du résumé de 15 pages (`main.tex`).
 
 - **Chapitres 3 (fac-similé + DPO)** : chiffres vérifiés contre `figures/synthetic_generation_cl4health_2025/task_results.csv` et le texte de `sources/chapters/synthetic_generation_cl4health_2025.tex`
 - **Chapitre 6 (vie privée)** : chiffres vérifiés contre `sources/chapters/synthetic_generation_improvements.tex` (ATTENTION : ce fichier contient en fait le chapitre Privacy, pas des améliorations DPO)
-- **Chapitres 4 (français), 5 (annotation faible)** : à vérifier avant rédaction, numéros initiaux potentiellement hallucinés
+- **Chapitre 4 (français)** : chiffres vérifiés contre `sources/chapters/french_clinical_application.tex`
+- **Chapitre 5 (annotation faible)** : chiffres vérifiés contre `sources/chapters/weak_annotations.tex` et tables dans `figures/multi_weak_supervision/`
 - **Correspondance fichiers → chapitres manuscrit** :
   - `synthetic_generation_cl4health_2025.tex` → Ch. Fac-similé + DPO (`chap:synthetic`)
   - `french_clinical_application.tex` → Ch. Application française (`chap:french-application`)
@@ -162,27 +163,54 @@ Usage : alimenter la rédaction du résumé de 15 pages (`main.tex`).
 - Preuve qu'il est possible de **découpler totalement l'amorçage des données patient réelles**
 - Pistes ouvertes : dossiers patients complets multimodaux, génération longue (sommaires de sortie complets)
 
-## Chapitre 5 — Annotation faible multilingue (E3C, 5 langues) [À VÉRIFIER]
+## Chapitre 5 — Annotation faible multilingue (E3C, 5 langues) [chiffres vérifiés]
 
-**Tâche** : NER clinique IOB, 3 labels (O, B_clin, I_clin)
+**Source** : `sources/chapters/weak_annotations.tex`, tables dans `figures/multi_weak_supervision/` et `figures/weak_supervision_healthnlp_2023/`. Publié à BioNLP 2023 (volet français) puis étendu multilingue.
 
-**Stratégie** : annotation par InstructGPT-3 (text-davinci-003) + dictionnaire UMLS + mélange pondéré r_mix dans [0, 1] pour distillation vers modèles encodeurs locaux
+**Tâche** : NER clinique IOB, 3 labels (O, B_clin, I_clin), corpus E3C (5 langues : anglais, espagnol, français, italien, basque).
 
-**Résultats (F1, gold test)**
+**Sources de supervision comparées**
+- **\dict (r_mix = 0)** : annotation par dictionnaire UMLS (précision haute, rappel étroit, favorise les entités mono-mot)
+- **\instruct (r_mix = 1)** : annotation par InstructGPT-3 (`text-davinci-003`, déterministe T=0, top_p=0), prompt few-shot à 3 exemples. InstructGPT extrait ~2× plus d'entités que le dictionnaire, notamment des I_clin multi-mots
+- **\hybridmodel (r_mix ∈ (0,1))** : mélange pondéré des deux sources
 
-| Langue | Dict seul | LLM seul | Mix optimal | r_mix optimal |
-|---|---|---|---|---|
-| Anglais | 0,72 | 0,71 | 0,72 | 0,0 |
-| Espagnol | 0,73 | 0,71 | **0,75** | 0,4 |
-| Français | 0,69 | 0,74 | **0,76** | 0,5 |
-| Italien | 0,63 | 0,75 | **0,77** | 0,8 |
-| Basque | 0,65 | 0,78 | **0,78** | 1,0 |
+**Protocole**
+- Trois couches E3C : S_silver (corpus annoté dict + LLM, entraînement 5-fold CV), S_val (sous-ensemble validé manuellement), S_gold (test)
+- Étudiants distillés : modèles encodeurs locaux (monolingues et multilingues) — camembert-base et DrBERT (fr), dbmdz (it), berteus (eu), BSC-LT biomedical-es (es), Bio_ClinicalBERT (en), xlm-roberta-base en contexte multilingue
+- Entraînement avec r_mix ∈ [0,1] puis évaluation sur S_gold
+
+**Résultats clés agrégés (moyenne toutes langues, F1)**
+- Sur S_silver : distil (r=1) 0,70 vs dict (r=0) 0,67
+- Sur S_val : distil 0,61 vs dict 0,70 (peu de données favorise dict stable)
+- Sur S_star (S_silver + S_val mixte) : distil 0,73 vs dict 0,71
+
+**Comparaison InstructGPT direct vs modèle distillé sur S_gold**
+- Italien : 0,63 (InstructGPT direct) → 0,75 (distillé), gain +0,12
+- Français, Basque : distillation bénéfique également
+- Anglais, Espagnol : tendance inversée, InstructGPT direct meilleur
+
+**Mélange optimal r_mix (contexte monolingue, meilleur modèle par langue, table `big_table_D`)**
+
+| Langue | Modèle | r_mix_max | F1 (r=1) | F1 (r_max) | F1 (r=0) |
+|---|---|---|---|---|---|
+| Anglais | Bio_ClinicalBERT | 0,6 | 0,68 | **0,72** | 0,66 |
+| Espagnol | BSC-LT biomedical-es | 0,4 | 0,78 | **0,79** | 0,72 |
+| Français | camembert-base | 0,5 | 0,74 | **0,76** | 0,75 |
+| Italien | dbmdz bert-italian | 0,8 | 0,73 | **0,75** | 0,74 |
+| Basque | berteus-base | 1,0 (bord) | 0,54 | **—** | 0,60 |
 
 **Observations**
-- LLM ~2x plus d'entités extraites que dictionnaire (multi-mots)
-- Dictionnaire : précision haute, recall étroit
-- Distillation souvent supérieure au LLM direct (italien : +0,12)
-- Grand bénéfice LLM sur langues à ressources faibles (basque)
+- Pour 4 langues sur 5, l'optimum se situe dans r_mix ∈ [0,4 ; 0,6] : le mélange des deux supervisions apporte un gain de diversité
+- Basque : cas particulier, optimum à r_mix = 1 ; lexique UMLS basque pauvre (63 tokens I_clin dict vs 482 pour InstructGPT sur S_silver), le dictionnaire sous-extrait fortement
+- Multilingue (xlm-roberta-base) inférieur au monolingue sauf italien (+0,01 à r_mix = 0,8) : bruit introduit par la multi-langue
+- Cas d'étude français détaillé : r_mix = 0,5 donne F1 = 0,76, précision = 0,73, rappel = 0,81, écart précision/rappel réduit. Ratios > 0,5 améliorent la stabilité cross-fold
+
+**Contributions pour le résumé**
+1. Annotation faible par LLM (précurseur 2023) comme source de supervision pour la distillation
+2. Ratio r_mix explicite pour combiner supervision dictionnaire et LLM, gain net dans 4 langues sur 5
+3. Démonstration que la distillation vers un petit modèle encodeur peut dépasser l'inférence LLM directe (italien +0,12)
+4. Analyse multilingue montrant les limites des modèles multilingues face aux monolingues en NER clinique
+5. Complémentarité précision/rappel entre dict (sous-extraction) et LLM (sur-extraction), base théorique du mélange
 
 ## Chapitre 6 — Analyse de confidentialité et atténuation [chiffres corrigés]
 
