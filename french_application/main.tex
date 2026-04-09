@@ -1,0 +1,204 @@
+\documentclass[11pt,a4paper]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Résumé substantiel en français (EDITE / Sorbonne Université)
+% Document isolé, réutilise bibliography.bib du manuscrit
+% Structure : par contribution (option A)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\sisetup{output-decimal-marker={,},group-separator={\,}}
+
+\usepackage[round]{natbib}
+\usepackage{xcolor}
+\usepackage[%
+  unicode,
+  colorlinks=true,
+  citecolor=blue,
+  linkcolor=blue,
+  urlcolor=blue,
+]{hyperref}
+
+% Métadonnées
+\title{\textbf{Résumé substantiel}\\[0.4em]
+\large Génération et évaluation de données médicales synthétiques\\
+pour le traitement automatique des langues cliniques}
+\author{Simon Meoni\\
+\small Sorbonne Université -- École Doctorale Informatique, Télécommunications et Électronique (EDITE)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Ce document constitue le résumé substantiel en français du manuscrit de thèse rédigé en anglais,
+conformément aux exigences de l'EDITE de Paris pour les doctorants de Sorbonne Université.
+La thèse porte sur la génération de données cliniques synthétiques préservant la vie privée
+et sur leur évaluation pour des tâches de traitement automatique des langues médicales.
+\end{abstract}
+
+\tableofcontents
+\vspace{1em}
+\hrule
+\vspace{1em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction et problématique}
+\label{sec:introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Contexte et verrou de la vie privée}
+% Contexte TAL clinique, RGPD/HIPAA, rareté des corpus annotés
+
+\subsection{Question de recherche}
+% Comment générer des documents cliniques synthétiques utiles pour des
+% tâches en aval tout en maîtrisant le risque de réidentification ?
+
+\subsection{Contributions et plan du résumé}
+% 1) Génération fac-similé guidée par mots-clés UMLS (chap. 3)
+% 2) Alignement itératif par DPO avec scoreur contrastif privé (chap. 4)
+% 3) Transfert au français clinique AP-HP, CIM-10 (chap. 5)
+% 4) Annotation faible multilingue par distillation LLM (chap. 6)
+% 5) Analyse vie privée : attaques par liaison et de proximité (chap. 7)
+% 6) Stratégies d'atténuation et arbitrage utilité/confidentialité
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{État de l'art}
+\label{sec:related}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Traitement automatique des langues cliniques}
+% MIMIC-III, corpus cliniques, tâches (NER, classification CIM)
+
+\subsection{Génération de données cliniques synthétiques}
+% Approches par LLM, prompt-based, distillation, KnowledgeSG
+
+\subsection{Évaluation de la confidentialité}
+% Dé-identification, confidentialité différentielle, attaques d'inférence
+
+\subsection{Positionnement : fac-similé vs fictionnel}
+% Frontière de confidentialité, trade-off utilité/confidentialité
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Génération fac-similé guidée par mots-clés médicaux}
+\label{sec:facsimile}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Source : sources/chapters/synthetic_generation_cl4health_2025.tex
+
+\subsection{Principe de la génération fac-similé}
+% Définition, intuition, frontière de confidentialité,
+% extraction UMLS comme seul signal traversant la frontière
+
+\subsection{Protocole expérimental sur MIMIC-III}
+% Extraction keywords, prompting, choix du générateur,
+% construction d'AlpaCare
+
+\subsection{Résultats : classification CIM-9}
+% Performances comparables ou supérieures aux données réelles,
+% effet de l'oversampling sur espaces de labels complexes
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Alignement itératif par DPO}
+\label{sec:dpo}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Source : sources/chapters/synthetic_generation_improvements.tex
+
+\subsection{Motivation : écart de qualité résiduel}
+% Limites de la génération one-shot, nécessité d'un alignement
+
+\subsection{Scoreur contrastif privé et boucle DPO}
+% Architecture du scoreur, préférences, boucle itérative,
+% rôle de la frontière de confidentialité
+
+\subsection{Résultats : gains d'utilité}
+% Courbes d'alignement, gains CIM-9, robustesse
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Transfert au français clinique : AP-HP et CIM-10}
+\label{sec:french}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Source : sources/chapters/french_clinical_application.tex
+
+\subsection{Contexte hospitalier et données AP-HP}
+% Spécificités du français clinique, contraintes institutionnelles
+
+\subsection{Adaptation du pipeline de génération}
+% Transfert du protocole, adaptation CIM-10
+
+\subsection{Résultats et preuve de généralisation}
+% Gains d'utilité, confirmation de l'indépendance linguistique
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Annotation faible multilingue par distillation LLM}
+\label{sec:weak}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Source : sources/chapters/weak_annotations.tex
+
+\subsection{Verrou : NER clinique en contexte faiblement doté}
+% E3C, cinq langues européennes, rareté des annotations gold
+
+\subsection{Supervision hybride : dictionnaires et LLM}
+% Distillation d'un LLM vers des modèles encodeurs,
+% complémentarité dictionnaire + LLM
+
+\subsection{Résultats multilingues}
+% Gains pour les langues faiblement dotées, comparaison des stratégies
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Analyse de la vie privée et atténuation}
+\label{sec:privacy}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Source : sources/chapters/discussion.tex (section vie privée)
+
+\subsection{Modèle de menace et protocoles d'attaque}
+% Attaques par liaison TF-IDF, attaques de proximité, discrimination
+
+\subsection{Résultats : risques de réidentification}
+% Linkage 45--76\%, discrimination 89--96\%,
+% effet amplificateur du DPO sur le risque
+
+\subsection{Stratégies d'atténuation}
+% Perturbation des mots-clés, effet négligeable sur l'utilité conversationnelle
+
+\subsection{Comparaison à KnowledgeSG}
+% Complétion d'identifiants vs réidentification,
+% complémentarité des deux approches
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion et conclusion}
+\label{sec:conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Arbitrage utilité/confidentialité}
+% Tensions fondamentales, pas de risque nul, honnêteté scientifique
+
+\subsection{Limites}
+% Annotations silver, dépendance au contexte institutionnel, généralisation
+
+\subsection{Perspectives}
+% Frameworks de remédiation, métriques composites, alignement réglementaire,
+% applications hors médical (juridique, financier)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bibliographie : réutilise bibliography.bib du manuscrit principal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{styles/acl_natbib}
+\bibliography{bibliography}
+
+\end{document}
