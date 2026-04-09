@@ -91,26 +91,76 @@ Usage : alimenter la rédaction du résumé de 15 pages (`main.tex`).
 - `GenMdl{4%}` évalué par `ScoreMdl{4%}` : 67,95 → 71,53 → 72,25 (step 0 → 1 → 2)
 - `GenMdl{6%}` évalué par `ScoreMdl{6%}` : 67,26 → 70,78 → 74,37
 
-## Chapitre 4 — Application française (AP-HP, CIM-10) [À VÉRIFIER]
+## Chapitre 4 — Application française (AP-HP, CIM-10) [chiffres vérifiés]
 
-**Particularités**
-- Aucune dépendance à des documents réels : corpus d'amorçage entièrement synthétique via MedGemma-27B-IT sur mappings CIM-10 ↔ mots-clés français
-- Générateur : Qwen3-4B-Instruct, LoRA (r=32, α=64)
-- Scoreur composite : BioLORD-2023-M + Qwen3-30B-A3B-Instruct comme LLM-juge
-- Classifieur aval : ModernBERT-large
-- Structure à 8 sections standardisées (Motif, Antécédents, Histoire, etc.)
+**Contexte**
+- Collaboration avec l'AP-HP (Assistance Publique -- Hôpitaux de Paris)
+- Travail réalisé par Riccardo Tripodi (master Politecnico di Milano) adaptant le pipeline au contexte français
+- Motivation : déployer de petits modèles efficaces pour le codage CIM-10 automatisé dans un contexte de rareté d'annotations et de contraintes RGPD
 
-**Résultats CIM-10 (macro F1, 50K synthétiques)**
+**Particularités méthodologiques**
+- **Aucune dépendance à des documents réels** : le corpus d'amorçage est entièrement synthétique (pas de pseudo-anonymisation comme dans MIMIC)
+- Corpus d'amorçage : \num{20000} rapports cliniques synthétiques générés par **MedGemma-27B-IT** à partir d'une base curée mappant codes CIM-10 vers mots-clés français (symptômes, anatomie, traitements, procédures)
+- Échantillonnage des codes selon les fréquences hospitalières empiriques
+- **Corpus de référence pour le scoring** : rapports cliniques *fictifs* rédigés par des médecins praticiens (pas des documents patients réels). Cliniquement réalistes mais sans information patient
+- **Jeu de test d'évaluation** : rapports cliniques réels annotés par des experts, strictement disjoint du reste du pipeline
+- Structure à 8 sections standardisées : Motif d'hospitalisation, Antécédents, Mode de vie, Histoire de la maladie, Examen clinique, Examens complémentaires, Évolution, Conclusion
+- Longueur moyenne des documents générés : ≈ 800 ± 240 mots
 
-| Configuration | Top-20 | Top-50 | Top-100 |
-|---|---|---|---|
-| SFT | 0,445 | 0,326 | 0,230 |
-| DPO3 | **0,461** | **0,385** | **0,316** |
-| Gain | +2,3 % | +17,6 % | **+37,2 %** |
+**Pipeline d'entraînement**
+- **Générateur** : Qwen3-4B-Instruct (vs. Mistral-7B-Instruct-v0.1 pour MIMIC), choisi pour ses capacités multilingues
+- **LoRA** : rang r=32, scale α=64, sur toutes les projections d'attention
+- **Stage 1 (SFT)** : ajustement supervisé sur les \num{20000} rapports d'amorçage
+- **Stage 2 (DPO)** : **3 itérations** d'optimisation de préférence directe (DPO1, DPO2, DPO3)  
+  ⚠️ Différence avec MIMIC qui n'avait que 2 itérations DPO
+- **Génération de candidats** : N=4 par prompt de mots-clés, avec mélange de températures (1 × τ=0,2 pour cohérence + 3 × τ ∼ U(0,6 ; 0,9) pour diversité)
+- Extraction de mots-clés des références par QuickUMLS
 
-- Gains français beaucoup plus larges qu'anglais sur labels rares (attribué au scoreur composite)
-- Validation translinguistique : méthodologie agnostique à la langue et au système de codage
-- Découplage possible des données réelles d'amorçage
+**Scoreur composite**
+- Composant 1 : similarité cosinus via BioLORD-2023-M (embeddings médicaux intégrant un graphe de connaissances clinique)
+- Composant 2 : Qwen3-30B-A3B-Instruct comme LLM-juge (correction médicale, alignement au contenu de la référence)
+- Score final : moyenne simple `S_composite = 0,5 · S_similarity + 0,5 · S_judge`
+- Ce scoreur à deux facettes fournit un signal d'entraînement plus riche que le SemScore seul utilisé sur MIMIC
+
+**Tâche aval**
+- Classification multilabel CIM-10 par ModernBERT-large
+- Top-k ∈ {20, 50, 100} codes les plus fréquents
+- 3 tailles de dataset : 10K, 20K, 50K documents synthétiques
+- Moyennes de codes/document : 1,52 ± 0,82 (top-20), 2,10 ± 1,14 (top-100)
+- Métrique : **macro F1** (différent de MIMIC qui utilise Micro-F1)
+
+**Résultats complets (macro F1)**
+
+| Dataset | Top-k | Step0/SFT | DPO1 | DPO2 | DPO3 | Gain (best vs Step0) |
+|---|---|---|---|---|---|---|
+| **10K** | 20 | 0,389 | **0,422** | 0,422 | 0,418 | +7,4 % |
+| 10K | 50 | 0,250 | 0,294 | 0,302 | **0,317** | +26,9 % |
+| 10K | 100 | 0,175 | 0,197 | 0,202 | **0,238** | +36,5 % |
+| **20K** | 20 | 0,438 | **0,457** | 0,448 | 0,447 | +2,1 % |
+| 20K | 50 | 0,299 | 0,326 | 0,334 | **0,347** | +16,2 % |
+| 20K | 100 | 0,195 | 0,230 | 0,210 | **0,285** | **+45,8 %** |
+| **50K** | 20 | 0,445 | **0,461** | 0,461 | 0,455 | +2,3 % |
+| 50K | 50 | 0,326 | 0,351 | **0,385** | 0,383 | +17,6 % |
+| 50K | 100 | 0,230 | 0,268 | 0,300 | **0,316** | +37,2 % |
+
+**Observations clés**
+- **Top-20 : DPO1 suffit**, les itérations suivantes plafonnent ou dégradent légèrement
+- **Top-50 : optimal entre DPO2 et DPO3**
+- **Top-100 : DPO3 est systématiquement le meilleur** (labels rares bénéficient d'un alignement plus profond)
+- **Gain maximal : +45,8 %** sur 20K top-100 (pas sur 50K comme indiqué précédemment à tort)
+- Même le plus petit dataset (**10K + DPO3**) atteint une performance compétitive → la qualité peut partiellement compenser la quantité
+- Scaling cohérent : 50K > 20K > 10K en valeur absolue sur toutes les configurations
+
+**Comparaison inter-lingue (MIMIC ↔ AP-HP)**
+- **Gains qualitatifs identiques** : DPO efficace surtout sur tâches complexes, rendements décroissants sur top-20
+- **Gains quantitatifs très différents** : français +36-46 % sur top-100 vs. anglais seulement +3-6 %
+- Explication principale : scoreur composite (BioLORD + LLM-juge) vs. SemScore seul
+- Facteurs secondaires : Qwen3-4B peut répondre mieux au DPO que Mistral-7B, CIM-10 vs. CIM-9
+
+**Conclusion du chapitre**
+- Preuve que la méthodologie **transfère à une autre langue, un autre système de codage, un autre contexte hospitalier**
+- Preuve qu'il est possible de **découpler totalement l'amorçage des données patient réelles**
+- Pistes ouvertes : dossiers patients complets multimodaux, génération longue (sommaires de sortie complets)
 
 ## Chapitre 5 — Annotation faible multilingue (E3C, 5 langues) [À VÉRIFIER]
 
