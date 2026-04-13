@@ -11,7 +11,7 @@ Les travaux présentés apportent des réponses nuancées aux quatre questions p
 introduction. Concernant la génération (Q1), les grands modèles de langue peuvent
 effectivement produire des documents cliniques linguistiquement réalistes et médicalement
 cohérents, à condition d'injecter la connaissance du domaine via une ontologie
-(extraction de concepts UMLS) et de raffiner itérativement les sorties à partir d'un
+(extraction de concepts \gls{umls}) et de raffiner itérativement les sorties à partir d'un
 signal de récompense issu d'un scoreur contrastif. L'approche fac-similé, en préservant
 une correspondance avec des narratifs authentiques, capture la structure documentaire et
 le raisonnement clinique que la génération \textit{ex nihilo} peine à reproduire.
@@ -37,7 +37,7 @@ l'inférence directe du grand modèle, grâce au filtrage implicite des erreurs 
 Enfin, sur la vie privée (Q4), la thèse apporte un constat lucide : la génération synthétique
 \textit{réduit} mais n'\textit{élimine} pas les risques de réidentification. Les attaques par
 liaison et de discrimination révèlent des vulnérabilités significatives, bien au-dessus du
-hasard. La cause identifiée est la combinaison distinctive de mots-clés UMLS qui encode
+hasard. La cause identifiée est la combinaison distinctive de mots-clés \gls{umls} qui encode
 une empreinte patient. De manière contre-intuitive, l'alignement par préférence directe amplifie
 ce risque par rapport à l'ajustement supervisé seul. La perturbation ciblée des mots-clés
 (remplacement par synonymes d'ontologie) réduit substantiellement le risque de liaison pour

@@ -15,10 +15,10 @@ raisonnement clinique, la trajectoire du patient et les déterminants sociaux de
 champs structurés ne savent pas représenter. Le traitement automatique des langues (TAL)
 clinique est devenu la technologie clé pour exploiter cette richesse, avec des applications
 allant de la classification diagnostique automatique à l'aide à la décision, en passant par
-l'identification de cohortes pour la recherche.
+l'identification de cohortes pour la recherche~\citep{wang2018clinical, kreimeyer2017natural}.
 
 Les progrès récents du domaine ont été portés par la mise à l'échelle des modèles de langue :
-GatorTron, entraîné sur \num{90} milliards de mots cliniques, ou encore Med-PaLM~2, qui
+GatorTron~\citep{yang2022large}, entraîné sur \num{90} milliards de mots cliniques, ou encore Med-PaLM~2~\citep{singhal2023medpalm2}, qui
 atteint \SI{86.5}{\percent} d'exactitude sur MedQA, illustrent un principe devenu dominant :
 plus de données, de meilleurs modèles. Pourtant, dans le domaine médical, cet appétit en
 données entre en collision frontale avec l'impératif de protection de la vie privée des patients.
@@ -26,12 +26,12 @@ données entre en collision frontale avec l'impératif de protection de la vie p
 \subsection{Tension fondamentale entre données et vie privée}
 
 Les données de santé occupent une position privilégiée dans les cadres réglementaires
-mondiaux. Le Règlement Général sur la Protection des Données (RGPD) en Europe et le
-Health Insurance Portability and Accountability Act (HIPAA) aux États-Unis les classent
+mondiaux. Le Règlement Général sur la Protection des Données (RGPD) en Europe~\citep{gdpr2016} et le
+Health Insurance Portability and Accountability Act (HIPAA) aux États-Unis~\citep{hipaa1996} les classent
 parmi les catégories les plus sensibles, soumises à des interdictions générales de traitement
 assorties d'exceptions strictement encadrées. Les approches classiques de partage,
 principalement l'anonymisation et la pseudonymisation, souffrent de limites structurelles :
-une étude séminale a montré que \SI{87}{\percent} de la population américaine pouvait être
+une étude séminale~\citep{sweeney2002} a montré que \SI{87}{\percent} de la population américaine pouvait être
 réidentifiée uniquement par la combinaison du sexe, de la date de naissance et du code
 postal à cinq chiffres, informations couramment conservées dans les jeux de données
 prétendus anonymisés. Plus fondamentalement, l'anonymisation agressive dégrade
@@ -39,10 +39,10 @@ précisément la richesse linguistique et clinique qui fait la valeur des textes
 
 Une seconde limite, souvent sous-estimée, concerne les modèles eux-mêmes : les réseaux
 de neurones peuvent mémoriser et divulguer des exemples d'entraînement. Les attaques par
-inférence d'appartenance ou par extraction de données d'entraînement démontrent que
+inférence d'appartenance~\citep{shokri2017membership} ou par extraction de données d'entraînement~\citep{carlini2021extracting} démontrent que
 partager un modèle entraîné sur des textes cliniques sensibles peut présenter un risque
 comparable à celui du partage direct des données sources. Il en résulte un paysage
-fragmenté où les rares corpus publics (MIMIC, i2b2/n2c2) servent de \emph{de facto}
+fragmenté où les rares corpus publics (\mimic{}, i2b2/n2c2) servent de \emph{de facto}
 standards, et où les outils véritablement utiles restent cantonnés à l'intérieur des
 institutions qui les développent.
 
@@ -86,9 +86,9 @@ cliniques sans jamais exposer le texte patient.
 Les contributions s'articulent autour de quatre axes :
 \begin{enumerate}
   \item une architecture de génération fac-similé reposant sur l'extraction de concepts
-    UMLS et un raffinement itératif par optimisation de préférence directe guidé par un
+    \gls{umls} et un raffinement itératif par optimisation de préférence directe guidé par un
     scoreur contrastif (Section~\ref{sec:facsimile} et Section~\ref{sec:dpo}) ;
-  \item une validation translinguistique sur le français clinique (données AP-HP, CIM-10)
+  \item une validation translinguistique sur le français clinique (données \gls{aphp}, CIM-10)
     démontrant l'indépendance de la méthodologie vis-à-vis de la langue et du système de
     codage (Section~\ref{sec:french}) ;
   \item une étude de distillation de grands modèles de langue pour l'annotation faible

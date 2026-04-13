@@ -8,7 +8,7 @@ Quatre axes sont successivement examinés : les ressources cliniques disponibles
 
 \subsection{Ressources cliniques et benchmarks}
 
-Le TAL clinique s'est structuré autour de jeux de données fondateurs tels que MIMIC-III et MIMIC-IV \citep{Johnson2016MIMIC-IIIDatabase}, complétés par les campagnes i2b2/n2c2 \citep{uzunerPracticalApplicationsNatural2015}.
+Le TAL clinique s'est structuré autour de jeux de données fondateurs tels que \mimic{} et MIMIC-IV \citep{Johnson2016MIMIC-IIIDatabase}, complétés par les campagnes i2b2/n2c2 \citep{uzunerPracticalApplicationsNatural2015}.
 Des initiatives récentes cherchent à dépasser le paradigme centré sur l'anglais : FRASIMED projette automatiquement des annotations en français \citep{zaghir2024frasimed}, ClinText-SP publie le plus grand corpus clinique espagnol, tandis qu'E3C-3.0 couvre plus de dix langues européennes \citep{ghosh2025e3c}.
 Malgré ces avancées, le paysage reste dominé par l'anglais et par des corpus issus de traductions ou de projections, ce qui soulève des biais linguistiques et limite la validité clinique en contexte réel.
 Des études multi-sites montrent en outre que les modèles entraînés sur MIMIC se dégradent fortement lors du déploiement hors de leur environnement d'origine \citep{adekkanattuEvaluatingPortabilityNLP2019}, ce qui motive les approches capables de s'adapter aux spécificités institutionnelles.
@@ -27,9 +27,9 @@ Ces approches doivent toutefois composer avec des risques propres aux pipelines 
 \subsection{Alignement et optimisation de préférences}
 
 L'alignement des grands modèles de langue sur des préférences humaines ou automatiques constitue le second pilier méthodologique mobilisé dans cette thèse.
-Le paradigme historique, l'apprentissage par renforcement à partir de rétroactions humaines (RLHF), combine ajustement supervisé, modèle de récompense et optimisation de politique \citep{ouyang2022training}.
-Son coût et son instabilité ont motivé des alternatives : le RLAIF remplace les annotateurs humains par des modèles juges \citep{lee2023rlaif}, tandis que l'optimisation par préférence directe (DPO) reformule l'alignement comme un problème supervisé sur paires de préférences \citep{rafailov2023dpo}.
-Des variantes ultérieures, telles que SimPO, ORPO ou KTO, suppriment le modèle de référence ou fusionnent les phases d'ajustement supervisé et d'alignement.
+Le paradigme historique, l'apprentissage par renforcement à partir de rétroactions humaines (\gls{rlhf}), combine ajustement supervisé, modèle de récompense et optimisation de politique \citep{ouyang2022training}.
+Son coût et son instabilité ont motivé des alternatives : le \gls{rlaif} remplace les annotateurs humains par des modèles juges \citep{lee2023rlaif}, tandis que l'optimisation par préférence directe (\gls{dpo}) reformule l'alignement comme un problème supervisé sur paires de préférences \citep{rafailov2023dpo}.
+Des variantes ultérieures, telles que \gls{simpo}, \gls{orpo} ou \gls{kto}, suppriment le modèle de référence ou fusionnent les phases d'ajustement supervisé et d'alignement.
 
 Une seconde famille de travaux internalise la fonction de récompense : les \emph{Self-Rewarding Language Models} optimisent leurs sorties via un juge intégré au modèle \citep{yuan2024selfrewarding}, et les approches de self-training itératif comme ReST raffinent le modèle sur ses propres générations filtrées \citep{gulcehre2023rest}.
 Ces méthodes soulèvent toutefois des risques de circularité, puisqu'un même modèle produit et évalue les données, et restent majoritairement hors ligne.
@@ -38,14 +38,14 @@ Des travaux récents suggèrent que la qualité des données d'ajustement superv
 \subsection{Approches préservant la vie privée}
 
 La confidentialité des données textuelles repose sur une distinction fondamentale entre anonymisation, irréversible et sortant du champ du RGPD, et pseudonymisation, qui conserve une clé de réidentification \citep{gdpr2016}.
-Sur le plan technique, les pipelines cliniques ont évolué des systèmes à règles vers des architectures neuronales profondes, puis vers des systèmes hybrides déployés à grande échelle comme celui de l'AP-HP, qui atteint un F1 global de \num{0.99} sur douze catégories d'entités identifiantes \citep{tannier2024aphp}.
+Sur le plan technique, les pipelines cliniques ont évolué des systèmes à règles vers des architectures neuronales profondes, puis vers des systèmes hybrides déployés à grande échelle comme celui de l'\gls{aphp}, qui atteint un F1 global de \num{0.99} sur douze catégories d'entités identifiantes \citep{tannier2024aphp}.
 Des travaux récents explorent en outre l'usage des grands modèles de langue eux-mêmes pour l'anonymisation \citep{staabLargeLanguageModels2025}, tout en soulignant la persistance de fuites sémantiques échappant à la substitution lexicale.
 
-La confidentialité différentielle (DP) offre un cadre formel pour borner le risque de divulgation \citep{dwork2014algorithmic}, mais son application au texte se heurte à la haute dimensionnalité et à la sensibilité non bornée des sorties génératives.
-Plusieurs lignes de travail adaptent la DP aux grands modèles de langue, de l'ajustement par DP-SGD à la génération de données synthétiques sous garantie formelle, jusqu'à des pipelines fédérés comme KnowledgeSG \citep{wangKnowledgeSGPrivacyPreservingSynthetic2024}, qui constitue le principal point de comparaison méthodologique pour cette thèse.
+La confidentialité différentielle (\gls{dp}) offre un cadre formel pour borner le risque de divulgation \citep{dwork2014algorithmic}, mais son application au texte se heurte à la haute dimensionnalité et à la sensibilité non bornée des sorties génératives.
+Plusieurs lignes de travail adaptent la \gls{dp} aux grands modèles de langue, de l'ajustement par DP-SGD à la génération de données synthétiques sous garantie formelle, jusqu'à des pipelines fédérés comme KnowledgeSG \citep{wangKnowledgeSGPrivacyPreservingSynthetic2024}, qui constitue le principal point de comparaison méthodologique pour cette thèse.
 
 L'évaluation des données synthétiques combine trois dimensions complémentaires.
 L'utilité se mesure par la performance sur des tâches en aval telles que la reconnaissance d'entités nommées ou la classification CIM.
-La cohérence sémantique, longtemps estimée par BLEU ou ROUGE, s'appuie désormais sur des métriques distributionnelles comme FID ou MAUVE \citep{pillutla2021mauve}, complétées par des évaluations préférentielles.
+La cohérence sémantique, longtemps estimée par \gls{bleu} ou \gls{rouge}, s'appuie désormais sur des métriques distributionnelles comme \gls{fid} ou \gls{mauve} \citep{pillutla2021mauve}, complétées par des évaluations préférentielles.
 Le risque de vie privée est quant à lui sondé par des attaques empiriques : inférence d'appartenance, inférence d'attributs et attaques par liaison \citep{powar2023sok_linkage}.
 Ce triptyque utilité / cohérence / risque structure le protocole d'évaluation adopté dans la suite du manuscrit.

@@ -6,28 +6,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Source : sources/chapters/weak_annotations.tex
 
-\subsection{Verrou : NER clinique en contexte faiblement doté}
+\subsection{Verrou : \gls{ner} clinique en contexte faiblement doté}
 
 Les chapitres précédents ont validé la génération fac-similé sur des tâches de classification documentaire, où les labels (codes CIM) se transfèrent directement du document source vers son fac-similé.
-L'extraction d'entités cliniques pose un problème distinct : elle nécessite des annotations au niveau du token (schéma IOB), dont la production manuelle est coûteuse et difficilement transférable d'un document réel vers un document synthétique.
+L'extraction d'entités cliniques pose un problème distinct : elle nécessite des annotations au niveau du token (schéma \gls{iob}), dont la production manuelle est coûteuse et difficilement transférable d'un document réel vers un document synthétique.
 Les documents fac-similé étant par construction non confidentiels, ils peuvent toutefois être soumis librement à un grand modèle de langue pour annotation automatique, ouvrant la voie à une distillation de connaissances vers des modèles encodeurs déployables localement.
 
 Ce volet de la thèse, publié à l'atelier BioNLP 2023 \citep{meoni2023large}, explore cette direction sur le corpus E3C \citep{Magnini2020TheCases}, un corpus clinique couvrant cinq langues européennes : anglais, espagnol, français, italien et basque.
 Le choix de ce corpus est motivé par la diversité des niveaux de ressources qu'il couvre, du basque faiblement doté à l'anglais richement annoté.
-La tâche consiste en une extraction d'entités cliniques à trois labels (O, B\_clin, I\_clin) évaluée en F1 sur un jeu de test annoté par des experts (\emph{gold}).
+La tâche consiste en une extraction d'entités cliniques à trois labels (O, \bclin, \iclin) évaluée en F1 sur un jeu de test annoté par des experts (\emph{gold}).
 
-\subsection{Supervision hybride : dictionnaires et LLM}
+\subsection{Supervision hybride : dictionnaires et \gls{llm}}
 
 Deux sources de supervision sont comparées.
-La première, notée \emph{dict}, repose sur une extraction par dictionnaire UMLS : elle produit des annotations de haute précision mais de rappel étroit, favorisant les entités mono-mot présentes dans le vocabulaire contrôlé.
-La seconde, notée \emph{instruct}, utilise InstructGPT (text-davinci-003) en mode few-shot (trois exemples, température nulle) pour annoter les mêmes documents : elle extrait environ deux fois plus d'entités que le dictionnaire, notamment des entités multi-mots (tokens I\_clin), mais introduit davantage de bruit.
+La première, notée \emph{dict}, repose sur une extraction par dictionnaire \gls{umls} : elle produit des annotations de haute précision mais de rappel étroit, favorisant les entités mono-mot présentes dans le vocabulaire contrôlé.
+La seconde, notée \emph{instruct}, utilise un \gls{llm} (text-davinci-003) en mode few-shot (trois exemples, température nulle) pour annoter les mêmes documents : elle extrait environ deux fois plus d'entités que le dictionnaire, notamment des entités multi-mots (tokens \iclin), mais introduit davantage de bruit.
 
 Les erreurs des deux sources sont complémentaires : le dictionnaire sous-extrait (rappel limité), tandis que le grand modèle de langue sur-extrait (précision réduite).
 Cette complémentarité motive une stratégie de supervision hybride, paramétrée par un ratio de mélange $r_{\text{mix}} \in [0,1]$ contrôlant la proportion d'annotations issues du grand modèle de langue dans le corpus d'entraînement.
 À $r_{\text{mix}} = 0$, seules les annotations dictionnaire sont utilisées ; à $r_{\text{mix}} = 1$, seules celles du grand modèle de langue.
 
-Le protocole de distillation entraîne des modèles encodeurs monolingues (CamemBERT pour le français, Bio\_ClinicalBERT pour l'anglais, DrBERT, dbmdz, berteus, BSC-LT pour les autres langues) sur le corpus annoté automatiquement, puis les évalue sur le jeu de test \emph{gold}.
-Ce schéma de distillation présente un double avantage pratique : les modèles résultants sont légers, déployables sur l'infrastructure hospitalière, et ne nécessitent aucun appel à une API externe en production, préservant ainsi la souveraineté des données.
+Le protocole de distillation entraîne des modèles encodeurs monolingues (cf.\ tableau~\ref{tab:weak-results}) sur le corpus annoté automatiquement, puis les évalue sur le jeu de test \emph{gold}.
+Ce schéma de distillation présente un double avantage pratique : les modèles résultants sont légers, déployables sur l'infrastructure hospitalière, et ne nécessitent aucun appel à une \gls{api} externe en production, préservant ainsi la souveraineté des données.
 
 \subsection{Résultats multilingues}
 
@@ -38,23 +38,23 @@ Le tableau~\ref{tab:weak-results} rapporte le F1 sur le jeu de test \emph{gold} 
 \small
 \begin{tabular}{lccc}
 \toprule
-\textbf{Langue} & \textbf{Modèle} & \textbf{F1 (dict)} & \textbf{F1 (LLM)} \\
+\textbf{Langue} & \textbf{Modèle} & \textbf{F1 (dict)} & \textbf{F1 (\gls{llm})} \\
 \midrule
-Anglais  & Bio\_ClinicalBERT     & \textbf{0,68} & 0,66 \\
-Espagnol & BSC-LT biomedical-es  & \textbf{0,78} & 0,72 \\
-Français & CamemBERT             & 0,69 & \textbf{0,75} \\
-Italien  & dbmdz                 & 0,73 & \textbf{0,74} \\
-Basque   & berteus               & 0,54 & \textbf{0,60} \\
+Anglais  & \verb|Bio_ClinicalBERT|     & \textbf{0,68} & 0,66 \\
+Espagnol & \verb|BSC-LT/roberta-base-biomedical-es|  & \textbf{0,78} & 0,72 \\
+Français & \verb|camembert-base|             & 0,69 & \textbf{0,75} \\
+Italien  & \verb|dbmdz/bert-base-italian-cased|                 & 0,73 & \textbf{0,74} \\
+Basque   & \verb|berteus-base-cased|               & 0,54 & \textbf{0,60} \\
 \bottomrule
 \end{tabular}
-\caption{F1 sur le jeu de test \emph{gold} E3C par langue et meilleur modèle encodeur. « Dict » ($r_{\text{mix}} = 0$) : supervision par dictionnaire UMLS seul ; « LLM » ($r_{\text{mix}} = 1$) : supervision par InstructGPT seul.}
+\caption{F1 sur le jeu de test \emph{gold} E3C par langue et meilleur modèle encodeur. « Dict » ($r_{\text{mix}} = 0$) : supervision par dictionnaire \gls{umls} seul ; « \gls{llm} » ($r_{\text{mix}} = 1$) : supervision par \gls{llm} seul.}
 \label{tab:weak-results}
 \end{table}
 
 Trois observations se dégagent.
 
 Premièrement, la supervision par grand modèle de langue est la plus bénéfique pour les langues où les ressources terminologiques structurées font défaut.
-En basque, le lexique UMLS est extrêmement pauvre : sur le corpus d'entraînement, le dictionnaire n'extrait que \num{63} tokens I\_clin, contre \num{482} pour InstructGPT.
+En basque, le lexique \gls{umls} est extrêmement pauvre : sur le corpus d'entraînement, le dictionnaire n'extrait que \num{63} tokens \iclin, contre \num{482} pour le \gls{llm}.
 Le modèle distillé depuis les annotations du grand modèle de langue atteint un F1 de \num{0,60}, contre \num{0,54} pour le dictionnaire.
 En français et en italien, la supervision par grand modèle de langue domine également, avec des F1 de \num{0,75} et \num{0,74} respectivement.
 À l'inverse, pour l'anglais et l'espagnol, langues richement dotées en ressources terminologiques, la supervision par dictionnaire est supérieure (\num{0,68} vs. \num{0,66} en anglais, \num{0,78} vs. \num{0,72} en espagnol).
@@ -64,12 +64,12 @@ L'optimum se situe dans l'intervalle $r_{\text{mix}} \in [0{,}4 ; 0{,}6]$, confi
 Le basque constitue l'exception : l'optimum est atteint à $r_{\text{mix}} = 1$ (grand modèle de langue seul), le dictionnaire étant si lacunaire que ses annotations ne font que diluer le signal utile.
 
 Troisièmement, la distillation vers un modèle encodeur local surpasse dans certains cas l'inférence directe du grand modèle de langue.
-Sur l'italien, le modèle distillé atteint un F1 de \num{0,75}, contre \num{0,63} pour InstructGPT en inférence directe, soit un gain de douze points.
+Sur l'italien, le modèle distillé atteint un F1 de \num{0,75}, contre \num{0,63} pour le \gls{llm} en inférence directe, soit un gain de douze points.
 Ce résultat, apparemment paradoxal, s'explique par le filtrage implicite des erreurs du grand modèle de langue lors de l'entraînement supervisé : le modèle encodeur apprend les régularités du corpus annoté tout en lissant le bruit ponctuel.
 En revanche, sur l'anglais et l'espagnol, l'inférence directe reste légèrement supérieure, suggérant que la qualité de la distillation dépend de l'adéquation entre le modèle encodeur et la langue cible.
 
-Enfin, les modèles multilingues (XLM-RoBERTa) se révèlent systématiquement inférieurs aux modèles monolingues, sauf marginalement sur l'italien.
-Ce résultat indique que, pour la NER clinique, le bruit introduit par la diversité linguistique l'emporte sur les bénéfices du transfert inter-langues, et que des modèles spécialisés par langue restent préférables lorsque les ressources le permettent.
+Enfin, les modèles multilingues (\verb|xlm-roberta-base|) se révèlent systématiquement inférieurs aux modèles monolingues, sauf marginalement sur l'italien.
+Ce résultat indique que, pour la \gls{ner} clinique, le bruit introduit par la diversité linguistique l'emporte sur les bénéfices du transfert inter-langues, et que des modèles spécialisés par langue restent préférables lorsque les ressources le permettent.
 
 Ces travaux démontrent que les grands modèles de langue constituent des annotateurs compétents pour le TAL clinique, particulièrement précieux pour les langues faiblement dotées, et que la distillation vers des modèles encodeurs locaux préserve la souveraineté des données tout en offrant des performances compétitives.
 La stratégie de mélange hybride, simple à mettre en œuvre, fournit un cadre opérationnel pour exploiter conjointement supervision automatique et ressources terminologiques dans un contexte multilingue.

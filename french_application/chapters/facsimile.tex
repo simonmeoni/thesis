@@ -15,19 +15,19 @@ Les documents synthétiques ainsi produits sont qualifiés de \emph{fac-similés
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{../figures/synthetic_generation_cl4health_2025/workflow.pdf}
-    \caption{Vue d'ensemble du pipeline fac-similé. À gauche de la frontière de confidentialité (zone hospitalière), les notes cliniques réelles sont traitées par un extracteur de concepts UMLS qui en dérive des séquences de mots-clés, et un scoreur sémantique privé qui compare documents réels et synthétiques pour produire des scores numériques. Seuls ces mots-clés et ces scores franchissent la frontière. À droite (environnement public), un générateur grand modèle de langue produit plusieurs candidats synthétiques par séquence de mots-clés, puis est raffiné itérativement par DPO à partir des scores renvoyés. Le texte patient ne quitte jamais la zone sécurisée.}
+    \caption{Vue d'ensemble du pipeline fac-similé. À gauche de la frontière de confidentialité (zone hospitalière), les notes cliniques réelles sont traitées par un extracteur de concepts \gls{umls} qui en dérive des séquences de mots-clés, et un scoreur sémantique privé qui compare documents réels et synthétiques pour produire des scores numériques. Seuls ces mots-clés et ces scores franchissent la frontière. À droite (environnement public), un générateur grand modèle de langue produit plusieurs candidats synthétiques par séquence de mots-clés, puis est raffiné itérativement par \gls{dpo} à partir des scores renvoyés. Le texte patient ne quitte jamais la zone sécurisée.}
     \label{fig:resume-workflow}
 \end{figure}
 
 La figure~\ref{fig:resume-workflow} illustre l'architecture d'ensemble : l'extraction de concepts et le scoring opèrent du côté privé, tandis que la génération et l'alignement opèrent du côté public, à partir des seuls signaux (mots-clés, scores) autorisés à traverser la frontière.
 
-\subsection{Protocole expérimental sur MIMIC-III}
+\subsection{Protocole expérimental sur \mimic{}}
 
 Le pipeline comporte trois étapes.
-Premièrement, un extracteur de concepts reposant sur QuickUMLS parcourt les notes cliniques de MIMIC-III et en extrait les codes diagnostiques, procédures, médicaments et symptômes sous forme de mots-clés UMLS.
+Premièrement, un extracteur de concepts reposant sur QuickUMLS parcourt les notes cliniques de \mimic{} et en extrait les codes diagnostiques, procédures, médicaments et symptômes sous forme de mots-clés \gls{umls}.
 Ces séquences de mots-clés sont les seules données qui traversent la frontière de confidentialité.
 Deuxièmement, un générateur Mistral-7B-Instruct-v0.1 est ajusté de manière supervisée sur un corpus d'amorçage pseudo-anonymisé, de taille volontairement réduite (\SI{4}{\percent} ou \SI{6}{\percent} du corpus source, noté $r_{\text{sft}}$), afin de minimiser l'exposition aux données réelles.
-Troisièmement, le générateur entraîné produit $N=4$ documents candidats par séquence de mots-clés, constituant un corpus synthétique parallèle à MIMIC-III.
+Troisièmement, le générateur entraîné produit $N=4$ documents candidats par séquence de mots-clés, constituant un corpus synthétique parallèle à \mimic{}.
 
 L'évaluation repose sur deux tâches en aval représentatives du TAL clinique : une classification multi-étiquettes CIM-9 à quatre niveaux de granularité croissante (\texttt{class-20}, \texttt{class-50}, \texttt{class-100}, \texttt{class-400}), et une reconnaissance d'entités nommées cliniques.
 La métrique retenue est le Micro-F1, qui reflète la performance globale en présence de distributions en loi de puissance caractéristiques du codage CIM.
@@ -35,5 +35,5 @@ La métrique retenue est le Micro-F1, qui reflète la performance globale en pr�
 \subsection{Résultats : utilité aval}
 
 Les modèles entraînés exclusivement sur le corpus synthétique issu de l'ajustement supervisé initial (noté $D_0$) atteignent déjà des performances proches des données réelles sur \texttt{class-20} (\num{49.8} vs. \num{49.3}), et les dépassent nettement sur les tâches plus granulaires : \num{32.2} vs. \num{23.0} sur \texttt{class-100} et \num{24.2} vs. \num{4.9} sur \texttt{class-400}.
-Ce résultat confirme que les mots-clés UMLS, bien qu'extraits sans accès au texte, transportent une information clinique suffisante pour piloter la génération d'exemples exploitables en entraînement.
+Ce résultat confirme que les mots-clés \gls{umls}, bien qu'extraits sans accès au texte, transportent une information clinique suffisante pour piloter la génération d'exemples exploitables en entraînement.
 L'écart-type des modèles synthétiques est par ailleurs plus faible que celui des modèles réels, traduisant une plus grande stabilité d'entraînement que nous attribuons à la répétition contrôlée des patrons cliniques dans le corpus généré.

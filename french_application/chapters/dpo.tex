@@ -8,13 +8,13 @@
 
 Si la génération fac-similé produit dès la première étape un corpus utile, un écart résiduel subsiste entre les documents synthétiques et les notes réelles, en particulier sur les tâches à fort espace de labels.
 Pour combler cet écart sans relâcher la contrainte de confidentialité, il faut un mécanisme de raffinement qui n'utilise jamais le texte patient comme supervision directe.
-La thèse propose à cet effet une boucle d'alignement par optimisation de préférence directe (DPO), guidée par un scoreur qui opère uniquement sur des comparaisons sémantiques agrégées, sans jamais exposer les documents de référence en dehors de la frontière.
+La thèse propose à cet effet une boucle d'alignement par optimisation de préférence directe (\gls{dpo}), guidée par un scoreur qui opère uniquement sur des comparaisons sémantiques agrégées, sans jamais exposer les documents de référence en dehors de la frontière.
 
-\subsection{Scoreur contrastif privé et boucle DPO}
+\subsection{Scoreur contrastif privé et boucle \gls{dpo}}
 
-Le scoreur repose sur le modèle de phrase \texttt{all-distilroberta-v1} : il calcule un SemScore, soit la similarité sémantique entre un document synthétique candidat et le document réel correspondant, à l'intérieur de la frontière.
+Le scoreur repose sur le modèle de phrase \texttt{all-distilroberta-v1} : il calcule un \score, soit la similarité sémantique entre un document synthétique candidat et le document réel correspondant, à l'intérieur de la frontière.
 Seul le score numérique est exporté.
-Pour chaque séquence de mots-clés, les $N=4$ candidats générés sont ordonnancés par SemScore, produisant des paires (préféré, rejeté) exploitables par DPO.
+Pour chaque séquence de mots-clés, les $N=4$ candidats générés sont ordonnancés par \score, produisant des paires (préféré, rejeté) exploitables par \gls{dpo}.
 Le générateur est ensuite raffiné par deux itérations successives ($D_1$ puis $D_2$), chacune réutilisant le modèle de l'étape précédente pour produire un nouveau lot de candidats.
 Ce protocole transforme ainsi une comparaison privée en un signal d'entraînement public.
 
@@ -31,25 +31,25 @@ Configuration & class-20 & class-50 & class-100 & class-400 \\
 \midrule
 $D_{\text{gold}}$ (réel)               & 49,3 & 33,3 & 23,0 &  4,9 \\
 $D_{\text{gold}} \times 4$ (suréch.)   & \textbf{53,7} & 42,5 & 35,0 & 26,4 \\
-$D_0$ (SFT)                            & 49,9 & 38,5 & 31,0 & 23,9 \\
+$D_0$ (\gls{sft})                            & 49,9 & 38,5 & 31,0 & 23,9 \\
 $D_1$ (DPO-1)                          & 51,2 & 40,7 & 33,7 & 24,5 \\
 $D_2$ (DPO-2)                          & 51,7 & 40,7 & 31,9 & 26,5 \\
 $D_{0,1,2}$ (mélange)                  & 52,4 & \textbf{43,1} & \textbf{37,2} & \textbf{31,0} \\
 \bottomrule
 \end{tabular}
-\caption{Micro-F1 (\%) sur MIMIC-III, $r_{\text{sft}} = \SI{6}{\percent}$.}
+\caption{Micro-F1 (\%) sur \mimic, $r_{\text{sft}} = \SI{6}{\percent}$.}
 \label{tab:mimic-micro-f1}
 \end{table}
 
 Trois observations se dégagent.
-Premièrement, chaque itération DPO améliore le SemScore moyen (\num{67.3} à $D_0$, \num{70.8} à $D_1$, \num{74.4} à $D_2$), confirmant que le signal de récompense, bien que réduit à un scalaire, suffit à guider l'alignement.
+Premièrement, chaque itération \gls{dpo} améliore le \score{} moyen (\num{67.3} à $D_0$, \num{70.8} à $D_1$, \num{74.4} à $D_2$), confirmant que le signal de récompense, bien que réduit à un scalaire, suffit à guider l'alignement.
 Deuxièmement, les gains d'utilité aval sont les plus marqués sur les tâches complexes : \texttt{class-400} bénéficie d'un écart absolu de plus de \num{20} points Micro-F1 par rapport aux données réelles.
 Troisièmement, et de manière contre-intuitive, la meilleure configuration n'est pas $D_2$ seul mais le \emph{mélange} des trois générations $D_{0,1,2}$, qui atteint \num{37.2} sur \texttt{class-100} et \num{31.0} sur \texttt{class-400}.
 Ce résultat suggère que l'alignement itératif enrichit la diversité du corpus synthétique plutôt qu'il ne remplace simplement les générations antérieures : chaque étape apporte des exemples complémentaires, et leur union constitue un ensemble d'entraînement plus robuste que chaque génération prise isolément.
 
 Sur la tâche de reconnaissance d'entités nommées, le mélange $D_{0,1,2}$ atteint \num{61.7} F1 à nombre de tokens annotés équivalent, contre \num{57.0} pour les annotations réelles, démontrant que les gains s'étendent au-delà de la classification.
 
-Ensemble, ces résultats fournissent une réponse empirique positive aux deux questions posées en introduction : les mots-clés UMLS transportent une information clinique suffisante, et un signal de récompense scalaire permet de raffiner itérativement la génération sans compromettre la frontière de confidentialité.
+Ensemble, ces résultats fournissent une réponse empirique positive aux deux questions posées en introduction : les mots-clés \gls{umls} transportent une information clinique suffisante, et un signal de récompense scalaire permet de raffiner itérativement la génération sans compromettre la frontière de confidentialité.
 
 \subsection{Évaluation étendue sur le benchmark AlpaCare}
 \label{subsec:alpacare}
@@ -58,7 +58,7 @@ Afin d'éprouver la généralité de l'approche au-delà des tâches de classifi
 Ce benchmark sert également de référence dans KnowledgeSG \citep{wangKnowledgeSGPrivacyPreservingSynthetic2024}, autorisant une comparaison directe.
 Les conditions expérimentales sont alignées sur celles de KnowledgeSG : même corpus privé de \num{500} exemples, même budget de confidentialité différentielle ($\varepsilon = 8$).
 Notre pipeline génère des questions patients synthétiques à partir de mots-clés médicaux, les réponses étant produites par AlpaCare lui-même.
-Une chaîne de sélection multi-critères est introduite, combinant SemScore, filtrage de domaine médical et juge par modèle de langue, afin de capturer des dimensions de qualité complémentaires.
+Une chaîne de sélection multi-critères est introduite, combinant \score, filtrage de domaine médical et juge par modèle de langue, afin de capturer des dimensions de qualité complémentaires.
 
 Les résultats montrent que notre meilleure variante atteint des taux de préférence comparables à KnowledgeSG face aux évaluateurs les plus récents (GPT-4, Claude-2), tout en le devançant lorsque l'évaluateur le plus ancien (text-davinci-003) est exclu.
 L'amplitude modérée des gains du filtrage multi-critères soulève toutefois une question ouverte : la frontière de confidentialité, en interdisant la comparaison directe aux documents réels, contraint à concevoir des mécanismes de scoring intrinsèques dont la calibration reste un axe de recherche ouvert.
