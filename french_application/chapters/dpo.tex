@@ -54,70 +54,11 @@ Ensemble, ces résultats fournissent une réponse empirique positive aux deux qu
 \subsection{Évaluation étendue sur le benchmark AlpaCare}
 \label{subsec:alpacare}
 
-Afin d'éprouver la généralité de l'approche au-delà des tâches de classification et de reconnaissance d'entités, une seconde campagne d'évaluation est menée sur le benchmark AlpaCare \citep{zhang2023alpacare}, un jeu de données conversationnel médecin-patient au format chatbot.
-Ce choix est motivé par deux considérations.
-D'une part, AlpaCare sert également de modèle professionnel de référence dans KnowledgeSG \citep{wangKnowledgeSGPrivacyPreservingSynthetic2024}, une approche contemporaine partageant avec la nôtre plusieurs traits : pipeline itératif, sélection de candidats, intégration de la confidentialité différentielle.
-Cette convergence méthodologique autorise une comparaison directe sur un terrain d'évaluation commun.
-D'autre part, la tâche de question-réponse médicale diffère nettement des évaluations précédentes (classification documentaire, extraction d'entités) et élargit le spectre de validation de la méthode.
+Afin d'éprouver la généralité de l'approche au-delà des tâches de classification et de reconnaissance d'entités, une seconde campagne d'évaluation est menée sur le benchmark AlpaCare \citep{zhang2023alpacare}, un jeu de données conversationnel médecin-patient.
+Ce benchmark sert également de référence dans KnowledgeSG \citep{wangKnowledgeSGPrivacyPreservingSynthetic2024}, autorisant une comparaison directe.
+Les conditions expérimentales sont alignées sur celles de KnowledgeSG : même corpus privé de \num{500} exemples, même budget de confidentialité différentielle ($\varepsilon = 8$).
+Notre pipeline génère des questions patients synthétiques à partir de mots-clés médicaux, les réponses étant produites par AlpaCare lui-même.
+Une chaîne de sélection multi-critères est introduite, combinant SemScore, filtrage de domaine médical et juge par modèle de langue, afin de capturer des dimensions de qualité complémentaires.
 
-\paragraph{Positionnement par rapport à KnowledgeSG.}
-KnowledgeSG repose sur un schéma client-serveur dans lequel un modèle local, ajusté sur les données privées via DP-SGD, transfère sa connaissance vers un modèle professionnel distant par distillation itérative.
-La confidentialité différentielle y joue un rôle fondateur : elle borne l'influence de chaque exemple d'entraînement par découpage de gradients et injection de bruit, ce qui garantit des sorties provablement préservant la vie privée et autorise la distillation ultérieure.
-Les objectifs des deux boucles itératives diffèrent toutefois nettement.
-Dans KnowledgeSG, l'itération vise à compenser la dégradation induite par le bruit DP par une distillation guidée par l'enseignant.
-Dans notre approche, elle vise à aligner progressivement le générateur vers des documents de meilleure qualité via un signal de similarité sémantique.
-Les échanges avec les auteurs de KnowledgeSG ont par ailleurs révélé qu'en pratique, seule la première itération apporte un gain mesurable dans leur pipeline, les suivantes n'améliorant plus la qualité des générations.
-
-\paragraph{Protocole expérimental.}
-Pour adapter notre pipeline à AlpaCare, nous générons non pas des notes cliniques mais des questions patients synthétiques à partir de mots-clés médicaux extraits du jeu privé, les réponses correspondantes étant produites par AlpaCare lui-même jouant le rôle de modèle professionnel de référence.
-Les paires question-réponse ainsi constituées servent à ajuster un modèle évalué ensuite sur le jeu de test AlpaCare.
-Les conditions expérimentales sont alignées sur celles de KnowledgeSG pour garantir une comparaison équitable : même corpus privé de \num{500} exemples, même budget de confidentialité différentielle ($\varepsilon = 8$) appliqué à l'ajustement supervisé initial, unique itération d'alignement.
-La différence principale réside dans la stratégie de génération et de sélection des candidats.
-KnowledgeSG produit \num{1000} candidats et en retient environ \num{500} par seuil de similarité cosinus, tandis que notre pipeline en génère \num{5000} et en sélectionne \num{1500} selon un classement combinant SemScore et critères multiples.
-
-\paragraph{Stratégies de sélection multi-critères.}
-Les expériences sur MIMIC-III suggéraient que SemScore seul pouvait laisser de côté certaines dimensions de qualité des documents synthétiques.
-Une chaîne de filtrage à deux étages est donc introduite pour la campagne AlpaCare.
-Le premier étage reprend le filtre de domaine médical de KnowledgeSG, qui écarte les générations s'éloignant du registre clinique (dérives hors-sujet, vocabulaire non médical).
-Ce filtre agit comme une porte de qualité grossière et peu coûteuse, réduisant le volume de candidats avant les évaluations plus lourdes.
-Le second étage exploite un modèle de langue comme juge (\emph{LLM-as-judge}) \citep{archit2024criticalevaluation,lee2024selfjudge}, instruit par une consigne explicite à noter chaque candidat sur une échelle de 1 à 5 selon sa cohérence clinique, sa plausibilité factuelle, et son adéquation aux normes de documentation médicale.
-Contrairement à SemScore, ce juge évalue chaque document de manière intrinsèque, sans référence à un document réel correspondant, ce qui convient particulièrement à un contexte préservant la confidentialité.
-Les scores issus de ces deux mécanismes sont ensuite combinés à SemScore pour produire le classement final des candidats.
-
-\paragraph{Résultats et analyse.}
-Le tableau~\ref{tab:alpacare-fr} rapporte les taux de préférence (\emph{win rates}) obtenus par comparaison par paires avec quatre modèles de référence (text-davinci-003, GPT-3.5-turbo, GPT-4, Claude-2), selon le protocole d'évaluation d'AlpaCare.
-
-\begin{table}[htbp]
-\centering
-\small
-\begin{tabular}{lccc}
-\toprule
-Méthode & Moyenne & Moy.\ sans davinci & vs.\ GPT-4 \\
-\midrule
-DP-Instruct-ICL                       & 0,266 & 0,227 & 0,187 \\
-AlpaCare (référence)                  & 0,536 & 0,492 & 0,474 \\
-KnowledgeSG                           & \textbf{0,562} & 0,492 & 0,457 \\
-\midrule
-SynthKG + DPO (SemScore seul)         & 0,513 & 0,483 & 0,478 \\
-SynthKG + KTO (SemScore seul)         & 0,521 & 0,485 & 0,476 \\
-SynthKG + DPO (filtres + juge)        & 0,528 & 0,485 & 0,470 \\
-SynthKG + KTO (filtres + juge)        & 0,540 & \textbf{0,498} & \textbf{0,492} \\
-\bottomrule
-\end{tabular}
-\caption{Taux de préférence sur le benchmark AlpaCare. La colonne « Moy.\ sans davinci » exclut l'évaluateur text-davinci-003, le plus ancien des quatre juges.}
-\label{tab:alpacare-fr}
-\end{table}
-
-Trois constats se dégagent.
-Premièrement, l'ensemble des variantes de notre pipeline dépasse largement DP-Instruct-ICL (\num{0.266} en moyenne), qui représente selon la littérature l'état de l'art des méthodes traditionnelles de confidentialité différentielle appliquées à la génération de texte.
-Deuxièmement, l'ajout du filtrage médical et du juge par modèle de langue améliore systématiquement la sélection des candidats par rapport à SemScore seul : la variante DP-SFT + KTO gagne près de deux points en moyenne (\num{0.521} à \num{0.540}), confirmant que les critères multi-facettes capturent des dimensions de qualité complémentaires, même si le gain reste d'ampleur modérée.
-Troisièmement, si KnowledgeSG obtient la meilleure moyenne globale (\num{0.562}), cet avantage est concentré sur un unique évaluateur : text-davinci-003, où KnowledgeSG atteint un taux de préférence exceptionnellement élevé de \num{0.776}.
-Lorsque cet évaluateur ancien et de plus petite taille est exclu du calcul, le classement s'inverse : notre meilleure variante (DP-SFT + KTO) atteint \num{0.498}, devançant à la fois KnowledgeSG et AlpaCare (\num{0.492} chacun).
-Face à GPT-4 et Claude-2 spécifiquement, cette variante obtient respectivement \num{0.492} et \num{0.490}, contre \num{0.457} et \num{0.488} pour KnowledgeSG.
-Ces chiffres suggèrent que notre approche présente une meilleure robustesse face à des évaluateurs récents et plus puissants, propriété souhaitable dans une perspective de déploiement à long terme.
-
-L'amplitude limitée des gains apportés par le filtrage multi-critères soulève toutefois une question ouverte sur le rapport coût-bénéfice de mécanismes d'évaluation plus complexes.
-Deux hypothèses sont formulées.
-D'une part, la phase d'amorçage supervisé pourrait manquer de diversité, limitant le bénéfice marginal de stratégies de sélection plus raffinées.
-D'autre part, les juges généralistes peinent peut-être à fournir un signal suffisamment discriminant pour du texte conversationnel médical, et des critères d'évaluation spécifiques au domaine clinique mériteraient d'être explorés.
-Ces interrogations rejoignent un constat plus général de la thèse : la frontière de confidentialité, en interdisant la comparaison directe aux documents réels, contraint à concevoir des mécanismes de scoring intrinsèques, dont la calibration précise reste un axe de recherche ouvert.
+Les résultats montrent que notre meilleure variante atteint des taux de préférence comparables à KnowledgeSG face aux évaluateurs les plus récents (GPT-4, Claude-2), tout en le devançant lorsque l'évaluateur le plus ancien (text-davinci-003) est exclu.
+L'amplitude modérée des gains du filtrage multi-critères soulève toutefois une question ouverte : la frontière de confidentialité, en interdisant la comparaison directe aux documents réels, contraint à concevoir des mécanismes de scoring intrinsèques dont la calibration reste un axe de recherche ouvert.

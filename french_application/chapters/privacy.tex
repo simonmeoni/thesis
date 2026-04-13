@@ -24,76 +24,41 @@ L'évaluation porte sur deux corpus : MIMIC-III (notes cliniques, $r_{\text{sft}
 
 \subsection{Résultats : risques de réidentification}
 
-Le tableau~\ref{tab:privacy-baseline} rapporte les taux de succès des attaques sur les documents synthétiques de base (sans atténuation).
+Le tableau~\ref{tab:privacy-combined} rapporte les taux de succès des attaques sur les documents synthétiques, avant et après perturbation des mots-clés UMLS.
 
 \begin{table}[htbp]
 \centering
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{llcccc}
 \toprule
- & \multicolumn{2}{c}{\textbf{Liaison}} & \multicolumn{2}{c}{\textbf{Discrimination}} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-\textbf{Corpus} & TF-IDF & Sémant. & TF-IDF & Sémant. \\
+ & & \multicolumn{2}{c}{\textbf{Liaison}} & \multicolumn{2}{c}{\textbf{Discrimination}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+\textbf{Corpus} & \textbf{Condition} & TF-IDF & Sémant. & TF-IDF & Sémant. \\
 \midrule
-MIMIC-III 4\,\% DPO-2 & 85,9 & 59,5 & 99,7 & 99,3 \\
-MIMIC-III 6\,\% DPO-2 & \textbf{89,7} & 55,7 & \textbf{100,0} & 99,3 \\
-AlpaCare DPO-1         & 77,9 & \textbf{82,0} & 98,4 & \textbf{99,9} \\
+\multirow{2}{*}{MIMIC-III 6\,\%}
+    & Base        & 89,7 & 55,7 & 100,0 & 99,3 \\
+    & Perturbé    & 30,7 \scriptsize(-59) & 29,6 \scriptsize(-26) & 94,6 \scriptsize(-5) & 98,7 \scriptsize(-1) \\
+\midrule
+\multirow{2}{*}{AlpaCare}
+    & Base        & 77,9 & 82,0 & 98,4 & 99,9 \\
+    & Perturbé    & 14,4 \scriptsize(-63) & 44,4 \scriptsize(-38) & 86,7 \scriptsize(-12) & 99,6 \scriptsize(-0,3) \\
 \bottomrule
 \end{tabular}
-\caption{Taux de succès (\%) des attaques par liaison et de discrimination sur les documents synthétiques, sans atténuation.}
-\label{tab:privacy-baseline}
+\caption{Taux de succès (\%) des attaques par liaison et de discrimination, avant et après perturbation des mots-clés UMLS. Les chiffres entre parenthèses indiquent la réduction en points de pourcentage.}
+\label{tab:privacy-combined}
 \end{table}
 
-Les résultats révèlent des vulnérabilités significatives.
-Les attaques par liaison atteignent \SIrange{78}{90}{\percent} en TF-IDF et \SIrange{56}{82}{\percent} en sémantique, bien au-dessus du hasard.
-Les attaques de discrimination frôlent le taux maximal (\SIrange{98}{100}{\percent}), indiquant que les documents synthétiques conservent des empreintes patient très distinctives.
-
-Le vecteur de fuite diffère selon le corpus.
-Sur MIMIC-III, la similarité lexicale (TF-IDF) domine nettement la sémantique (\SI{86}{\percent} à \SI{90}{\percent} contre \SI{56}{\percent} à \SI{59}{\percent}), indiquant que les patrons terminologiques médicaux constituent le canal principal de fuite.
-Sur AlpaCare, la tendance s'inverse : la similarité sémantique (\SI{82}{\percent}) dépasse la lexicale (\SI{78}{\percent}), le contenu conversationnel fuyant davantage par le sens que par le vocabulaire.
-
-Un résultat contre-intuitif émerge de la comparaison entre les étapes de génération.
-Sur AlpaCare, le modèle ajusté par DP-SFT seul (sans DPO) présente un taux de liaison de seulement \SI{14}{\percent}, contre \SI{78}{\percent} après DPO-1.
-L'alignement par préférence, en poussant le générateur à maximiser la similarité aux documents réels, amplifie les empreintes patient dans les documents synthétiques.
-Ce phénomène constitue un arbitrage fondamental : le DPO améliore l'utilité aval mais aggrave le risque de réidentification.
+Les résultats révèlent des vulnérabilités significatives sur les documents de base.
+Les attaques par liaison atteignent \SIrange{78}{90}{\percent} en TF-IDF, bien au-dessus du hasard, et les attaques de discrimination frôlent le taux maximal (\SIrange{98}{100}{\percent}).
+Le vecteur de fuite diffère selon le corpus : sur MIMIC-III, la similarité lexicale domine, indiquant que les patrons terminologiques constituent le canal principal de fuite ; sur AlpaCare, la similarité sémantique prévaut.
+Un résultat contre-intuitif émerge : l'alignement par préférence amplifie les empreintes patient (taux de liaison passant de \SI{14}{\percent} après ajustement supervisé seul à \SI{78}{\percent} après DPO sur AlpaCare), révélant un arbitrage fondamental entre utilité aval et risque de réidentification.
 
 \subsection{Stratégies d'atténuation}
 
 Deux stratégies de post-traitement sont évaluées.
-
-La première, la \emph{reformulation standard}, consiste à paraphraser les documents synthétiques par un grand modèle de langue généraliste.
-Elle réduit le risque de liaison de \SIrange{2}{5}{pp} sur MIMIC-III et de \SIrange{12}{24}{pp} sur AlpaCare, mais les attaques de discrimination restent quasi-intactes (\SIrange{97}{100}{\percent}).
-La reformulation introduit une variabilité lexicale de surface sans modifier le contenu sémantique sous-jacent.
-
-La seconde, la \emph{perturbation des mots-clés UMLS}, cible directement la cause identifiée de la fuite : la combinaison distinctive de mots-clés qui encode l'empreinte patient.
-Chaque mot-clé est remplacé par un synonyme issu de l'ontologie UMLS, perturbant l'empreinte lexicale tout en préservant la cohérence médicale.
-Les résultats sont présentés dans le tableau~\ref{tab:privacy-mitigation}.
-
-\begin{table}[htbp]
-\centering
-\small
-\begin{tabular}{lcccc}
-\toprule
- & \multicolumn{2}{c}{\textbf{Liaison}} & \multicolumn{2}{c}{\textbf{Discrimination}} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-\textbf{Corpus} & TF-IDF & Sémant. & TF-IDF & Sémant. \\
-\midrule
-MIMIC-III 4\,\% & 28,9 \scriptsize(-57) & 30,2 \scriptsize(-29) & 91,1 \scriptsize(-9) & 97,3 \scriptsize(-2) \\
-MIMIC-III 6\,\% & 30,7 \scriptsize(-59) & 29,6 \scriptsize(-26) & 94,6 \scriptsize(-5) & 98,7 \scriptsize(-1) \\
-AlpaCare         & 14,4 \scriptsize(-63) & 44,4 \scriptsize(-38) & 86,7 \scriptsize(-12) & 99,6 \scriptsize(-0,3) \\
-\bottomrule
-\end{tabular}
-\caption{Taux de succès (\%) après perturbation des mots-clés UMLS. Les chiffres entre parenthèses indiquent la réduction en points de pourcentage par rapport au tableau~\ref{tab:privacy-baseline}.}
-\label{tab:privacy-mitigation}
-\end{table}
-
-La perturbation des mots-clés réduit massivement le risque de liaison : \SIrange{57}{63}{pp} en TF-IDF et \SIrange{26}{38}{pp} en sémantique.
-Sur MIMIC-III, le taux de liaison TF-IDF chute de \SI{86}{\percent}--\SI{90}{\percent} à \SI{29}{\percent}--\SI{31}{\percent}, approchant le niveau de hasard.
-Sur AlpaCare, la réduction atteint \SI{63}{pp}, ramenant le taux à \SI{14}{\percent}.
-Les attaques de discrimination, bien que réduites (\SIrange{87}{99}{\percent}), restent élevées : les paires de documents demeurent distinguables même après perturbation, mais l'attribution globale à un patient source devient difficile.
-
-L'arbitrage utilité/confidentialité est favorable.
-Sur AlpaCare, la perturbation des mots-clés ne dégrade l'utilité aval que de \SI{1,3}{\percent}, pour une réduction de liaison de \SI{63}{pp}, un ratio nettement supérieur à la reformulation standard (\SI{2,2}{\percent} de perte d'utilité pour seulement \SI{24}{pp} de réduction).
+La \emph{reformulation standard} (paraphrase par un grand modèle de langue) réduit modérément le risque de liaison (\SIrange{2}{24}{pp}) sans affecter les attaques de discrimination.
+La \emph{perturbation des mots-clés UMLS}, qui remplace chaque mot-clé par un synonyme issu de l'ontologie, cible directement la cause identifiée de la fuite.
+Cette stratégie réduit massivement le risque de liaison (\SIrange{57}{63}{pp} en TF-IDF), ramenant les taux proches du hasard, pour une perte d'utilité aval marginale (\SI{1,3}{\percent} sur AlpaCare).
 
 \subsection{Comparaison à KnowledgeSG}
 

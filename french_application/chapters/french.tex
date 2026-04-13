@@ -47,32 +47,21 @@ Ce scoreur à deux facettes fournit un signal d'entraînement plus riche, ce qui
 La qualité des documents synthétiques est évaluée par une tâche de classification multi-étiquettes CIM-10 avec un classifieur ModernBERT-large, entraîné exclusivement sur données synthétiques et évalué sur le jeu de test réel.
 Trois tailles de corpus (\num{10000}, \num{20000}, \num{50000} documents) et trois niveaux de granularité (top-20, top-50, top-100 codes les plus fréquents) sont explorés.
 La métrique retenue est le macro F1.
-Le tableau~\ref{tab:french-results} rapporte les résultats complets.
+Le tableau~\ref{tab:french-results} rapporte les résultats pour \num{20000} documents ; les tendances sont similaires aux autres tailles, avec des performances croissant avec le volume de données.
 
 \begin{table}[htbp]
 \centering
 \small
-\begin{tabular}{llccccr}
+\begin{tabular}{lccccr}
 \toprule
-\textbf{Corpus} & \textbf{Top-$k$} & \textbf{Step0} & \textbf{DPO1} & \textbf{DPO2} & \textbf{DPO3} & \textbf{Gain} \\
+\textbf{Top-$k$} & \textbf{Step0} & \textbf{DPO1} & \textbf{DPO2} & \textbf{DPO3} & \textbf{Gain} \\
 \midrule
-\multirow{3}{*}{10K}
-    & 20  & 0,389 & \textbf{0,422} & 0,422 & 0,418 & +7,4\,\% \\
-    & 50  & 0,250 & 0,294 & 0,302 & \textbf{0,317} & +26,9\,\% \\
-    & 100 & 0,175 & 0,197 & 0,202 & \textbf{0,238} & +36,5\,\% \\
-\midrule
-\multirow{3}{*}{20K}
-    & 20  & 0,438 & \textbf{0,457} & 0,448 & 0,447 & +2,1\,\% \\
-    & 50  & 0,299 & 0,326 & 0,334 & \textbf{0,347} & +16,2\,\% \\
-    & 100 & 0,195 & 0,230 & 0,210 & \textbf{0,285} & +45,8\,\% \\
-\midrule
-\multirow{3}{*}{50K}
-    & 20  & 0,445 & \textbf{0,461} & 0,461 & 0,455 & +2,3\,\% \\
-    & 50  & 0,326 & 0,351 & \textbf{0,385} & 0,383 & +17,6\,\% \\
-    & 100 & 0,230 & 0,268 & 0,300 & \textbf{0,316} & +37,2\,\% \\
+20  & 0,438 & \textbf{0,457} & 0,448 & 0,447 & +2,1\,\% \\
+50  & 0,299 & 0,326 & 0,334 & \textbf{0,347} & +16,2\,\% \\
+100 & 0,195 & 0,230 & 0,210 & \textbf{0,285} & +45,8\,\% \\
 \bottomrule
 \end{tabular}
-\caption{Macro F1 sur la classification CIM-10 multi-étiquettes (données françaises AP-HP). Le gain relatif est calculé par rapport à Step0 (ajustement supervisé seul, sans DPO).}
+\caption{Macro F1 sur la classification CIM-10 multi-étiquettes (données françaises AP-HP, \num{20000} documents). Le gain relatif est calculé par rapport à Step0 (ajustement supervisé seul, sans DPO).}
 \label{tab:french-results}
 \end{table}
 

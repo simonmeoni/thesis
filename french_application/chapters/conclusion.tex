@@ -22,27 +22,26 @@ ressources : classes minoritaires, pathologies rares, contextes institutionnels 
 manuelle est prohibitive. La complexité de la tâche module l'ampleur du bénéfice : les
 tâches de classification fine (CIM-9 top-100, CIM-10 top-100) bénéficient davantage de
 l'alignement itératif que les tâches plus simples. Sur le français, le scoreur composite
-(BioLORD + LLM-juge) produit des gains relatifs allant jusqu'à \SI{37}{\percent} sur les
+(BioLORD + juge par modèle de langue) produit des gains relatifs marqués sur les
 labels rares, confirmant l'importance du signal de récompense.
 
 Concernant l'annotation faible (Q3), les grands modèles de langue constituent des
 annotateurs compétents, particulièrement précieux pour les langues faiblement dotées
 comme le basque. Leurs erreurs sont complémentaires de celles des approches
-dictionnaires : recall large mais sur-extraction d'un côté, précision étroite de l'autre. La
+dictionnaires : rappel large mais sur-extraction d'un côté, précision étroite de l'autre. La
 stratégie de supervision hybride, qui mélange ces deux sources d'annotations à un ratio
 optimisé par langue, surpasse chacune prise isolément. La distillation vers des modèles
 encodeurs locaux préserve la souveraineté des données et s'avère souvent supérieure à
-l'inférence directe du grand modèle, grâce au filtrage implicite des erreurs LLM.
+l'inférence directe du grand modèle, grâce au filtrage implicite des erreurs de ce dernier.
 
 Enfin, sur la vie privée (Q4), la thèse apporte un constat lucide : la génération synthétique
-\textit{réduit} mais n'\textit{élimine} pas les risques de réidentification. Les attaques de
-discrimination atteignent \SIrange{89}{96}{\percent} de succès sur les documents de base,
-et les attaques par liaison \SIrange{45}{52}{\percent}, bien au-dessus du hasard. La cause
-identifiée est la combinaison distinctive de mots-clés UMLS qui encode une empreinte
-patient. De manière contre-intuitive, l'alignement DPO amplifie ce risque par rapport au
-SFT seul. La perturbation ciblée des mots-clés (remplacement par synonymes d'ontologie)
-réduit le risque de liaison de \SI{37}{\percent} absolus pour seulement \SI{3}{\percent} de
-perte d'utilité aval, offrant un compromis déployable en pratique.
+\textit{réduit} mais n'\textit{élimine} pas les risques de réidentification. Les attaques par
+liaison et de discrimination révèlent des vulnérabilités significatives, bien au-dessus du
+hasard. La cause identifiée est la combinaison distinctive de mots-clés UMLS qui encode
+une empreinte patient. De manière contre-intuitive, l'alignement par préférence directe amplifie
+ce risque par rapport à l'ajustement supervisé seul. La perturbation ciblée des mots-clés
+(remplacement par synonymes d'ontologie) réduit substantiellement le risque de liaison pour
+une perte d'utilité aval marginale, offrant un compromis déployable en pratique.
 
 \subsection{Limites et arbitrage utilité/confidentialité}
 
