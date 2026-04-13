@@ -31,44 +31,42 @@ Ce schéma de distillation présente un double avantage pratique : les modèles 
 
 \subsection{Résultats multilingues}
 
-Le tableau~\ref{tab:weak-results} rapporte le F1 sur le jeu de test \emph{gold} pour chaque langue, en fonction du ratio de mélange.
+Le tableau~\ref{tab:weak-results} rapporte le F1 sur le jeu de test \emph{gold} pour chaque langue, selon la source de supervision.
 
 \begin{table}[htbp]
 \centering
 \small
-\begin{tabular}{lccccc}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Langue} & \textbf{Modèle} & \textbf{$r_{\text{mix}}^*$} & \textbf{F1 ($r\!=\!0$)} & \textbf{F1 ($r^*$)} & \textbf{F1 ($r\!=\!1$)} \\
+\textbf{Langue} & \textbf{Modèle} & \textbf{F1 (dict)} & \textbf{F1 (LLM)} \\
 \midrule
-Anglais  & Bio\_ClinicalBERT     & 0,6 & 0,66 & \textbf{0,72} & 0,68 \\
-Espagnol & BSC-LT biomedical-es  & 0,4 & 0,72 & \textbf{0,79} & 0,78 \\
-Français & CamemBERT             & 0,5 & 0,75 & \textbf{0,76} & 0,74 \\
-Italien  & dbmdz                 & 0,8 & 0,74 & \textbf{0,75} & 0,73 \\
-Basque   & berteus               & 1,0 & 0,54 & --- & \textbf{0,60} \\
+Anglais  & Bio\_ClinicalBERT     & \textbf{0,68} & 0,66 \\
+Espagnol & BSC-LT biomedical-es  & \textbf{0,78} & 0,72 \\
+Français & CamemBERT             & 0,69 & \textbf{0,75} \\
+Italien  & dbmdz                 & 0,73 & \textbf{0,74} \\
+Basque   & berteus               & 0,54 & \textbf{0,60} \\
 \bottomrule
 \end{tabular}
-\caption{F1 sur le jeu de test \emph{gold} E3C par langue. $r_{\text{mix}}^*$ désigne le ratio optimal ; $r\!=\!0$ correspond à la supervision par dictionnaire seul, $r\!=\!1$ au grand modèle de langue seul.}
+\caption{F1 sur le jeu de test \emph{gold} E3C par langue et meilleur modèle encodeur. « Dict » ($r_{\text{mix}} = 0$) : supervision par dictionnaire UMLS seul ; « LLM » ($r_{\text{mix}} = 1$) : supervision par InstructGPT seul.}
 \label{tab:weak-results}
 \end{table}
 
 Trois observations se dégagent.
 
-Premièrement, pour quatre langues sur cinq, l'optimum se situe dans l'intervalle $r_{\text{mix}} \in [0{,}4 ; 0{,}8]$, confirmant que le mélange des deux sources de supervision apporte un gain de diversité supérieur à chacune prise isolément.
-En anglais, le passage de $r_{\text{mix}} = 0$ à $r_{\text{mix}} = 0{,}6$ fait passer le F1 de \num{0,66} à \num{0,72}, soit un gain absolu de six points.
-En espagnol, le gain atteint sept points (\num{0,72} à \num{0,79}).
+Premièrement, la supervision par grand modèle de langue est la plus bénéfique pour les langues où les ressources terminologiques structurées font défaut.
+En basque, le lexique UMLS est extrêmement pauvre : sur le corpus d'entraînement, le dictionnaire n'extrait que \num{63} tokens I\_clin, contre \num{482} pour InstructGPT.
+Le modèle distillé depuis les annotations du grand modèle de langue atteint un F1 de \num{0,60}, contre \num{0,54} pour le dictionnaire.
+En français et en italien, la supervision par grand modèle de langue domine également, avec des F1 de \num{0,75} et \num{0,74} respectivement.
+À l'inverse, pour l'anglais et l'espagnol, langues richement dotées en ressources terminologiques, la supervision par dictionnaire est supérieure (\num{0,68} vs. \num{0,66} en anglais, \num{0,78} vs. \num{0,72} en espagnol).
 
-Deuxièmement, le basque constitue un cas limite révélateur.
-Le lexique UMLS basque est extrêmement pauvre : sur le corpus d'entraînement, le dictionnaire n'extrait que \num{63} tokens I\_clin, contre \num{482} pour InstructGPT.
-L'optimum à $r_{\text{mix}} = 1$ reflète cette indigence lexicale : le dictionnaire apporte si peu d'annotations que toute dilution des annotations du grand modèle de langue dégrade la performance.
-Ce résultat illustre la valeur particulière des grands modèles de langue pour les langues faiblement dotées, où les ressources terminologiques structurées font défaut.
+Deuxièmement, le mélange des deux sources de supervision améliore les résultats pour quatre langues sur cinq.
+L'optimum se situe dans l'intervalle $r_{\text{mix}} \in [0{,}4 ; 0{,}6]$, confirmant que les erreurs complémentaires des deux sources (sous-extraction du dictionnaire, sur-extraction du grand modèle de langue) se compensent dans le modèle distillé.
+Le basque constitue l'exception : l'optimum est atteint à $r_{\text{mix}} = 1$ (grand modèle de langue seul), le dictionnaire étant si lacunaire que ses annotations ne font que diluer le signal utile.
 
 Troisièmement, la distillation vers un modèle encodeur local surpasse dans certains cas l'inférence directe du grand modèle de langue.
 Sur l'italien, le modèle distillé atteint un F1 de \num{0,75}, contre \num{0,63} pour InstructGPT en inférence directe, soit un gain de douze points.
 Ce résultat, apparemment paradoxal, s'explique par le filtrage implicite des erreurs du grand modèle de langue lors de l'entraînement supervisé : le modèle encodeur apprend les régularités du corpus annoté tout en lissant le bruit ponctuel.
 En revanche, sur l'anglais et l'espagnol, l'inférence directe reste légèrement supérieure, suggérant que la qualité de la distillation dépend de l'adéquation entre le modèle encodeur et la langue cible.
-
-L'étude de cas détaillée sur le français apporte un éclairage complémentaire : à $r_{\text{mix}} = 0{,}5$, le modèle CamemBERT atteint un F1 de \num{0,76} avec une précision de \num{0,73} et un rappel de \num{0,81}.
-L'écart réduit entre précision et rappel confirme l'effet de rééquilibrage apporté par le mélange des deux supervisions.
 
 Enfin, les modèles multilingues (XLM-RoBERTa) se révèlent systématiquement inférieurs aux modèles monolingues, sauf marginalement sur l'italien.
 Ce résultat indique que, pour la NER clinique, le bruit introduit par la diversité linguistique l'emporte sur les bénéfices du transfert inter-langues, et que des modèles spécialisés par langue restent préférables lorsque les ressources le permettent.
