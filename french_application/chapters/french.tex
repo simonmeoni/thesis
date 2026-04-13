@@ -11,7 +11,7 @@
 Les expériences décrites dans les sections précédentes ont été menées sur MIMIC-III, un corpus anglophone de soins intensifs issu d'un hôpital universitaire américain.
 Une question naturelle se pose : la méthodologie fac-similé transfère-t-elle à une autre langue, un autre système de codage et un autre contexte institutionnel ?
 Pour y répondre, une collaboration avec l'Assistance Publique -- Hôpitaux de Paris (AP-HP) a permis d'appliquer le pipeline de génération à des rapports cliniques français.
-Ce travail a été réalisé par Riccardo Tripodi dans le cadre de son mémoire de master au Politecnico di Milano.
+Ce travail a été mené par Riccardo Tripodi dans le cadre de son mémoire de master au Politecnico di Milano, sous la supervision de l'auteur de cette thèse.
 
 Le contexte français présente plusieurs spécificités.
 Premièrement, la rédaction clinique française obéit à des conventions narratives et terminologiques distinctes de l'anglais.
@@ -29,27 +29,57 @@ L'évaluation finale repose sur un jeu de test strictement disjoint, constitué 
 
 \subsection{Adaptation du pipeline de génération}
 
-Le générateur retenu est Qwen3-4B-Instruct, choisi pour ses capacités multilingues supérieures à Mistral-7B sur le français.
+Le générateur retenu est Qwen3-4B-Instruct, un modèle distinct de MedGemma utilisé pour l'amorçage, choisi pour ses capacités multilingues supérieures à Mistral-7B sur le français.
 L'ajustement fin s'effectue par LoRA (rang $r=32$, facteur d'échelle $\alpha=64$) sur toutes les projections d'attention.
-Le protocole comporte un ajustement supervisé initial suivi de \emph{trois} itérations DPO (contre deux sur MIMIC-III), chacune générant $N=4$ candidats par séquence de mots-clés selon une stratégie de températures mixtes : un échantillon à $\tau = 0{,}2$ pour la cohérence, et trois à $\tau \sim \mathcal{U}(0{,}6 ; 0{,}9)$ pour la diversité.
+Le protocole comporte un ajustement supervisé initial sur les \num{20000} documents d'amorçage, suivi de \emph{trois} itérations DPO (contre deux sur MIMIC-III).
+Lors de chaque itération, les mots-clés servant de prompts de génération sont extraits des rapports fictifs de référence par QuickUMLS, et non de documents patients réels comme dans le pipeline MIMIC-III.
+Pour chaque séquence de mots-clés, $N=4$ candidats sont générés selon une stratégie de températures mixtes : un échantillon à $\tau = 0{,}2$ pour la cohérence, et trois à $\tau \sim \mathcal{U}(0{,}6 ; 0{,}9)$ pour la diversité.
 
-Le mécanisme de scoring diffère également.
-Le SemScore seul, utilisé sur MIMIC-III, est remplacé par un score composite à deux facettes.
+Le mécanisme de scoring diffère également de celui utilisé sur MIMIC-III.
+Le SemScore seul est remplacé par un score composite à deux facettes.
 La première composante mesure la similarité cosinus via BioLORD-2023-M, un modèle d'embeddings médicaux intégrant un graphe de connaissances clinique.
 La seconde composante fait appel à Qwen3-30B-A3B-Instruct en tant que juge par modèle de langue, évaluant la correction médicale et l'alignement au contenu de la référence.
 Le score final est la moyenne simple des deux composantes : $S_{\text{composite}} = 0{,}5 \cdot S_{\text{similarité}} + 0{,}5 \cdot S_{\text{juge}}$.
-Ce scoreur à deux facettes fournit un signal d'entraînement plus riche que le SemScore seul, ce qui se traduit par des gains d'alignement plus marqués.
+Ce scoreur à deux facettes fournit un signal d'entraînement plus riche, ce qui se traduit par des gains d'alignement plus marqués.
 
 \subsection{Résultats et preuve de généralisation}
 
 La qualité des documents synthétiques est évaluée par une tâche de classification multi-étiquettes CIM-10 avec un classifieur ModernBERT-large, entraîné exclusivement sur données synthétiques et évalué sur le jeu de test réel.
 Trois tailles de corpus (\num{10000}, \num{20000}, \num{50000} documents) et trois niveaux de granularité (top-20, top-50, top-100 codes les plus fréquents) sont explorés.
 La métrique retenue est le macro F1.
+Le tableau~\ref{tab:french-results} rapporte les résultats complets.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{llccccr}
+\toprule
+\textbf{Corpus} & \textbf{Top-$k$} & \textbf{Step0} & \textbf{DPO1} & \textbf{DPO2} & \textbf{DPO3} & \textbf{Gain} \\
+\midrule
+\multirow{3}{*}{10K}
+    & 20  & 0,389 & \textbf{0,422} & 0,422 & 0,418 & +7,4\,\% \\
+    & 50  & 0,250 & 0,294 & 0,302 & \textbf{0,317} & +26,9\,\% \\
+    & 100 & 0,175 & 0,197 & 0,202 & \textbf{0,238} & +36,5\,\% \\
+\midrule
+\multirow{3}{*}{20K}
+    & 20  & 0,438 & \textbf{0,457} & 0,448 & 0,447 & +2,1\,\% \\
+    & 50  & 0,299 & 0,326 & 0,334 & \textbf{0,347} & +16,2\,\% \\
+    & 100 & 0,195 & 0,230 & 0,210 & \textbf{0,285} & +45,8\,\% \\
+\midrule
+\multirow{3}{*}{50K}
+    & 20  & 0,445 & \textbf{0,461} & 0,461 & 0,455 & +2,3\,\% \\
+    & 50  & 0,326 & 0,351 & \textbf{0,385} & 0,383 & +17,6\,\% \\
+    & 100 & 0,230 & 0,268 & 0,300 & \textbf{0,316} & +37,2\,\% \\
+\bottomrule
+\end{tabular}
+\caption{Macro F1 sur la classification CIM-10 multi-étiquettes (données françaises AP-HP). Le gain relatif est calculé par rapport à Step0 (ajustement supervisé seul, sans DPO).}
+\label{tab:french-results}
+\end{table}
 
 Les résultats confirment les tendances observées sur MIMIC-III, avec des gains quantitatifs nettement supérieurs.
-Sur les \num{20000} documents à top-100, DPO3 atteint un macro F1 de \num{0.285} contre \num{0.195} pour l'ajustement supervisé seul, soit un gain relatif de \SI{+45.8}{\percent}.
-Sur les \num{50000} documents à top-50, DPO2 atteint \num{0.385} contre \num{0.326} pour la ligne de base (\SI{+17.6}{\percent}).
+Le gain relatif maximal atteint \SI{+45,8}{\percent} sur \num{20000} documents à top-100 (macro F1 passant de \num{0,195} à \num{0,285}).
 Le schéma selon lequel les itérations DPO supplémentaires bénéficient davantage aux tâches complexes se reproduit fidèlement : pour top-20, une seule itération DPO suffit (les suivantes plafonnent ou dégradent légèrement), tandis que pour top-100, DPO3 est systématiquement le meilleur.
+L'effet d'échelle est cohérent : les modèles entraînés sur \num{50000} documents surpassent systématiquement ceux entraînés sur \num{20000} et \num{10000}.
 
 La comparaison inter-lingue révèle des gains français nettement plus élevés que sur MIMIC-III (\SI{+36}{\percent} à \SI{+46}{\percent} sur top-100 contre \SI{+3}{\percent} à \SI{+6}{\percent} en anglais).
 Cette différence est principalement attribuée au scoreur composite, qui fournit un signal de préférence plus informatif que le SemScore seul.
@@ -57,4 +87,4 @@ Des facteurs secondaires peuvent contribuer : la meilleure réponse de Qwen3-4B 
 
 Deux résultats méritent d'être soulignés.
 D'une part, même le plus petit corpus (\num{10000} documents avec DPO3) atteint des performances compétitives, ce qui indique que la qualité de génération peut partiellement compenser un volume de données limité.
-D'autre part, le découplage total vis-à-vis des données réelles dans le corpus d'amorçage constitue une avancée pratique significative : il démontre qu'un pipeline de génération fac-similé peut fonctionner sans aucun accès à des documents patients, en s'appuyant uniquement sur des associations ontologiques entre codes et mots-clés.
+D'autre part, le découplage total vis-à-vis des données réelles, tant dans le corpus d'amorçage que dans la source des mots-clés DPO, constitue une avancée pratique significative : il démontre qu'un pipeline de génération fac-similé peut fonctionner sans aucun accès à des documents patients, en s'appuyant uniquement sur des associations ontologiques entre codes et mots-clés et sur des rapports fictifs rédigés par des praticiens.
