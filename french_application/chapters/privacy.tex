@@ -7,15 +7,103 @@
 % Source : sources/chapters/synthetic_generation_improvements.tex (malgré son nom, ce fichier est le chapitre Vie privée)
 
 \subsection{Modèle de menace et protocoles d'attaque}
-% Attaques par liaison TF-IDF, attaques de proximité, discrimination
+
+Les chapitres précédents ont établi que les documents fac-similé sont utiles pour l'entraînement de modèles de TAL clinique.
+Reste à quantifier le risque résiduel de réidentification : dans quelle mesure un adversaire peut-il relier un document synthétique à son patient source ?
+Cette question est d'autant plus critique que l'approche fac-similé, par construction, ancre chaque document synthétique dans un ensemble de mots-clés extraits d'un patient réel.
+
+Deux scénarios d'attaque sont considérés.
+L'\emph{attaque par liaison} (1-vs-$N$) simule un adversaire qui tente d'attribuer chaque document synthétique à son patient source parmi l'ensemble des $N$ patients du corpus.
+Le taux de référence est $1/N$ (attribution aléatoire).
+L'\emph{attaque de discrimination} (1-vs-2) évalue si un adversaire, ayant réduit les candidats à deux patients, peut identifier le bon.
+Le taux de référence est \SI{50}{\percent}.
+Ce second scénario est plus réaliste : il modélise un adversaire disposant d'informations auxiliaires (période d'hospitalisation, pathologie) lui permettant de restreindre l'ensemble de candidats.
+
+Pour chacun de ces scénarios, deux métriques de similarité sont employées : une mesure lexicale par TF-IDF (cosinus sur les vecteurs de termes) et une mesure sémantique par embeddings (all-mpnet-base-v2).
+L'évaluation porte sur deux corpus : MIMIC-III (notes cliniques, $r_{\text{sft}} \in \{4\,\%, 6\,\%\}$, DPO-2) et AlpaCare (instructions conversationnelles, DPO-1).
 
 \subsection{Résultats : risques de réidentification}
-% Linkage 45--76\%, discrimination 89--96\%,
-% effet amplificateur du DPO sur le risque
+
+Le tableau~\ref{tab:privacy-baseline} rapporte les taux de succès des attaques sur les documents synthétiques de base (sans atténuation).
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Liaison}} & \multicolumn{2}{c}{\textbf{Discrimination}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Corpus} & TF-IDF & Sémant. & TF-IDF & Sémant. \\
+\midrule
+MIMIC-III 4\,\% DPO-2 & 85,9 & 59,5 & 99,7 & 99,3 \\
+MIMIC-III 6\,\% DPO-2 & \textbf{89,7} & 55,7 & \textbf{100,0} & 99,3 \\
+AlpaCare DPO-1         & 77,9 & \textbf{82,0} & 98,4 & \textbf{99,9} \\
+\bottomrule
+\end{tabular}
+\caption{Taux de succès (\%) des attaques par liaison et de discrimination sur les documents synthétiques, sans atténuation.}
+\label{tab:privacy-baseline}
+\end{table}
+
+Les résultats révèlent des vulnérabilités significatives.
+Les attaques par liaison atteignent \SIrange{78}{90}{\percent} en TF-IDF et \SIrange{56}{82}{\percent} en sémantique, bien au-dessus du hasard.
+Les attaques de discrimination frôlent le taux maximal (\SIrange{98}{100}{\percent}), indiquant que les documents synthétiques conservent des empreintes patient très distinctives.
+
+Le vecteur de fuite diffère selon le corpus.
+Sur MIMIC-III, la similarité lexicale (TF-IDF) domine nettement la sémantique (\SI{86}{\percent} à \SI{90}{\percent} contre \SI{56}{\percent} à \SI{59}{\percent}), indiquant que les patrons terminologiques médicaux constituent le canal principal de fuite.
+Sur AlpaCare, la tendance s'inverse : la similarité sémantique (\SI{82}{\percent}) dépasse la lexicale (\SI{78}{\percent}), le contenu conversationnel fuyant davantage par le sens que par le vocabulaire.
+
+Un résultat contre-intuitif émerge de la comparaison entre les étapes de génération.
+Sur AlpaCare, le modèle ajusté par DP-SFT seul (sans DPO) présente un taux de liaison de seulement \SI{14}{\percent}, contre \SI{78}{\percent} après DPO-1.
+L'alignement par préférence, en poussant le générateur à maximiser la similarité aux documents réels, amplifie les empreintes patient dans les documents synthétiques.
+Ce phénomène constitue un arbitrage fondamental : le DPO améliore l'utilité aval mais aggrave le risque de réidentification.
 
 \subsection{Stratégies d'atténuation}
-% Perturbation des mots-clés, effet négligeable sur l'utilité conversationnelle
+
+Deux stratégies de post-traitement sont évaluées.
+
+La première, la \emph{reformulation standard}, consiste à paraphraser les documents synthétiques par un grand modèle de langue généraliste.
+Elle réduit le risque de liaison de \SIrange{2}{5}{pp} sur MIMIC-III et de \SIrange{12}{24}{pp} sur AlpaCare, mais les attaques de discrimination restent quasi-intactes (\SIrange{97}{100}{\percent}).
+La reformulation introduit une variabilité lexicale de surface sans modifier le contenu sémantique sous-jacent.
+
+La seconde, la \emph{perturbation des mots-clés UMLS}, cible directement la cause identifiée de la fuite : la combinaison distinctive de mots-clés qui encode l'empreinte patient.
+Chaque mot-clé est remplacé par un synonyme issu de l'ontologie UMLS, perturbant l'empreinte lexicale tout en préservant la cohérence médicale.
+Les résultats sont présentés dans le tableau~\ref{tab:privacy-mitigation}.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Liaison}} & \multicolumn{2}{c}{\textbf{Discrimination}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Corpus} & TF-IDF & Sémant. & TF-IDF & Sémant. \\
+\midrule
+MIMIC-III 4\,\% & 28,9 \scriptsize(-57) & 30,2 \scriptsize(-29) & 91,1 \scriptsize(-9) & 97,3 \scriptsize(-2) \\
+MIMIC-III 6\,\% & 30,7 \scriptsize(-59) & 29,6 \scriptsize(-26) & 94,6 \scriptsize(-5) & 98,7 \scriptsize(-1) \\
+AlpaCare         & 14,4 \scriptsize(-63) & 44,4 \scriptsize(-38) & 86,7 \scriptsize(-12) & 99,6 \scriptsize(-0,3) \\
+\bottomrule
+\end{tabular}
+\caption{Taux de succès (\%) après perturbation des mots-clés UMLS. Les chiffres entre parenthèses indiquent la réduction en points de pourcentage par rapport au tableau~\ref{tab:privacy-baseline}.}
+\label{tab:privacy-mitigation}
+\end{table}
+
+La perturbation des mots-clés réduit massivement le risque de liaison : \SIrange{57}{63}{pp} en TF-IDF et \SIrange{26}{38}{pp} en sémantique.
+Sur MIMIC-III, le taux de liaison TF-IDF chute de \SI{86}{\percent}--\SI{90}{\percent} à \SI{29}{\percent}--\SI{31}{\percent}, approchant le niveau de hasard.
+Sur AlpaCare, la réduction atteint \SI{63}{pp}, ramenant le taux à \SI{14}{\percent}.
+Les attaques de discrimination, bien que réduites (\SIrange{87}{99}{\percent}), restent élevées : les paires de documents demeurent distinguables même après perturbation, mais l'attribution globale à un patient source devient difficile.
+
+L'arbitrage utilité/confidentialité est favorable.
+Sur AlpaCare, la perturbation des mots-clés ne dégrade l'utilité aval que de \SI{1,3}{\percent}, pour une réduction de liaison de \SI{63}{pp}, un ratio nettement supérieur à la reformulation standard (\SI{2,2}{\percent} de perte d'utilité pour seulement \SI{24}{pp} de réduction).
 
 \subsection{Comparaison à KnowledgeSG}
-% Complétion d'identifiants vs réidentification,
-% complémentarité des deux approches
+
+L'approche KnowledgeSG \citep{wangKnowledgeSGPrivacyPreservingSynthetic2024} intègre la confidentialité différentielle directement dans la boucle d'entraînement (DP-SGD), offrant des garanties formelles ($\varepsilon$-DP) que l'approche fac-similé ne fournit pas.
+En contrepartie, le bruit injecté par DP-SGD dégrade la qualité des générations, et les garanties formelles reposent sur des hypothèses (composition, sous-échantillonnage) dont la validation pratique reste discutée.
+
+Les deux approches sont complémentaires plutôt que concurrentes.
+KnowledgeSG excelle lorsqu'une garantie formelle est requise par le cadre réglementaire, tandis que l'approche fac-similé offre une meilleure fidélité structurelle et un déploiement plus simple dans les contextes inter-institutionnels.
+La combinaison des deux, appliquant la confidentialité différentielle à l'étape d'ajustement supervisé puis le raffinement par DPO avec perturbation des mots-clés, constitue une piste prometteuse pour articuler garanties formelles et utilité empirique.
+
+Les résultats de cette analyse apportent un constat lucide : la génération synthétique \emph{réduit} mais n'\emph{élimine} pas les risques de réidentification.
+La perturbation ciblée des mots-clés offre un compromis déployable en pratique, mais des vulnérabilités résiduelles subsistent, en particulier pour les attaques de discrimination.
+L'articulation entre garanties empiriques (attaques évaluées) et garanties formelles (confidentialité différentielle) reste un axe de recherche ouvert.
