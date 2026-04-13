@@ -42,7 +42,3 @@ IMPORTANT - These rules differ from defaults and must be followed:
 - Don't change `main.tex` structure
 - Don't remove content without confirmation
 - Don't add speculative content not grounded in your research
-
-## Project Details
-
-See @NOTES.md for thesis status, priority tasks, and improvement plan.
